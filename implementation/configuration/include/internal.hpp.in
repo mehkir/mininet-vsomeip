@@ -31,19 +31,19 @@
 #ifdef _WIN32
 #define VSOMEIP_CFG_LIBRARY                      "vsomeip3-cfg.dll"
 #else
-#define VSOMEIP_CFG_LIBRARY                      "libvsomeip3-cfg.so.@VSOMEIP_MAJOR_VERSION@"
+#define VSOMEIP_CFG_LIBRARY                      "/tmp/vsomeip/cmake-build-debug/libvsomeip3-cfg.so.@VSOMEIP_MAJOR_VERSION@"
 #endif
 
 #ifdef _WIN32
 #define VSOMEIP_SD_LIBRARY                      "vsomeip3-sd.dll"
 #else
-#define VSOMEIP_SD_LIBRARY                      "libvsomeip3-sd.so.@VSOMEIP_MAJOR_VERSION@"
+#define VSOMEIP_SD_LIBRARY                      "/tmp/vsomeip/cmake-build-debug/libvsomeip3-sd.so.@VSOMEIP_MAJOR_VERSION@"
 #endif
 
 #ifdef _WIN32
 #define VSOMEIP_E2E_LIBRARY                      "vsomeip3-e2e.dll"
 #else
-#define VSOMEIP_E2E_LIBRARY                      "libvsomeip3-e2e.so.@VSOMEIP_MAJOR_VERSION@"
+#define VSOMEIP_E2E_LIBRARY                      "/tmp/vsomeip/cmake-build-debug/libvsomeip3-e2e.so.@VSOMEIP_MAJOR_VERSION@"
 #endif
 
 #define VSOMEIP_ROUTING_CLIENT                  0

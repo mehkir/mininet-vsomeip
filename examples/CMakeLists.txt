@@ -14,18 +14,28 @@ set(EXAMPLE_CONFIG_FILES
     "../config/vsomeip-udp-service.json"
 )
 
+find_package (vsomeip3 REQUIRED)
+find_package(Boost COMPONENTS system thread log REQUIRED)
+
+include_directories (
+        ${Boost_INCLUDE_DIR}
+        ${VSOMEIP_INCLUDE_DIRS}
+)
+
+list(APPEND VSOMEIP_LIBS ${VSOMEIP_NAME}-cfg ${VSOMEIP_NAME}-e2e ${VSOMEIP_NAME}-sd)
+
 # Examples
 add_executable(request-sample request-sample.cpp ${EXAMPLE_CONFIG_FILES})
-target_link_libraries(request-sample ${VSOMEIP_NAME} ${Boost_LIBRARIES} ${DL_LIBRARY})
+target_link_libraries(request-sample ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boost_LIBRARIES} ${DL_LIBRARY})
 
 add_executable(response-sample response-sample.cpp ${EXAMPLE_CONFIG_FILES})
-target_link_libraries(response-sample ${VSOMEIP_NAME} ${Boost_LIBRARIES} ${DL_LIBRARY})
+target_link_libraries(response-sample ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boost_LIBRARIES} ${DL_LIBRARY})
 
 add_executable(subscribe-sample subscribe-sample.cpp ${EXAMPLE_CONFIG_FILES})
-target_link_libraries(subscribe-sample ${VSOMEIP_NAME} ${Boost_LIBRARIES} ${DL_LIBRARY})
+target_link_libraries(subscribe-sample ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boost_LIBRARIES} ${DL_LIBRARY})
 
 add_executable(notify-sample notify-sample.cpp ${EXAMPLE_CONFIG_FILES})
-target_link_libraries(notify-sample ${VSOMEIP_NAME} ${Boost_LIBRARIES} ${DL_LIBRARY})
+target_link_libraries(notify-sample ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boost_LIBRARIES} ${DL_LIBRARY})
 
 add_dependencies(examples request-sample response-sample subscribe-sample notify-sample)
 
