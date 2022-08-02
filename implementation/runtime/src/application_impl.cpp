@@ -1000,6 +1000,7 @@ void application_impl::unregister_subscription_handler(service_t _service,
 void application_impl::on_subscription_status(service_t _service,
         instance_t _instance, eventgroup_t _eventgroup, event_t _event,
         uint16_t _error) {
+    VSOMEIP_DEBUG << ">>>>> application_impl::on_subscription_status (MEHMET MUELLER DEBUG) <<<<<";
     bool entry_found(false);
     {
         auto its_tuple = std::make_tuple(_service, _instance, _eventgroup, _event);

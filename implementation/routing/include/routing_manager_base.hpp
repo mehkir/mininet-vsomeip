@@ -24,6 +24,7 @@
 #include "../../message/include/deserializer.hpp"
 #include "../../configuration/include/configuration.hpp"
 #include "../../endpoints/include/endpoint_manager_base.hpp"
+#include "../../dnssec/include/record_checker.hpp"
 
 namespace vsomeip_v3 {
 
@@ -298,6 +299,7 @@ protected:
 private:
     services_t services_;
     mutable std::mutex services_mutex_;
+    record_checker record_checker_;
 
 #ifdef VSOMEIP_ENABLE_COMPAT
     std::map<service_t,

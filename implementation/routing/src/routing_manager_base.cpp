@@ -24,7 +24,8 @@ routing_manager_base::routing_manager_base(routing_manager_host *_host) :
         host_(_host),
         io_(host_->get_io()),
         client_(host_->get_client()),
-        configuration_(host_->get_configuration())
+        configuration_(host_->get_configuration()),
+        record_checker_(record_checker())
 #ifdef USE_DLT
         , tc_(trace::connector_impl::get())
 #endif
@@ -1328,11 +1329,16 @@ void routing_manager_base::put_deserializer(
 
 void routing_manager_base::send_pending_subscriptions(service_t _service,
         instance_t _instance, major_version_t _major) {
+    VSOMEIP_DEBUG << ">>>>> routing_manager_base::send_pending_subscriptions (MEHMET MUELLER DEBUG) <<<<<";
     for (auto &ps : pending_subscriptions_) {
         if (ps.service_ == _service &&
                 ps.instance_ == _instance && ps.major_ == _major) {
-            send_subscribe(client_, ps.service_, ps.instance_,
-                    ps.eventgroup_, ps.major_, ps.event_);
+            if (record_checker_.is_valid()) {
+                send_subscribe(client_, ps.service_, ps.instance_,
+                               ps.eventgroup_, ps.major_, ps.event_);
+            } else {
+                VSOMEIP_WARNING << "There is no valid record for this service!";
+            }
         }
     }
 }

@@ -346,6 +346,7 @@ bool routing_manager_impl::offer_service(client_t _client,
         major_version_t _major, minor_version_t _minor,
         bool _must_queue) {
 
+    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::offer_service (MEHMET MUELLER DEBUG) <<<<<";
     VSOMEIP_INFO << "OFFER("
         << std::hex << std::setw(4) << std::setfill('0') << _client <<"): ["
         << std::hex << std::setw(4) << std::setfill('0') << _service << "."
@@ -443,6 +444,7 @@ void routing_manager_impl::stop_offer_service(client_t _client,
         major_version_t _major, minor_version_t _minor,
         bool _must_queue) {
 
+    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::stop_offer_service (MEHMET MUELLER DEBUG) <<<<<";
     VSOMEIP_INFO << "STOP OFFER("
         << std::hex << std::setw(4) << std::setfill('0') << _client <<"): ["
         << std::hex << std::setw(4) << std::setfill('0') << _service << "."
@@ -3483,6 +3485,7 @@ std::shared_ptr<endpoint_manager_impl> routing_manager_impl::get_endpoint_manage
 void routing_manager_impl::send_subscribe(client_t _client, service_t _service,
         instance_t _instance, eventgroup_t _eventgroup, major_version_t _major,
         event_t _event) {
+    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::send_subscribe (MEHMET MUELLER DEBUG) <<<<<";
     auto endpoint = ep_mgr_->find_local(_service, _instance);
     if (endpoint) {
         stub_->send_subscribe(endpoint, _client,

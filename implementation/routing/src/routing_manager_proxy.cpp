@@ -497,6 +497,7 @@ void routing_manager_proxy::subscribe(client_t _client, uid_t _uid, gid_t _gid, 
 void routing_manager_proxy::send_subscribe(client_t _client, service_t _service,
         instance_t _instance, eventgroup_t _eventgroup, major_version_t _major,
         event_t _event) {
+    VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::send_subscribe (MEHMET MUELLER DEBUG) <<<<<";
     (void)_client;
 
     byte_t its_command[VSOMEIP_SUBSCRIBE_COMMAND_SIZE];
@@ -861,6 +862,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
         credentials_t _credentials,
         const boost::asio::ip::address &_remote_address,
         std::uint16_t _remote_port) {
+    VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message (MEHMET MUELLER DEBUG) <<<<<";
     (void)_receiver;
     (void)_destination;
     (void)_remote_address;
@@ -922,6 +924,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
 
         switch (its_command) {
         case VSOMEIP_SEND: {
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_SEND (MEHMET MUELLER DEBUG) <<<<<";
             if (_size < VSOMEIP_SEND_COMMAND_SIZE + VSOMEIP_FULL_HEADER_SIZE) {
                 VSOMEIP_WARNING << "Received a SEND command with too small size -> skip!";
                 break;
@@ -1095,6 +1098,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
         }
 
         case VSOMEIP_ASSIGN_CLIENT_ACK: {
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_ASSIGN_CLIENT_ACK (MEHMET MUELLER DEBUG) <<<<<";
             if (_size != VSOMEIP_ASSIGN_CLIENT_ACK_COMMAND_SIZE) {
                 VSOMEIP_WARNING << "Received a VSOMEIP_ASSIGN_CLIENT_ACK command with wrong size ~> skip!";
                 break;
@@ -1106,6 +1110,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
             break;
         }
         case VSOMEIP_ROUTING_INFO:
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_ROUTING_INFO (MEHMET MUELLER DEBUG) <<<<<";
             if (_size - VSOMEIP_COMMAND_HEADER_SIZE != its_length) {
                 VSOMEIP_WARNING << "Received a ROUTING_INFO command with invalid size -> skip!";
                 break;
@@ -1121,6 +1126,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
             break;
 
         case VSOMEIP_PING:
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_PING (MEHMET MUELLER DEBUG) <<<<<";
             if (_size != VSOMEIP_PING_COMMAND_SIZE) {
                 VSOMEIP_WARNING << "Received a PING command with wrong size ~> skip!";
                 break;
@@ -1131,6 +1137,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
             break;
 
         case VSOMEIP_SUBSCRIBE:
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_SUBSCRIBE (MEHMET MUELLER DEBUG) <<<<<";
             if (_size != VSOMEIP_SUBSCRIBE_COMMAND_SIZE) {
                 VSOMEIP_WARNING << "Received a SUBSCRIBE command with wrong size ~> skip!";
                 break;
@@ -1281,6 +1288,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
             break;
 
         case VSOMEIP_UNSUBSCRIBE:
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_UNSUBSCRIBE (MEHMET MUELLER DEBUG) <<<<<";
             if (_size != VSOMEIP_UNSUBSCRIBE_COMMAND_SIZE) {
                 VSOMEIP_WARNING << "Received an UNSUBSCRIBE command with wrong ~> skip!";
                 break;
@@ -1321,6 +1329,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
             break;
 
         case VSOMEIP_SUBSCRIBE_NACK:
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_SUBSCRIBE_NACK (MEHMET MUELLER DEBUG) <<<<<";
             if (_size != VSOMEIP_SUBSCRIBE_NACK_COMMAND_SIZE) {
                 VSOMEIP_WARNING << "Received a VSOMEIP_SUBSCRIBE_NACK command with wrong size ~> skip!";
                 break;
@@ -1346,6 +1355,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
             break;
 
         case VSOMEIP_SUBSCRIBE_ACK:
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_SUBSCRIBE_ACK (MEHMET MUELLER DEBUG) <<<<<";
             if (_size != VSOMEIP_SUBSCRIBE_ACK_COMMAND_SIZE) {
                 VSOMEIP_WARNING << "Received a VSOMEIP_SUBSCRIBE_ACK command with wrong size ~> skip!";
                 break;
@@ -1362,6 +1372,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
                     sizeof(its_event));
 
             on_subscribe_ack(its_subscriber, its_service, its_instance, its_eventgroup, its_event);
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message (MEHMET MUELLER DEBUG) <<<<<";
             VSOMEIP_INFO << "SUBSCRIBE ACK("
                 << std::hex << std::setw(4) << std::setfill('0') << its_client << "): ["
                 << std::hex << std::setw(4) << std::setfill('0') << its_service << "."
@@ -1371,6 +1382,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
             break;
 
         case VSOMEIP_OFFERED_SERVICES_RESPONSE:
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_OFFERED_SERVICES_RESPONSE (MEHMET MUELLER DEBUG) <<<<<";
             if (_size - VSOMEIP_COMMAND_HEADER_SIZE != its_length) {
                 VSOMEIP_WARNING << "Received a VSOMEIP_OFFERED_SERVICES_RESPONSE command with invalid size -> skip!";
                 break;
@@ -1384,6 +1396,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
             }
             break;
         case VSOMEIP_RESEND_PROVIDED_EVENTS: {
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_RESEND_PROVIDED_EVENTS (MEHMET MUELLER DEBUG) <<<<<";
             if (_size != VSOMEIP_RESEND_PROVIDED_EVENTS_COMMAND_SIZE) {
                 VSOMEIP_WARNING << "Received a RESEND_PROVIDED_EVENTS command with wrong size ~> skip!";
                 break;
@@ -1399,9 +1412,11 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
             break;
         }
         case VSOMEIP_UPDATE_SECURITY_POLICY_INT:
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_UPDATE_SECURITY_POLICY_INT (MEHMET MUELLER DEBUG) <<<<<";
             is_internal_policy_update = true;
             /* Fallthrough */
         case VSOMEIP_UPDATE_SECURITY_POLICY: {
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_UPDATE_SECURITY_POLICY (MEHMET MUELLER DEBUG) <<<<<";
             if (_size < VSOMEIP_COMMAND_HEADER_SIZE + sizeof(pending_security_update_id_t) ||
                     _size - VSOMEIP_COMMAND_HEADER_SIZE != its_length) {
                 VSOMEIP_WARNING << "vSomeIP Security: Received a VSOMEIP_UPDATE_SECURITY_POLICY command with wrong size -> skip!";
@@ -1446,6 +1461,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
             break;
         }
         case VSOMEIP_REMOVE_SECURITY_POLICY: {
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_REMOVE_SECURITY_POLICY (MEHMET MUELLER DEBUG) <<<<<";
             if (_size != VSOMEIP_REMOVE_SECURITY_POLICY_COMMAND_SIZE) {
                 VSOMEIP_WARNING << "vSomeIP Security: Received a VSOMEIP_REMOVE_SECURITY_POLICY command with wrong size ~> skip!";
                 break;
@@ -1474,6 +1490,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
             break;
         }
         case VSOMEIP_DISTRIBUTE_SECURITY_POLICIES: {
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_DISTRIBUTE_SECURITY_POLICIES (MEHMET MUELLER DEBUG) <<<<<";
             if (_size < VSOMEIP_COMMAND_HEADER_SIZE ||
                     _size - VSOMEIP_COMMAND_HEADER_SIZE != its_length) {
                 VSOMEIP_WARNING << "vSomeIP Security: Received a VSOMEIP_DISTRIBUTE_SECURITY_POLICIES command with wrong size -> skip!";
@@ -1523,6 +1540,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
             break;
         }
         case VSOMEIP_UPDATE_SECURITY_CREDENTIALS: {
+            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_message case VSOMEIP_UPDATE_SECURITY_CREDENTIALS (MEHMET MUELLER DEBUG) <<<<<";
             if (_size < VSOMEIP_COMMAND_HEADER_SIZE ||
                     _size - VSOMEIP_COMMAND_HEADER_SIZE != its_length) {
                 VSOMEIP_WARNING << "vSomeIP Security: Received a VSOMEIP_UPDATE_SECURITY_CREDENTIALS command with wrong size -> skip!";
@@ -1546,6 +1564,7 @@ void routing_manager_proxy::on_message(const byte_t *_data, length_t _size,
 
 void routing_manager_proxy::on_routing_info(const byte_t *_data,
         uint32_t _size) {
+    VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_routing_info (MEHMET MUELLER DEBUG) <<<<<";
 #if 0
     std::stringstream msg;
     msg << "rmp::on_routing_info(" << std::hex << client_ << "): ";
@@ -1678,6 +1697,7 @@ void routing_manager_proxy::on_routing_info(const byte_t *_data,
                                 std::lock_guard<std::mutex> its_lock(state_mutex_);
                                 send_pending_subscriptions(its_service, its_instance, its_major);
                             }
+                            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_routing_info ON_AVAILABLE (MEHMET MUELLER DEBUG) <<<<<";
                             host_->on_availability(its_service, its_instance, true, its_major, its_minor);
                             VSOMEIP_INFO << "ON_AVAILABLE("
                                 << std::hex << std::setw(4) << std::setfill('0') << get_client() <<"): ["
@@ -1698,6 +1718,7 @@ void routing_manager_proxy::on_routing_info(const byte_t *_data,
                                 }
                             }
                             on_stop_offer_service(its_service, its_instance, its_major, its_minor);
+                            VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::on_routing_info (MEHMET MUELLER DEBUG) <<<<<";
                             host_->on_availability(its_service, its_instance, false, its_major, its_minor);
                             VSOMEIP_INFO << "ON_UNAVAILABLE("
                                 << std::hex << std::setw(4) << std::setfill('0') << get_client() <<"): ["

@@ -1375,6 +1375,7 @@ bool routing_manager_stub::send_subscribe(const std::shared_ptr<endpoint>& _targ
         client_t _client, service_t _service, instance_t _instance,
         eventgroup_t _eventgroup, major_version_t _major,
         event_t _event, remote_subscription_id_t _id) {
+    VSOMEIP_DEBUG << ">>>>> routing_manager_stub::send_subscribe (MEHMET MUELLER DEBUG) <<<<<";
     if (_target) {
         byte_t its_command[VSOMEIP_SUBSCRIBE_COMMAND_SIZE];
         uint32_t its_size = VSOMEIP_SUBSCRIBE_COMMAND_SIZE
