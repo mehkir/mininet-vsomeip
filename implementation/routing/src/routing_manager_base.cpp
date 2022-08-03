@@ -1333,11 +1333,20 @@ void routing_manager_base::send_pending_subscriptions(service_t _service,
     for (auto &ps : pending_subscriptions_) {
         if (ps.service_ == _service &&
                 ps.instance_ == _instance && ps.major_ == _major) {
-            if (record_checker_.is_valid()) {
+            if (record_checker_.is_svcb_valid()) {
+                VSOMEIP_DEBUG << ">>>>> There is a valid SVCB record for the "
+                              << "service: 0x" << std::hex << std::setw(4) << std::setfill('0') << ps.service_
+                              << " (instance: 0x" << std::hex << std::setw(4) << std::setfill('0') << ps.instance_
+                              << ", major: " << std::dec << static_cast<std::uint32_t>(ps.major_)
+                              << "). <<<<<";
                 send_subscribe(client_, ps.service_, ps.instance_,
                                ps.eventgroup_, ps.major_, ps.event_);
             } else {
-                VSOMEIP_WARNING << "There is no valid record for this service!";
+                VSOMEIP_DEBUG << ">>>>> There is no valid SVCB record for the "
+                <<  "service: 0x" << std::hex << std::setw(4) << std::setfill('0') << ps.service_
+                << " (instance: " << std::hex << std::setw(4) << std::setfill('0') << ps.instance_
+                << ", major: " << std::dec << static_cast<std::uint32_t>(ps.major_)
+                << ")! <<<<<";
             }
         }
     }

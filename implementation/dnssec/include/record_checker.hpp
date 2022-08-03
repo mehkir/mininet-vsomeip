@@ -9,7 +9,10 @@ namespace vsomeip_v3 {
     class record_checker {
       public:
         record_checker();
-        bool is_valid();
+        // Dummy method always returning true
+        bool is_svcb_valid();
+        // Dummy method always returning true
+        bool is_tlsa_valid();
       protected:
       private:
     };

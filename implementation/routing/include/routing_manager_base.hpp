@@ -260,6 +260,8 @@ protected:
 
     std::mutex event_registration_mutex_;
 
+    // DNSSEC record checker
+    record_checker record_checker_;
 #ifdef USE_DLT
     std::shared_ptr<trace::connector_impl> tc_;
 #endif
@@ -299,7 +301,6 @@ protected:
 private:
     services_t services_;
     mutable std::mutex services_mutex_;
-    record_checker record_checker_;
 
 #ifdef VSOMEIP_ENABLE_COMPAT
     std::map<service_t,

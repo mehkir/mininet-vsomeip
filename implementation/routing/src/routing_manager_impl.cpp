@@ -589,6 +589,7 @@ void routing_manager_impl::subscribe(client_t _client, uid_t _uid, gid_t _gid,
         service_t _service, instance_t _instance, eventgroup_t _eventgroup,
         major_version_t _major, event_t _event) {
 
+    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::subscribe (MEHMET MUELLER DEBUG) <<<<<";
     VSOMEIP_INFO << "SUBSCRIBE("
         << std::hex << std::setw(4) << std::setfill('0') << _client <<"): ["
         << std::hex << std::setw(4) << std::setfill('0') << _service << "."
@@ -615,7 +616,26 @@ void routing_manager_impl::subscribe(client_t _client, uid_t _uid, gid_t _gid,
                              << " rejected from application handler.";
                 return;
             } else {
-                stub_->send_subscribe_ack(_client, _service, _instance, _eventgroup, _event);
+                if (record_checker_.is_svcb_valid() && record_checker_.is_tlsa_valid()) {
+                    VSOMEIP_DEBUG
+                        << ">>>>> There is a valid SVCB and TLSA record for the client: "
+                        << std::hex << std::setw(4) << std::setfill('0') << _client <<"): ["
+                        << std::hex << std::setw(4) << std::setfill('0') << _service << "."
+                        << std::hex << std::setw(4) << std::setfill('0') << _instance << "."
+                        << std::hex << std::setw(4) << std::setfill('0') << _eventgroup << ":"
+                        << std::hex << std::setw(4) << std::setfill('0') << _event << ":"
+                        << std::dec << (uint16_t)_major << "] <<<<<";
+                    stub_->send_subscribe_ack(_client, _service, _instance, _eventgroup, _event);
+                } else {
+                    VSOMEIP_DEBUG
+                        << ">>>>> There is no valid SVCB and TLSA record for the client: "
+                        << std::hex << std::setw(4) << std::setfill('0') << _client <<"): ["
+                        << std::hex << std::setw(4) << std::setfill('0') << _service << "."
+                        << std::hex << std::setw(4) << std::setfill('0') << _instance << "."
+                        << std::hex << std::setw(4) << std::setfill('0') << _eventgroup << ":"
+                        << std::hex << std::setw(4) << std::setfill('0') << _event << ":"
+                        << std::dec << (uint16_t)_major << "] <<<<<";
+                }
             }
             routing_manager_base::subscribe(_client, _uid, _gid, _service, _instance, _eventgroup, _major, _event);
 #ifdef VSOMEIP_ENABLE_COMPAT
