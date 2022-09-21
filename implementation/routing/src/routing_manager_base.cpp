@@ -1338,7 +1338,7 @@ void routing_manager_base::send_pending_subscriptions(service_t _service,
                               << "service: 0x" << std::hex << std::setw(4) << std::setfill('0') << ps.service_
                               << " (instance: 0x" << std::hex << std::setw(4) << std::setfill('0') << ps.instance_
                               << ", major: " << std::dec << static_cast<std::uint32_t>(ps.major_)
-                              << "). <<<<<";
+                              << "). (MEHMET MUELLER DEBUG) <<<<<";
                 send_subscribe(client_, ps.service_, ps.instance_,
                                ps.eventgroup_, ps.major_, ps.event_);
             } else {
@@ -1346,7 +1346,7 @@ void routing_manager_base::send_pending_subscriptions(service_t _service,
                 <<  "service: 0x" << std::hex << std::setw(4) << std::setfill('0') << ps.service_
                 << " (instance: " << std::hex << std::setw(4) << std::setfill('0') << ps.instance_
                 << ", major: " << std::dec << static_cast<std::uint32_t>(ps.major_)
-                << ")! <<<<<";
+                << ")! (MEHMET MUELLER DEBUG) <<<<<";
             }
         }
     }

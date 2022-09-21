@@ -624,7 +624,7 @@ void routing_manager_impl::subscribe(client_t _client, uid_t _uid, gid_t _gid,
                         << std::hex << std::setw(4) << std::setfill('0') << _instance << "."
                         << std::hex << std::setw(4) << std::setfill('0') << _eventgroup << ":"
                         << std::hex << std::setw(4) << std::setfill('0') << _event << ":"
-                        << std::dec << (uint16_t)_major << "] <<<<<";
+                        << std::dec << (uint16_t)_major << "] (MEHMET MUELLER DEBUG) <<<<<";
                     stub_->send_subscribe_ack(_client, _service, _instance, _eventgroup, _event);
                 } else {
                     VSOMEIP_DEBUG
