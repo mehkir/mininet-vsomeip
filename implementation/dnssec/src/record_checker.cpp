@@ -3,6 +3,7 @@
 //
 
 #include "../include/record_checker.hpp"
+#include "../include/dns_resolver.hpp"
 
 namespace vsomeip_v3 {
 
