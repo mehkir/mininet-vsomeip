@@ -38,35 +38,40 @@ int dns_resolver::changeIPv4DNSServer(ares_channel& channel, in_addr_t address) 
 }
 
 int dns_resolver::initialize(in_addr_t address) {
-    ares_library_init(ARES_LIB_INIT_ALL);
-    if (ares_init(&channel) != ARES_SUCCESS) {
-        std::cout << "Channel initialization failed" << std::endl;
-        return 1;
-    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (!initialized) {
+        ares_library_init(ARES_LIB_INIT_ALL);
+        if (ares_init(&channel) != ARES_SUCCESS) {
+            std::cout << "Channel initialization failed" << std::endl;
+            return 1;
+        }
 
-    ares_options options = {0};
-    int optmask = 0;
-    if (ares_save_options(channel, &options, &optmask) != ARES_SUCCESS) {
-        std::cout << "Retrieving options failed" << std::endl;
-        return 1;
+        ares_options options = {0};
+        int optmask = 0;
+        if (ares_save_options(channel, &options, &optmask) != ARES_SUCCESS) {
+            std::cout << "Retrieving options failed" << std::endl;
+            return 1;
+        }
+        ares_destroy(channel);
+        options.flags |= ARES_FLAG_EDNS;
+        optmask |= ARES_OPT_EDNSPSZ;
+        options.ednspsz = EDNSPKSZ;
+        if (ares_init_options(&channel, &options, optmask) != ARES_SUCCESS) {
+            std::cout << "Initializing with options failed" << std::endl;
+            return 1;
+        }
+        ares_destroy_options(&options);
+        if (changeIPv4DNSServer(channel, address) != ARES_SUCCESS) {
+            std::cout << "Setting servers failed" << std::endl;
+            return 1;
+        }
+        state = STARTED;
+        processThread = std::thread(&dns_resolver::process, this);
+        initialized = true;
+        LOG_DEBUG("Process Thread is initialized")
+    } else {
+        LOG_DEBUG("Process Thread is initialized")
     }
-    ares_destroy(channel);
-    options.flags |= ARES_FLAG_EDNS;
-    optmask |= ARES_OPT_EDNSPSZ;
-    options.ednspsz = EDNSPKSZ;
-    if (ares_init_options(&channel,&options, optmask) != ARES_SUCCESS) {
-        std::cout << "Initializing with options failed" << std::endl;
-        return 1;
-    }
-    ares_destroy_options(&options);
-    if (changeIPv4DNSServer(channel, address) != ARES_SUCCESS) {
-        std::cout << "Setting servers failed" << std::endl;
-        return 1;
-    }
-    state = STARTED;
-    processThread = std::thread(&dns_resolver::process, this);
-    initialized = true;
-    LOG_DEBUG("Process Thread is initialized")
     return ARES_SUCCESS;
 }
 

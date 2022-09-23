@@ -7,7 +7,9 @@
 
 namespace vsomeip_v3 {
 
-    record_checker::record_checker() {}
+    record_checker::record_checker() {
+
+    }
 
     bool record_checker::is_svcb_valid() {
 
