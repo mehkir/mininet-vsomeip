@@ -3,7 +3,7 @@
 //
 
 #include "../include/dns_resolver.hpp"
-#include "..include/logger.hpp"
+#include "../include/logger.hpp"
 #include <arpa/inet.h>
 
 #define EDNSPKSZ 1280 // https://datatracker.ietf.org/doc/html/rfc6891
@@ -22,7 +22,12 @@ dns_resolver* dns_resolver::getInstance() {
 void dns_resolver::resolve(const char *name, int dnsclass, int type, ares_callback callback, void *arg) {
     if (!initialized)
         throw std::runtime_error("dns_resolver is not initialized, call initialize() first!");
-    DNSRequest dnsRequest = {name, dnsclass, type, callback, arg};
+    DNSRequest dnsRequest;
+    dnsRequest.name = name;
+    dnsRequest.dnsclass = dnsclass;
+    dnsRequest.type = type;
+    dnsRequest.callback = callback;
+    dnsRequest.arg = arg;
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         dnsRequests.push_back(dnsRequest);
@@ -31,7 +36,8 @@ void dns_resolver::resolve(const char *name, int dnsclass, int type, ares_callba
 }
 
 int dns_resolver::changeIPv4DNSServer(ares_channel& channel, in_addr_t address) {
-    ares_addr_node servers = {nullptr};
+    ares_addr_node servers;
+    servers.next = nullptr;
     servers.family = AF_INET;
     servers.addr.addr4.s_addr = htonl(address);
     return ares_set_servers(channel, &servers);
@@ -46,7 +52,8 @@ int dns_resolver::initialize(in_addr_t address) {
             return 1;
         }
 
-        ares_options options = {0};
+        ares_options options;
+        options.flags = 0;
         int optmask = 0;
         if (ares_save_options(channel, &options, &optmask) != ARES_SUCCESS) {
             std::cout << "Retrieving options failed" << std::endl;

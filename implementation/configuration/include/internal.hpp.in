@@ -18,32 +18,32 @@
 #define VSOMEIP_ENV_LOAD_PLUGINS                "VSOMEIP_LOAD_PLUGINS"
 #define VSOMEIP_ENV_CLIENTSIDELOGGING           "VSOMEIP_CLIENTSIDELOGGING"
 
-#define VSOMEIP_DEFAULT_CONFIGURATION_FILE      "@DEFAULT_CONFIGURATION_FILE@"
-#define VSOMEIP_LOCAL_CONFIGURATION_FILE        "./vsomeip.json"
+#define VSOMEIP_DEFAULT_CONFIGURATION_FILE      "/home/vsomeip/config/vsomeip.json"
+#define VSOMEIP_LOCAL_CONFIGURATION_FILE        "./config/vsomeip.json"
 #define VSOMEIP_MANDATORY_CONFIGURATION_FILES   "vsomeip_std.json,vsomeip_app.json,vsomeip_plc.json,vsomeip_log.json,vsomeip_security.json,vsomeip_whitelist.json"
 
-#define VSOMEIP_DEFAULT_CONFIGURATION_FOLDER    "@DEFAULT_CONFIGURATION_FOLDER@"
-#define VSOMEIP_DEBUG_CONFIGURATION_FOLDER      "/var/opt/public/sin/vsomeip/"
-#define VSOMEIP_LOCAL_CONFIGURATION_FOLDER      "./vsomeip"
+#define VSOMEIP_DEFAULT_CONFIGURATION_FOLDER    "/home/vsomeip/config"
+#define VSOMEIP_DEBUG_CONFIGURATION_FOLDER      "/home/vsomeip/config"
+#define VSOMEIP_LOCAL_CONFIGURATION_FOLDER      "./config"
 
-#define VSOMEIP_BASE_PATH                       "@VSOMEIP_BASE_PATH@/"
+#define VSOMEIP_BASE_PATH                       "/home/vsomeip"
 
 #ifdef _WIN32
 #define VSOMEIP_CFG_LIBRARY                      "vsomeip3-cfg.dll"
 #else
-#define VSOMEIP_CFG_LIBRARY                      "/tmp/vsomeip/cmake-build-debug/libvsomeip3-cfg.so.@VSOMEIP_MAJOR_VERSION@"
+#define VSOMEIP_CFG_LIBRARY                      "/home/vsomeip/build/libvsomeip3-cfg.so.@VSOMEIP_MAJOR_VERSION@"
 #endif
 
 #ifdef _WIN32
 #define VSOMEIP_SD_LIBRARY                      "vsomeip3-sd.dll"
 #else
-#define VSOMEIP_SD_LIBRARY                      "/tmp/vsomeip/cmake-build-debug/libvsomeip3-sd.so.@VSOMEIP_MAJOR_VERSION@"
+#define VSOMEIP_SD_LIBRARY                      "/home/vsomeip/build/libvsomeip3-sd.so.@VSOMEIP_MAJOR_VERSION@"
 #endif
 
 #ifdef _WIN32
 #define VSOMEIP_E2E_LIBRARY                      "vsomeip3-e2e.dll"
 #else
-#define VSOMEIP_E2E_LIBRARY                      "/tmp/vsomeip/cmake-build-debug/libvsomeip3-e2e.so.@VSOMEIP_MAJOR_VERSION@"
+#define VSOMEIP_E2E_LIBRARY                      "/home/vsomeip/build/libvsomeip3-e2e.so.@VSOMEIP_MAJOR_VERSION@"
 #endif
 
 #define VSOMEIP_ROUTING_CLIENT                  0

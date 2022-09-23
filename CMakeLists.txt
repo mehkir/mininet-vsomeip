@@ -296,7 +296,7 @@ target_include_directories(${VSOMEIP_NAME} INTERFACE
 # them (which shouldn't be required). ${Boost_LIBRARIES} includes absolute
 # build host paths as of writing, which also makes this important as it breaks
 # the build.
-target_link_libraries(${VSOMEIP_NAME} PRIVATE ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBRARY} ${DLT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${OS_LIBS})
+target_link_libraries(${VSOMEIP_NAME} PRIVATE ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBRARY} ${DLT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${OS_LIBS} libcares.so)
 
 ################################################################################
 # Service Discovery library
