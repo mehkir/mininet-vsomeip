@@ -551,6 +551,8 @@ void application_impl::stop() {
         }
         block_stopping_ = false;
     }
+    VSOMEIP_INFO << "Cleanup DNS resolver";
+    dns_resolver::getInstance()->cleanup();
 }
 
 void application_impl::process(int _number) {

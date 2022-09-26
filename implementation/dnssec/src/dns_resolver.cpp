@@ -138,11 +138,13 @@ dns_resolver::~dns_resolver() {
 }
 
 void dns_resolver::cleanup() {
-    LOG_DEBUG("Cleanup begins")
-    state = STOPPED;
-    conditionVariable.notify_one();
-    processThread.join();
-    ares_destroy(channel);
-    ares_library_cleanup();
-    LOG_DEBUG("Cleanup finished")
+    if (initialized) {
+        LOG_DEBUG("Cleanup begins")
+        state = STOPPED;
+        conditionVariable.notify_one();
+        processThread.join();
+        ares_destroy(channel);
+        ares_library_cleanup();
+        LOG_DEBUG("Cleanup finished")
+    }
 }
