@@ -40,7 +40,6 @@
         result->done_ = true;
         result->status_ = status;
         result->timeouts_ = timeouts;
-        LOG_DEBUG("Result adresse danach: " << result)
         std::vector<vsomeip_v3::byte> buffer;
         buffer.assign(abuf, abuf + alen);
 
@@ -73,7 +72,6 @@ namespace vsomeip_v3 {
 
     bool record_checker::is_svcb_valid() {
         SearchResult* result = (SearchResult*) malloc(2*sizeof(int)+sizeof(bool));
-        LOG_DEBUG("Result adresse davor: " << result)
         dnsResolver->resolve("_someip._udp.1.service.", C_IN, T_SVCB, callback, result);
         return true;
     }
