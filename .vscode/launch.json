@@ -61,7 +61,7 @@
                 },
                 {
                     "name": "VSOMEIP_APPLICATION_NAME",
-                    "value": "subscribe-sample"
+                    "value": "client-sample"
                 }
             ],
             "MIMode": "gdb",
