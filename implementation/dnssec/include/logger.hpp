@@ -10,7 +10,7 @@ enum LOG_TYPE {
     DEBUG,
 };
 
-#define LOG_LEVEL DEBUG
+#define LOG_LEVEL NONE
 
 #define LOG_DEBUG(m) if (LOG_LEVEL==DEBUG) { \
     std::cout<<m<<std::endl;                 \

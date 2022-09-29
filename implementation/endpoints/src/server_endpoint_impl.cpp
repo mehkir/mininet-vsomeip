@@ -166,6 +166,7 @@ void server_endpoint_impl<Protocol>::set_connected(bool _connected) {
 
 template<typename Protocol>bool server_endpoint_impl<Protocol>::send(const uint8_t *_data,
         uint32_t _size) {
+    VSOMEIP_DEBUG << ">>>>> server_endpoint_impl::send (MEHMET MUELLER DEBUG) <<<<<";
 #if 0
     std::stringstream msg;
     msg << "sei::send ";
@@ -229,6 +230,7 @@ template<typename Protocol>
 bool server_endpoint_impl<Protocol>::send(
         const std::vector<byte_t>& _cmd_header, const byte_t *_data,
         uint32_t _size) {
+    VSOMEIP_DEBUG << ">>>>> server_endpoint_impl::send (MEHMET MUELLER DEBUG) <<<<<";
     (void) _cmd_header;
     (void) _data;
     (void) _size;

@@ -257,6 +257,7 @@ void routing_manager_proxy::stop_offer_service(client_t _client,
 void routing_manager_proxy::request_service(client_t _client,
         service_t _service, instance_t _instance,
         major_version_t _major, minor_version_t _minor) {
+    VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::request_service (MEHMET MUELLER DEBUG) <<<<<";
     routing_manager_base::request_service(_client,
             _service, _instance, _major, _minor);
     {
@@ -1991,6 +1992,7 @@ void routing_manager_proxy::send_pong() const {
 }
 
 void routing_manager_proxy::send_request_services(std::set<service_data_t>& _requests) {
+    VSOMEIP_DEBUG << ">>>>> routing_manager_proxy::send_request_services (MEHMET MUELLER DEBUG) <<<<<";
     if (!_requests.size()) {
         return;
     }

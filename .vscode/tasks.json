@@ -8,9 +8,22 @@
 			"targets": [
 				"all"
 			],
+			"dependsOn": ["CMake: build examples"],
 			"group": "build",
 			"problemMatcher": [],
 			"detail": "CMake template build task"
-		}
+		},
+		{
+			"type": "cmake",
+			"label": "CMake: build examples",
+			"command": "build",
+			"targets": [
+				"examples"
+			],
+			"dependsOn": [],
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "CMake template build task"
+		},
 	]
 }

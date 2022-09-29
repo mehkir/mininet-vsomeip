@@ -578,6 +578,7 @@ void application_impl::stop_offer_service(service_t _service, instance_t _instan
 
 void application_impl::request_service(service_t _service, instance_t _instance,
         major_version_t _major, minor_version_t _minor) {
+    VSOMEIP_DEBUG << ">>>>> application_impl::request_service (MEHMET MUELLER DEBUG) <<<<<";
     if (routing_)
         routing_->request_service(client_, _service, _instance, _major, _minor);
 }

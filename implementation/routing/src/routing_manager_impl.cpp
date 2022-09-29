@@ -401,7 +401,7 @@ bool routing_manager_impl::offer_service(client_t _client,
     if (discovery_) {
         std::shared_ptr<serviceinfo> its_info = find_service(_service, _instance);
         if (its_info) {
-            discovery_->offer_service(its_info);
+            //discovery_->offer_service(its_info);
         }
     }
 

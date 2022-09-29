@@ -143,6 +143,7 @@ void routing_manager_base::stop_offer_service(client_t _client,
 void routing_manager_base::request_service(client_t _client,
         service_t _service, instance_t _instance,
         major_version_t _major, minor_version_t _minor) {
+    VSOMEIP_DEBUG << ">>>>> routing_manager_base::request_service (MEHMET MUELLER DEBUG) <<<<<";
     auto its_info = find_service(_service, _instance);
     if (its_info) {
         if ((_major == its_info->get_major()

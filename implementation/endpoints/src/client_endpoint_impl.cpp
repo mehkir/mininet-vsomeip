@@ -150,6 +150,7 @@ bool client_endpoint_impl<Protocol>::send_error(
 
 template<typename Protocol>
 bool client_endpoint_impl<Protocol>::send(const uint8_t *_data, uint32_t _size) {
+    VSOMEIP_DEBUG << ">>>>> client_endpoint_impl::send (MEHMET MUELLER DEBUG) <<<<<";
     std::lock_guard<std::mutex> its_lock(mutex_);
     bool must_depart(false);
     const bool queue_size_zero_on_entry(queue_.empty());
@@ -336,6 +337,7 @@ void client_endpoint_impl<Protocol>::wait_until_debounce_time_reached() const {
 template<typename Protocol>
 bool client_endpoint_impl<Protocol>::send(const std::vector<byte_t>& _cmd_header,
                                       const byte_t *_data, uint32_t _size) {
+    VSOMEIP_DEBUG << ">>>>> client_endpoint_impl::send (MEHMET MUELLER DEBUG) <<<<<";
     (void) _cmd_header;
     (void) _data;
     (void) _size;
