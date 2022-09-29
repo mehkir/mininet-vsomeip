@@ -29,6 +29,7 @@
 #include "../../service_discovery/include/runtime.hpp"
 #include "../../utility/include/byteorder.hpp"
 #include "../../utility/include/utility.hpp"
+#include <arpa/nameser.h>
 #ifdef USE_DLT
 #include "../../tracing/include/connector_impl.hpp"
 #endif
@@ -48,8 +49,10 @@ routing_manager_proxy::routing_manager_proxy(routing_manager_host *_host,
         request_debounce_timer_ (io_),
         request_debounce_timer_running_(false),
         client_side_logging_(_client_side_logging),
-        client_side_logging_filter_(_client_side_logging_filter)
+        client_side_logging_filter_(_client_side_logging_filter),
+        dnsResolver(dns_resolver::getInstance())
 {
+    dnsResolver->initialize(0xAC110002);
 }
 
 routing_manager_proxy::~routing_manager_proxy() {
@@ -487,9 +490,21 @@ void routing_manager_proxy::subscribe(client_t _client, uid_t _uid, gid_t _gid, 
         }
 
         std::lock_guard<std::mutex> its_lock(state_mutex_);
+        ServiceData* serviceData = (ServiceData*)malloc(sizeof(ServiceData));
+        serviceData->client = {client_.load()};
+        serviceData->service = _service;
+        serviceData->instance = _instance;
+        serviceData->eventGroup = _eventgroup;
+        serviceData->major = _major;
+        serviceData->event = _event;
+        serviceData->func = &send_subscribe;
+        dnsResolver->resolve("_someip._udp.1.service.", C_IN, T_SVCB, SearchCallback, serviceData);
+        //send_subscribe(client_, _service, _instance, _eventgroup, _major, _event );
+        /*
         if (state_ == inner_state_type_e::ST_REGISTERED && is_available(_service, _instance, _major)) {
             send_subscribe(client_, _service, _instance, _eventgroup, _major, _event );
         }
+        */
         subscription_data_t subscription = { _service, _instance, _eventgroup, _major, _event, _uid, _gid};
         pending_subscriptions_.insert(subscription);
     }

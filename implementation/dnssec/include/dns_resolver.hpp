@@ -6,6 +6,9 @@
 #define VSOMEIP_DNS_RESOLVER_HPP
 
 #define DEFAULT_SERVER 0xAC110002 // 0xAC=172 0x11=17 0x00=0 0x02=2 -> 172.17.0.2
+#define INSTANCE 65280
+#define MAJOR_VERSION 65281
+#define MINOR_VERSION 65282
 
 #include <mutex>
 #include <thread>

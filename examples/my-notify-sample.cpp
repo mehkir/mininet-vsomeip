@@ -160,7 +160,7 @@ public:
                 app_->notify(SAMPLE_SERVICE_ID, SAMPLE_INSTANCE_ID, SAMPLE_EVENT_ID, payload_);
             }
 
-            its_size = (its_size + 1) % 10;
+            its_size = its_size == 10 ? 1 : ++its_size;
 
             std::this_thread::sleep_for(std::chrono::milliseconds(cycle_));
         }

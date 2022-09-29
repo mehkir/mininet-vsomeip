@@ -79,7 +79,8 @@ public:
 
     void on_state(vsomeip::state_type_e _state) {
         if (_state == vsomeip::state_type_e::ST_REGISTERED) {
-            app_->request_service(SAMPLE_SERVICE_ID, SAMPLE_INSTANCE_ID);
+            app_->subscribe(SAMPLE_SERVICE_ID, SAMPLE_INSTANCE_ID, SAMPLE_EVENTGROUP_ID);
+            //app_->request_service(SAMPLE_SERVICE_ID, SAMPLE_INSTANCE_ID);
         }
     }
 

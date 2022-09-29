@@ -19,7 +19,49 @@
 #include <vsomeip/enumeration_types.hpp>
 #include <vsomeip/handler.hpp>
 
+
+#include "../../dnssec/include/dns_resolver.hpp"
+#include "../../dnssec/include/parse_svcb_reply.hpp"
+#include "../../dnssec/include/logger.hpp"
+
 namespace vsomeip_v3 {
+
+    typedef void (routing_manager_proxy::*proxy_function)(client_t, service_t, instance_t, eventgroup_t, major_version_t, event_t);
+    struct ServiceData {
+        std::atomic<client_t> client;
+        service_t service;
+        instance_t instance;
+        eventgroup_t eventGroup;
+        major_version_t major;
+        event_t event;
+        proxy_function func;
+    };
+
+    void SearchCallback(void *data, int status, int timeouts,
+                    unsigned char *abuf, int alen) {
+        LOG_DEBUG("SearchCallback is called")
+        auto result = reinterpret_cast<ServiceData*>(data);
+        unsigned char* copy = (unsigned char*)malloc(alen);
+        memcpy(copy, abuf, alen);
+
+        SVCB_Reply* svcbReply;
+        if ((parse_svcb_reply(copy, alen, &svcbReply)) != ARES_SUCCESS) {
+            std::cout << "Parsing SVCB reply failed" << std::endl;
+        }
+        SVCB_Reply* svcbReplyPtr = svcbReply;
+        while (svcbReplyPtr != nullptr) {
+            std::cout << *svcbReplyPtr << std::endl;
+            svcbReplyPtr->getSVCBKey(INSTANCE);
+            svcbReplyPtr->getSVCBKey(MAJOR_VERSION);
+            result->func(result->client, result->service, result->instance, result->eventGroup, result->major, result->event);
+            svcbReplyPtr = svcbReplyPtr->svcbReplyNext;
+        }
+        delete_svcb_reply(svcbReply);
+        
+        free(result);
+        free(copy);
+        //processRequest(result);
+    }
 
 class configuration;
 class event;
@@ -258,6 +300,8 @@ private:
     const std::set<std::tuple<service_t, instance_t> > client_side_logging_filter_;
 
     std::mutex stop_mutex_;
+
+    dns_resolver* dnsResolver;
 };
 
 } // namespace vsomeip_v3

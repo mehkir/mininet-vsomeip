@@ -189,6 +189,7 @@ service_discovery_impl::request_service(
         service_t _service, instance_t _instance,
         major_version_t _major, minor_version_t _minor,
         ttl_t _ttl) {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::request_service (MEHMET MUELLER DEBUG) <<<<<";
     std::lock_guard<std::mutex> its_lock(requested_mutex_);
     auto find_service = requested_.find(_service);
     if (find_service != requested_.end()) {
@@ -206,6 +207,7 @@ service_discovery_impl::request_service(
 void
 service_discovery_impl::release_service(
         service_t _service, instance_t _instance) {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::release_service (MEHMET MUELLER DEBUG) <<<<<";
     std::lock_guard<std::mutex> its_lock(requested_mutex_);
     auto find_service = requested_.find(_service);
     if (find_service != requested_.end()) {
@@ -215,6 +217,7 @@ service_discovery_impl::release_service(
 
 std::shared_ptr<request>
 service_discovery_impl::find_request(service_t _service, instance_t _instance) {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::find_request (MEHMET MUELLER DEBUG) <<<<<";
     std::lock_guard<std::mutex> its_lock(requested_mutex_);
     auto find_service = requested_.find(_service);
     if (find_service != requested_.end()) {
@@ -232,6 +235,7 @@ service_discovery_impl::subscribe(
         eventgroup_t _eventgroup, major_version_t _major,
         ttl_t _ttl, client_t _client,
         const std::shared_ptr<eventgroupinfo> &_info) {
+        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::subscribe (MEHMET MUELLER DEBUG) <<<<<";
 #ifdef VSOMEIP_ENABLE_COMPAT
     bool is_selective(_info ? _info->is_selective() : false);
 #endif // VSOMEIP_ENABLE_COMPAT
@@ -305,6 +309,7 @@ service_discovery_impl::send_subscription(
         const service_t _service, const instance_t _instance,
         const eventgroup_t _eventgroup,
         const client_t _client) {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::send_subscription (MEHMET MUELLER DEBUG) <<<<<";
     (void)_client;
 
     auto its_reliable = _subscription->get_endpoint(true);
@@ -368,6 +373,7 @@ service_discovery_impl::get_subscription_endpoints(
         service_t _service, instance_t _instance,
         std::shared_ptr<endpoint> &_reliable,
         std::shared_ptr<endpoint> &_unreliable) const {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::get_subscription_endpoints (MEHMET MUELLER DEBUG) <<<<<";
     _unreliable = host_->find_or_create_remote_client(
             _service, _instance, false);
     _reliable = host_->find_or_create_remote_client(
@@ -379,6 +385,7 @@ service_discovery_impl::get_subscription_address(
         const std::shared_ptr<endpoint> &_reliable,
         const std::shared_ptr<endpoint> &_unreliable,
         boost::asio::ip::address &_address) const {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::get_subscription_address (MEHMET MUELLER DEBUG) <<<<<";
     if (_reliable) {
         auto its_client_endpoint
             = std::dynamic_pointer_cast<client_endpoint>(_reliable);
@@ -399,6 +406,7 @@ service_discovery_impl::get_subscription_address(
 void
 service_discovery_impl::unsubscribe(service_t _service,
         instance_t _instance, eventgroup_t _eventgroup, client_t _client) {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::unsubscribe (MEHMET MUELLER DEBUG) <<<<<";
     std::shared_ptr < runtime > its_runtime = runtime_.lock();
     if (!its_runtime) {
         return;
@@ -989,6 +997,7 @@ service_discovery_impl::on_message(
         const byte_t *_data, length_t _length,
         const boost::asio::ip::address &_sender,
         const boost::asio::ip::address &_destination) {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::on_message (MEHMET MUELLER DEBUG) <<<<<";
 #if 0
     std::stringstream msg;
     msg << "sdi::on_message: ";
@@ -1165,7 +1174,7 @@ service_discovery_impl::process_serviceentry(
         std::vector<std::shared_ptr<message_impl> > &_resubscribes,
         bool _received_via_mcast,
         const sd_acceptance_state_t& _sd_ac_state) {
-
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry (MEHMET MUELLER DEBUG) <<<<<";
     // Read service info from entry
     entry_type_e its_type = _entry->get_type();
     service_t its_service = _entry->get_service();
@@ -2635,6 +2644,7 @@ service_discovery_impl::check_ipv4_address(
 
 void
 service_discovery_impl::offer_service(const std::shared_ptr<serviceinfo> &_info) {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::request_service (MEHMET MUELLER DEBUG) <<<<<";
     service_t its_service = _info->get_service();
     service_t its_instance = _info->get_instance();
 
