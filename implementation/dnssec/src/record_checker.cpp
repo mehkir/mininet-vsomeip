@@ -71,8 +71,8 @@ namespace vsomeip_v3 {
     }
 
     bool record_checker::is_svcb_valid() {
-        SearchResult* result = (SearchResult*) malloc(2*sizeof(int)+sizeof(bool));
-        dnsResolver->resolve("_someip._udp.1.service.", C_IN, T_SVCB, callback, result);
+        //SearchResult* result = (SearchResult*) malloc(2*sizeof(int)+sizeof(bool));
+        //dnsResolver->resolve("_someip._udp.1.service.", C_IN, T_SVCB, callback, result);
         return true;
     }
 
