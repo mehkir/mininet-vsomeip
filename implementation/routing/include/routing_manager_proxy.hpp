@@ -26,7 +26,7 @@
 
 namespace vsomeip_v3 {
 
-    typedef void (routing_manager_proxy::*proxy_function)(client_t, service_t, instance_t, eventgroup_t, major_version_t, event_t);
+    typedef std::function<void(client_t, service_t, instance_t, eventgroup_t, major_version_t, event_t)> Callback;
     struct ServiceData {
         std::atomic<client_t> client;
         service_t service;
@@ -34,34 +34,8 @@ namespace vsomeip_v3 {
         eventgroup_t eventGroup;
         major_version_t major;
         event_t event;
-        proxy_function func;
+        Callback callback;
     };
-
-    void SearchCallback(void *data, int status, int timeouts,
-                    unsigned char *abuf, int alen) {
-        LOG_DEBUG("SearchCallback is called")
-        auto result = reinterpret_cast<ServiceData*>(data);
-        unsigned char* copy = (unsigned char*)malloc(alen);
-        memcpy(copy, abuf, alen);
-
-        SVCB_Reply* svcbReply;
-        if ((parse_svcb_reply(copy, alen, &svcbReply)) != ARES_SUCCESS) {
-            std::cout << "Parsing SVCB reply failed" << std::endl;
-        }
-        SVCB_Reply* svcbReplyPtr = svcbReply;
-        while (svcbReplyPtr != nullptr) {
-            std::cout << *svcbReplyPtr << std::endl;
-            svcbReplyPtr->getSVCBKey(INSTANCE);
-            svcbReplyPtr->getSVCBKey(MAJOR_VERSION);
-            result->func(result->client, result->service, result->instance, result->eventGroup, result->major, result->event);
-            svcbReplyPtr = svcbReplyPtr->svcbReplyNext;
-        }
-        delete_svcb_reply(svcbReply);
-        
-        free(result);
-        free(copy);
-        //processRequest(result);
-    }
 
 class configuration;
 class event;
@@ -168,6 +142,7 @@ private:
             const std::set<eventgroup_t> &_eventgroups,
             const event_type_e _type, reliability_type_e _reliability,
             bool _is_provided);
+
     void send_subscribe(client_t _client, service_t _service,
             instance_t _instance, eventgroup_t _eventgroup,
             major_version_t _major, event_t _event);
