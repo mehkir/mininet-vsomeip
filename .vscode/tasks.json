@@ -6,19 +6,19 @@
 			"label": "CMake: build",
 			"command": "build",
 			"targets": [
-				"all"
+				"examples"
 			],
-			"dependsOn": ["CMake: build examples"],
+			"dependsOn": ["CMake: build all"],
 			"group": "build",
 			"problemMatcher": [],
 			"detail": "CMake template build task"
 		},
 		{
 			"type": "cmake",
-			"label": "CMake: build examples",
+			"label": "CMake: build all",
 			"command": "build",
 			"targets": [
-				"examples"
+				"all"
 			],
 			"dependsOn": [],
 			"group": "build",

@@ -55,7 +55,7 @@ public:
                 SAMPLE_EVENT_ID,
                 its_groups,
                 vsomeip::event_type_e::ET_FIELD);
-        app_->subscribe(SAMPLE_SERVICE_ID, SAMPLE_INSTANCE_ID, SAMPLE_EVENTGROUP_ID);
+        //app_->subscribe(SAMPLE_SERVICE_ID, SAMPLE_INSTANCE_ID, SAMPLE_EVENTGROUP_ID);
 
         return true;
     }
