@@ -172,9 +172,13 @@ service_discovery_impl::start() {
         }
     }
     is_suspended_ = false;
+#ifdef ENABLE_FIND_AND_OFFER    
     start_main_phase_timer();
+#endif
     start_offer_debounce_timer(true);
+#ifdef ENABLE_FIND_AND_OFFER
     start_find_debounce_timer(true);
+#endif
     start_ttl_timer();
 }
 

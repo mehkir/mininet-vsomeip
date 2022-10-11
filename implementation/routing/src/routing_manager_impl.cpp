@@ -397,14 +397,14 @@ bool routing_manager_impl::offer_service(client_t _client,
             pending_sd_offers_.push_back(std::make_pair(_service, _instance));
         }
     }
-
+#ifdef ENABLE_FIND_AND_OFFER
     if (discovery_) {
         std::shared_ptr<serviceinfo> its_info = find_service(_service, _instance);
         if (its_info) {
             discovery_->offer_service(its_info);
         }
     }
-
+#endif
     {
         std::lock_guard<std::mutex> ist_lock(pending_subscription_mutex_);
         std::set<event_t> its_already_subscribed_events;
