@@ -19,23 +19,7 @@
 #include <vsomeip/enumeration_types.hpp>
 #include <vsomeip/handler.hpp>
 
-
-#include "../../dnssec/include/dns_resolver.hpp"
-#include "../../dnssec/include/parse_svcb_reply.hpp"
-#include "../../dnssec/include/logger.hpp"
-
 namespace vsomeip_v3 {
-
-    typedef std::function<void(client_t, service_t, instance_t, eventgroup_t, major_version_t, event_t)> Callback;
-    struct ServiceData {
-        std::atomic<client_t> client;
-        service_t service;
-        instance_t instance;
-        eventgroup_t eventGroup;
-        major_version_t major;
-        event_t event;
-        Callback callback;
-    };
 
 class configuration;
 class event;
@@ -276,7 +260,7 @@ private:
 
     std::mutex stop_mutex_;
 
-    dns_resolver* dnsResolver;
+    record_checker record_checker_;
 };
 
 } // namespace vsomeip_v3

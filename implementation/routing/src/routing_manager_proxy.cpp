@@ -36,32 +36,6 @@
 
 namespace vsomeip_v3 {
 
-    void ResolverCallback(void *data, int status, int timeouts,
-                    unsigned char *abuf, int alen) {
-        LOG_DEBUG("ResolverCallback is called")
-        auto result = reinterpret_cast<ServiceData*>(data);
-        unsigned char* copy = (unsigned char*)malloc(alen);
-        memcpy(copy, abuf, alen);
-
-        SVCB_Reply* svcbReply;
-        if ((parse_svcb_reply(copy, alen, &svcbReply)) != ARES_SUCCESS) {
-            std::cout << "Parsing SVCB reply failed" << std::endl;
-        }
-        SVCB_Reply* svcbReplyPtr = svcbReply;
-        while (svcbReplyPtr != nullptr) {
-            //std::cout << *svcbReplyPtr << std::endl;
-            svcbReplyPtr->getSVCBKey(INSTANCE);
-            svcbReplyPtr->getSVCBKey(MAJOR_VERSION);
-            result->callback(result->client, result->service, result->instance, result->eventGroup, result->major, result->event);
-            svcbReplyPtr = svcbReplyPtr->svcbReplyNext;
-        }
-        delete_svcb_reply(svcbReply);
-        
-        delete result;
-        free(copy);
-        //processRequest(result);
-    }
-
 routing_manager_proxy::routing_manager_proxy(routing_manager_host *_host,
             bool _client_side_logging,
             const std::set<std::tuple<service_t, instance_t> > & _client_side_logging_filter) :
@@ -76,10 +50,8 @@ routing_manager_proxy::routing_manager_proxy(routing_manager_host *_host,
         request_debounce_timer_running_(false),
         client_side_logging_(_client_side_logging),
         client_side_logging_filter_(_client_side_logging_filter),
-        dnsResolver(dns_resolver::getInstance())
-{
-    dnsResolver->initialize(0xAC110002);
-}
+        record_checker_(record_checker())
+{}
 
 routing_manager_proxy::~routing_manager_proxy() {
 }
@@ -524,10 +496,15 @@ void routing_manager_proxy::subscribe(client_t _client, uid_t _uid, gid_t _gid, 
             serviceData->eventGroup = _eventgroup;
             serviceData->major = _major;
             serviceData->event = _event;
-            serviceData->callback = std::bind(&routing_manager_proxy::send_subscribe, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6);
-            dnsResolver->resolve("_someip._udp.1.service.", C_IN, T_SVCB, ResolverCallback, serviceData);
+            serviceData->callback = std::bind(&routing_manager_proxy::send_subscribe, this,
+                                              std::placeholders::_1,
+                                              std::placeholders::_2,
+                                              std::placeholders::_3,
+                                              std::placeholders::_4,
+                                              std::placeholders::_5,
+                                              std::placeholders::_6);
+            record_checker_.resolveSomeipService(serviceData);
         }
-       //send_subscribe(client_, _service, _instance, _eventgroup, _major, _event );
         /*
         if (state_ == inner_state_type_e::ST_REGISTERED && is_available(_service, _instance, _major)) {
             send_subscribe(client_, _service, _instance, _eventgroup, _major, _event );
