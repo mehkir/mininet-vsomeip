@@ -1198,6 +1198,7 @@ service_discovery_impl::process_serviceentry(
 
                 switch (its_option->get_type()) {
                 case option_type_e::IP4_ENDPOINT: {
+                    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry IP4_ENDPOINT (MEHMET MUELLER DEBUG) <<<<<";
                     std::shared_ptr < ipv4_option_impl > its_ipv4_option =
                             std::dynamic_pointer_cast < ipv4_option_impl
                                     > (its_option);
@@ -1218,6 +1219,7 @@ service_discovery_impl::process_serviceentry(
                     break;
                 }
                 case option_type_e::IP6_ENDPOINT: {
+                    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry IP6_ENDPOINT (MEHMET MUELLER DEBUG) <<<<<";
                     std::shared_ptr < ipv6_option_impl > its_ipv6_option =
                             std::dynamic_pointer_cast < ipv6_option_impl
                                     > (its_option);
@@ -1237,10 +1239,13 @@ service_discovery_impl::process_serviceentry(
                 }
                 case option_type_e::IP4_MULTICAST:
                 case option_type_e::IP6_MULTICAST:
+                    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry IP4/6_MULTICAST (MEHMET MUELLER DEBUG) <<<<<";
                     break;
                 case option_type_e::CONFIGURATION:
+                    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry CONFIGURATION (MEHMET MUELLER DEBUG) <<<<<";
                     break;
                 case option_type_e::UNKNOWN:
+                    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry UNKNOWN (MEHMET MUELLER DEBUG) <<<<<";
                 default:
                     VSOMEIP_ERROR << __func__ << ": Unsupported service option";
                     break;
@@ -1252,10 +1257,12 @@ service_discovery_impl::process_serviceentry(
     if (0 < its_ttl) {
         switch(its_type) {
             case entry_type_e::FIND_SERVICE:
+                VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry FIND_SERVICE (MEHMET MUELLER DEBUG) <<<<<";
                 process_findservice_serviceentry(its_service, its_instance,
                                                  its_major, its_minor, _unicast_flag);
                 break;
             case entry_type_e::OFFER_SERVICE:
+                VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry OFFER_SERVICE (MEHMET MUELLER DEBUG) <<<<<";
                 process_offerservice_serviceentry(its_service, its_instance,
                         its_major, its_minor, its_ttl,
                         its_reliable_address, its_reliable_port,
@@ -1263,6 +1270,7 @@ service_discovery_impl::process_serviceentry(
                         _received_via_mcast, _sd_ac_state);
                 break;
             case entry_type_e::UNKNOWN:
+                VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry UNKNOWN (MEHMET MUELLER DEBUG) <<<<<";
             default:
                 VSOMEIP_ERROR << __func__ << ": Unsupported service entry type";
         }
