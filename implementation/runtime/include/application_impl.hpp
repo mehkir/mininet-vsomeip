@@ -22,6 +22,8 @@
 #include <vsomeip/export.hpp>
 #include <vsomeip/application.hpp>
 
+#include "../../dnssec/include/dns_resolver.hpp"
+
 #ifdef ANDROID
 #include "../../configuration/include/internal_android.hpp"
 #else
@@ -438,6 +440,7 @@ private:
 #ifdef VSOMEIP_HAS_SESSION_HANDLING_CONFIG
     bool has_session_handling_;
 #endif // VSOMEIP_HAS_SESSION_HANDLING_CONFIG
+    dns_resolver* dnsResolver;
 };
 
 } // namespace vsomeip_v3
