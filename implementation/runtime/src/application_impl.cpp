@@ -594,6 +594,7 @@ void application_impl::subscribe(service_t _service, instance_t _instance,
                                  eventgroup_t _eventgroup,
                                  major_version_t _major,
                                  event_t _event) {
+    VSOMEIP_DEBUG << ">>>>> application_impl::subscribe (MEHMET MUELLER DEBUG) <<<<<";
     if (routing_) {
         bool send_back_cached(false);
         bool send_back_cached_group(false);

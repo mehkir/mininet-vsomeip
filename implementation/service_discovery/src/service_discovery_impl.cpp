@@ -2666,7 +2666,7 @@ service_discovery_impl::offer_service(const std::shared_ptr<serviceinfo> &_info)
 
 void
 service_discovery_impl::start_offer_debounce_timer(bool _first_start) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::start_offer_debounce_timer (MEHMET MUELLER DEBUG) <<<<<";
+    //VSOMEIP_DEBUG << ">>>>> service_discovery_impl::start_offer_debounce_timer (MEHMET MUELLER DEBUG) <<<<<";
     std::lock_guard<std::mutex> its_lock(offer_debounce_timer_mutex_);
     boost::system::error_code ec;
     if (_first_start) {
@@ -2770,7 +2770,7 @@ service_discovery_impl::on_find_debounce_timer_expired(
 void
 service_discovery_impl::on_offer_debounce_timer_expired(
         const boost::system::error_code &_error) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::on_offer_debounce_timer_expired (MEHMET MUELLER DEBUG) <<<<<";
+    //VSOMEIP_DEBUG << ">>>>> service_discovery_impl::on_offer_debounce_timer_expired (MEHMET MUELLER DEBUG) <<<<<";
     if(_error) { // timer was canceled
         return;
     }

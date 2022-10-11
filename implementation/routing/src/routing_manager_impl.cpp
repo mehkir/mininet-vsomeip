@@ -665,6 +665,7 @@ void routing_manager_impl::subscribe(client_t _client, uid_t _uid, gid_t _gid,
 
                     auto its_info = find_eventgroup(_service, _instance, _eventgroup);
                     if (its_info) {
+                        VSOMEIP_DEBUG << ">>>>> routing_manager_impl::subscribe calls discovery_->subscribe (MEHMET MUELLER DEBUG) <<<<<";
                         discovery_->subscribe(_service, _instance, _eventgroup,
                                 _major, configured_ttl,
                                 its_info->is_selective() ? _client : VSOMEIP_ROUTING_CLIENT,
