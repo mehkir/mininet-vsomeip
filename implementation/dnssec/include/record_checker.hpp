@@ -14,6 +14,10 @@
 #include "../../dnssec/include/parse_svcb_reply.hpp"
 #include "../../dnssec/include/logger.hpp"
 #include <vector>
+#include <functional>
+#include <atomic>
+#include <cstring>
+#include <vsomeip/primitive_types.hpp>
 
 namespace vsomeip_v3 {
     typedef std::function<void(client_t, service_t, instance_t, eventgroup_t, major_version_t, event_t)> Callback;
@@ -26,40 +30,6 @@ namespace vsomeip_v3 {
         event_t event;
         Callback callback;
     };
-
-    void ResolverCallback(void *data, int status, int timeouts,
-                unsigned char *abuf, int alen) {
-    LOG_DEBUG("ResolverCallback is called")
-    auto result = reinterpret_cast<ServiceData*>(data);
-    
-    if (status) {
-        std::cout << "Bad DNS response" << std::endl;
-        return;
-    }
-
-    unsigned char* copy = new unsigned char[alen];
-    memcpy(copy, abuf, alen);
-    SVCB_Reply* svcbReply;
-    if ((parse_svcb_reply(copy, alen, &svcbReply)) != ARES_SUCCESS) {
-        std::cout << "Parsing SVCB reply failed" << std::endl;
-        delete_svcb_reply(svcbReply);
-        return;
-    }
-    
-    SVCB_Reply* svcbReplyPtr = svcbReply;
-    while (svcbReplyPtr != nullptr) {
-        std::cout << "record checker\n" << *svcbReplyPtr << std::endl;
-        svcbReplyPtr->getSVCBKey(INSTANCE);
-        svcbReplyPtr->getSVCBKey(MAJOR_VERSION);
-        result->callback(result->client, result->service, result->instance, result->eventGroup, result->major, result->event);
-        svcbReplyPtr = svcbReplyPtr->svcbReplyNext;
-    }
-    delete_svcb_reply(svcbReply);
-    
-    delete result;
-    delete[] copy;
-    //processRequest(result);
-}
 
     typedef unsigned char byte;
     struct SearchResult {
