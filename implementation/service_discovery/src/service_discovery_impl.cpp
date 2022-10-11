@@ -139,6 +139,7 @@ service_discovery_impl::init() {
 
 void
 service_discovery_impl::start() {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::start (MEHMET MUELLER DEBUG) <<<<<";
     if (!endpoint_) {
         endpoint_ = host_->create_service_discovery_endpoint(
                 sd_multicast_, port_, reliable_);
@@ -171,7 +172,7 @@ service_discovery_impl::start() {
         }
     }
     is_suspended_ = false;
-    start_main_phase_timer();
+    //start_main_phase_timer();
     start_offer_debounce_timer(true);
     start_find_debounce_timer(true);
     start_ttl_timer();
@@ -2644,7 +2645,7 @@ service_discovery_impl::check_ipv4_address(
 
 void
 service_discovery_impl::offer_service(const std::shared_ptr<serviceinfo> &_info) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::request_service (MEHMET MUELLER DEBUG) <<<<<";
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::offer_service (MEHMET MUELLER DEBUG) <<<<<";
     service_t its_service = _info->get_service();
     service_t its_instance = _info->get_instance();
 
@@ -2665,6 +2666,7 @@ service_discovery_impl::offer_service(const std::shared_ptr<serviceinfo> &_info)
 
 void
 service_discovery_impl::start_offer_debounce_timer(bool _first_start) {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::start_offer_debounce_timer (MEHMET MUELLER DEBUG) <<<<<";
     std::lock_guard<std::mutex> its_lock(offer_debounce_timer_mutex_);
     boost::system::error_code ec;
     if (_first_start) {
@@ -2768,6 +2770,7 @@ service_discovery_impl::on_find_debounce_timer_expired(
 void
 service_discovery_impl::on_offer_debounce_timer_expired(
         const boost::system::error_code &_error) {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::on_offer_debounce_timer_expired (MEHMET MUELLER DEBUG) <<<<<";
     if(_error) { // timer was canceled
         return;
     }
