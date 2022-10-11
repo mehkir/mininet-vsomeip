@@ -77,7 +77,7 @@ int dns_resolver::initialize(in_addr_t address) {
         initialized = true;
         LOG_DEBUG("Process Thread is initialized")
     } else {
-        LOG_DEBUG("Process Thread is initialized")
+        LOG_DEBUG("Process Thread is already initialized")
     }
     return ARES_SUCCESS;
 }
