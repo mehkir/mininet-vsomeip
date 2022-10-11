@@ -172,7 +172,7 @@ service_discovery_impl::start() {
         }
     }
     is_suspended_ = false;
-    //start_main_phase_timer();
+    start_main_phase_timer();
     start_offer_debounce_timer(true);
     start_find_debounce_timer(true);
     start_ttl_timer();
