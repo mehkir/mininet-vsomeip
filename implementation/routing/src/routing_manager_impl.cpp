@@ -618,7 +618,7 @@ void routing_manager_impl::subscribe(client_t _client, uid_t _uid, gid_t _gid,
             } else {
                 if (record_checker_.is_svcb_valid() && record_checker_.is_tlsa_valid()) {
                     VSOMEIP_DEBUG
-                        << ">>>>> There is a valid SVCB and TLSA record for the client: "
+                        << ">>>>> (SUBSCRIBEACK) There is a valid SVCB and TLSA record for the client: "
                         << std::hex << std::setw(4) << std::setfill('0') << _client <<"): ["
                         << std::hex << std::setw(4) << std::setfill('0') << _service << "."
                         << std::hex << std::setw(4) << std::setfill('0') << _instance << "."
