@@ -67,7 +67,8 @@ application_impl::application_impl(const std::string &_name)
           is_routing_manager_host_(false),
           stopped_called_(false),
           watchdog_timer_(io_),
-          client_side_logging_(false)
+          client_side_logging_(false),
+          dnsResolver(dns_resolver::getInstance())
 #ifdef VSOMEIP_HAS_SESSION_HANDLING_CONFIG
           , has_session_handling_(true)
 #endif // VSOMEIP_HAS_SESSION_HANDLING_CONFIG
@@ -552,7 +553,7 @@ void application_impl::stop() {
         block_stopping_ = false;
     }
     VSOMEIP_INFO << "Cleanup DNS resolver";
-    dns_resolver::getInstance()->cleanup();
+    dnsResolver->cleanup();
 }
 
 void application_impl::process(int _number) {
