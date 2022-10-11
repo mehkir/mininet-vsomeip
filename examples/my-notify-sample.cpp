@@ -56,6 +56,7 @@ public:
 
         std::set<vsomeip::eventgroup_t> its_groups;
         its_groups.insert(SAMPLE_EVENTGROUP_ID);
+
         app_->offer_event(
                 SAMPLE_SERVICE_ID,
                 SAMPLE_INSTANCE_ID,
@@ -63,6 +64,8 @@ public:
                 its_groups,
                 vsomeip::event_type_e::ET_FIELD, std::chrono::milliseconds::zero(),
                 false, true, nullptr, vsomeip::reliability_type_e::RT_UNKNOWN);
+
+
         {
             std::lock_guard<std::mutex> its_lock(payload_mutex_);
             payload_ = vsomeip::runtime::get()->create_payload();
@@ -133,13 +136,6 @@ public:
     }
 
     void notify() {
-        std::shared_ptr<vsomeip::message> its_message
-            = vsomeip::runtime::get()->create_request(use_tcp_);
-
-        its_message->set_service(SAMPLE_SERVICE_ID);
-        its_message->set_instance(SAMPLE_INSTANCE_ID);
-        its_message->set_method(SAMPLE_SET_METHOD_ID);
-
         vsomeip::byte_t its_data[10];
         uint32_t its_size = 1;
 
