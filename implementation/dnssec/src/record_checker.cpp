@@ -7,6 +7,7 @@
 #include "../include/parse_svcb_reply.hpp"
 #include <arpa/nameser.h>
 #include <string>
+#include <vsomeip/constants.hpp>
 
 namespace vsomeip_v3 {
 
@@ -81,10 +82,11 @@ namespace vsomeip_v3 {
         while (svcbReplyPtr != nullptr) {
             std::cout << "record checker\n" << *svcbReplyPtr << std::endl;
             if (result->instance == std::stoi(svcbReplyPtr->getSVCBKey(INSTANCE))
-                && result->major == std::stoi(svcbReplyPtr->getSVCBKey(MAJOR_VERSION))
-                && result->minor == std::stoi(svcbReplyPtr->getSVCBKey(MINOR_VERSION))) {
-                    result->callback(result->service, result->instance, result->major, result->minor,
-                                     0xFFFFFF, "", 0, svcbReplyPtr->ipv4AddressString, svcbReplyPtr->port);
+                && (result->major == ANY_MAJOR || std::stoi(svcbReplyPtr->getSVCBKey(MAJOR_VERSION)) == result->major)
+                && (result->minor == ANY_MINOR || std::stoi(svcbReplyPtr->getSVCBKey(MINOR_VERSION)) == result->minor)) {
+                    result->callback(result->service, result->instance, std::stoi(svcbReplyPtr->getSVCBKey(MAJOR_VERSION)),
+                                    std::stoi(svcbReplyPtr->getSVCBKey(MINOR_VERSION)), 0xFFFFFF, "", 0,
+                                    svcbReplyPtr->ipv4AddressString, svcbReplyPtr->port);
                 }
             svcbReplyPtr = svcbReplyPtr->svcbReplyNext;
         }
