@@ -31,7 +31,9 @@ namespace vsomeip_v3 {
         LocalCallback callback;
     };
 
-    typedef std::function<void(service_t, instance_t, major_version_t, minor_version_t, ttl_t, std::string, uint16_t, std::string, uint16_t)> RemoteCallback;
+    typedef std::function<void(service_t, instance_t, major_version_t,
+                               minor_version_t, ttl_t, std::string,
+                               uint16_t, std::string, uint16_t)> RemoteCallback;
     struct RemoteServiceData {
         service_t service;
         instance_t instance;
