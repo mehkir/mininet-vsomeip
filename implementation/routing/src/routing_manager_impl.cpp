@@ -555,7 +555,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     instance_t instanceID = 22136;
     major_version_t major_version = 0;
     minor_version_t minor_version = 0;
-    ttl_t ttl = 3;
+    ttl_t ttl = DEFAULT_TTL;
     std::string reliable_address = "";
     uint16_t reliable_port = 0;
     std::string unreliable_address = "172.17.0.4";
