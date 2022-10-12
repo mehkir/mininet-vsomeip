@@ -1314,6 +1314,9 @@ service_discovery_impl::mimic_offerservice_serviceentry(
     sd_acceptance_state_t accept_state(expired_ports);
     accept_state.accept_entries_ = false;
     accept_state.accept_entries_ = true;
+    process_offerservice_serviceentry(_service, _instance, _major, _minor, _ttl,
+                                      reliable_address, _reliable_port, unreliable_address,
+                                      _unreliable_port, its_resubscribes, true, accept_state);
 }
 
 void

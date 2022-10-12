@@ -6,7 +6,7 @@
 #ifndef VSOMEIP_V3_CONSTANTS_HPP_
 #define VSOMEIP_V3_CONSTANTS_HPP_
 
-//#define ENABLE_FIND_AND_OFFER
+#define ENABLE_FIND_AND_OFFER
 
 #include <string>
 

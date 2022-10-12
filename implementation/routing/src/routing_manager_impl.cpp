@@ -549,6 +549,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
         stub_->handle_requests(_client, requests);
     }
 
+#ifndef ENABLE_FIND_AND_OFFER
     //Mimic incoming offer entry
     service_t serviceID = 4660;
     instance_t instanceID = 22136;
@@ -562,6 +563,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     discovery_->mimic_offerservice_serviceentry(serviceID, instanceID, major_version,
                                                 minor_version, ttl, reliable_address,
                                                 reliable_port, unreliable_address, unreliable_port);
+#endif
 }
 
 void routing_manager_impl::release_service(client_t _client, service_t _service,
