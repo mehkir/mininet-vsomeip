@@ -489,7 +489,7 @@ void routing_manager_proxy::subscribe(client_t _client, uid_t _uid, gid_t _gid, 
 
         std::lock_guard<std::mutex> its_lock(state_mutex_);
         if (state_ == inner_state_type_e::ST_REGISTERED) {
-            ServiceData* serviceData = new ServiceData();
+            LocalServiceData* serviceData = new LocalServiceData();
             serviceData->client = {client_.load()};
             serviceData->service = _service;
             serviceData->instance = _instance;
@@ -503,7 +503,7 @@ void routing_manager_proxy::subscribe(client_t _client, uid_t _uid, gid_t _gid, 
                                               std::placeholders::_4,
                                               std::placeholders::_5,
                                               std::placeholders::_6);
-            record_checker_.resolveSomeipService(serviceData);
+            record_checker_.resolveLocalSomeipService(serviceData);
         }
         /*
         if (state_ == inner_state_type_e::ST_REGISTERED && is_available(_service, _instance, _major)) {
