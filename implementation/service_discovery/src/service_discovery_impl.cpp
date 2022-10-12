@@ -1298,6 +1298,25 @@ service_discovery_impl::process_serviceentry(
 }
 
 void
+service_discovery_impl::mimic_offerservice_serviceentry(
+        service_t _service, instance_t _instance, major_version_t _major,
+        minor_version_t _minor, ttl_t _ttl,
+        std::string _reliable_address,
+        uint16_t _reliable_port,
+        std::string _unreliable_address,
+        uint16_t _unreliable_port) {
+    boost::asio::ip::address reliable_address;
+    boost::asio::ip::address unreliable_address;
+    unreliable_address.from_string(_unreliable_address);
+    std::vector<std::shared_ptr<message_impl> > its_resubscribes;
+    its_resubscribes.push_back(std::make_shared<message_impl>());
+    expired_ports_t expired_ports;
+    sd_acceptance_state_t accept_state(expired_ports);
+    accept_state.accept_entries_ = false;
+    accept_state.accept_entries_ = true;
+}
+
+void
 service_discovery_impl::process_offerservice_serviceentry(
         service_t _service, instance_t _instance, major_version_t _major,
         minor_version_t _minor, ttl_t _ttl,

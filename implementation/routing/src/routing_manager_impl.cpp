@@ -548,6 +548,20 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
         requests.insert(request);
         stub_->handle_requests(_client, requests);
     }
+
+    //Mimic incoming offer entry
+    service_t serviceID = 4660;
+    instance_t instanceID = 22136;
+    major_version_t major_version = 0;
+    minor_version_t minor_version = 0;
+    ttl_t ttl = 3;
+    std::string reliable_address = "";
+    uint16_t reliable_port = 0;
+    std::string unreliable_address = "172.17.0.4";
+    uint16_t unreliable_port = 30509;
+    discovery_->mimic_offerservice_serviceentry(serviceID, instanceID, major_version,
+                                                minor_version, ttl, reliable_address,
+                                                reliable_port, unreliable_address, unreliable_port);
 }
 
 void routing_manager_impl::release_service(client_t _client, service_t _service,
