@@ -5,6 +5,7 @@
 #include "../include/dns_resolver.hpp"
 #include "../include/logger.hpp"
 #include <arpa/inet.h>
+#include <string.h>
 
 #define EDNSPKSZ 1280 // https://datatracker.ietf.org/doc/html/rfc6891
 
@@ -23,7 +24,9 @@ void dns_resolver::resolve(const char *name, int dnsclass, int type, ares_callba
     if (!initialized)
         throw std::runtime_error("dns_resolver is not initialized, call initialize() first!");
     DNSRequest dnsRequest;
-    dnsRequest.name = name;
+    char* url = (char*)malloc(strlen(name)+1);
+    strcpy(url, name);
+    dnsRequest.name = url;
     dnsRequest.dnsclass = dnsclass;
     dnsRequest.type = type;
     dnsRequest.callback = callback;
@@ -124,6 +127,8 @@ void dns_resolver::process() {
                 count = select(nfds, &readers, &writers, NULL, tvp);
                 ares_process(channel, &readers, &writers);
             }
+            free(const_cast<char *>(dnsRequest.name));
+
         } else {
             LOG_DEBUG("Process thread is about to exit")
         }
