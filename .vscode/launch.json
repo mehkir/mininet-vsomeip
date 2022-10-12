@@ -57,7 +57,8 @@
                 },
                 {
                     "name": "VSOMEIP_CONFIGURATION",
-                    "value": "config/vsomeip-local.json"
+                    //"value": "config/vsomeip-local.json"
+                    "value": "config/vsomeip-udp-client.json"
                 },
                 {
                     "name": "VSOMEIP_APPLICATION_NAME",
