@@ -1305,9 +1305,9 @@ service_discovery_impl::mimic_offerservice_serviceentry(
         uint16_t _reliable_port,
         std::string _unreliable_address,
         uint16_t _unreliable_port) {
+
     boost::asio::ip::address reliable_address;
-    boost::asio::ip::address unreliable_address;
-    unreliable_address.from_string(_unreliable_address);
+    boost::asio::ip::address unreliable_address = boost::asio::ip::address::from_string(_unreliable_address);
     std::vector<std::shared_ptr<message_impl> > its_resubscribes;
     its_resubscribes.push_back(std::make_shared<message_impl>());
     expired_ports_t expired_ports;
