@@ -567,7 +567,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     std::string unreliable_address = "172.17.0.4";
     uint16_t unreliable_port = 30509;
     */
-   std::bind(&vsomeip_v3::sd::service_discovery::mimic_offerservice_serviceentry, discovery_,
+   remoteServiceData->callback = std::bind(&vsomeip_v3::sd::service_discovery::mimic_offerservice_serviceentry, discovery_,
                                               std::placeholders::_1,
                                               std::placeholders::_2,
                                               std::placeholders::_3,
