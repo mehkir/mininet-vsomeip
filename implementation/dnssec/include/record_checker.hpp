@@ -20,27 +20,25 @@
 #include <vsomeip/primitive_types.hpp>
 
 namespace vsomeip_v3 {
-    typedef std::function<void(client_t, service_t, instance_t, eventgroup_t, major_version_t, event_t)> Callback;
-    struct ServiceData {
+    typedef std::function<void(client_t, service_t, instance_t, eventgroup_t, major_version_t, event_t)> LocalCallback;
+    struct LocalServiceData {
         std::atomic<client_t> client;
         service_t service;
         instance_t instance;
         eventgroup_t eventGroup;
         major_version_t major;
         event_t event;
-        Callback callback;
+        LocalCallback callback;
     };
 
-    typedef unsigned char byte;
-    struct SearchResult {
-        // Whether the callback has been invoked.
-        bool done_ = false;
-        // Explicitly provided result information.
-        int status_ = ARES_ENODATA;
-        int timeouts_ = 0;
-        std::vector<byte> data_;
+    typedef std::function<void(service_t, instance_t, major_version_t, minor_version_t, ttl_t, std::string, uint16_t, std::string, uint16_t)> RemoteCallback;
+    struct RemoteServiceData {
+        service_t service;
+        instance_t instance;
+        major_version_t major;
+        minor_version_t minor;
+        RemoteCallback callback;
     };
-
 
     class record_checker {
       public:
@@ -49,7 +47,8 @@ namespace vsomeip_v3 {
         bool is_svcb_valid();
         // Dummy method always returning true
         bool is_tlsa_valid();
-        void resolveSomeipService(ServiceData* serviceData);
+        void resolveLocalSomeipService(LocalServiceData* serviceData);
+        void resolveRemoteSomeipService(RemoteServiceData* serviceData);
       protected:
       private:
         dns_resolver* dnsResolver;

@@ -10,10 +10,18 @@
 
 namespace vsomeip_v3 {
 
-    void ResolverCallback(void *data, int status, int timeouts,
+    record_checker::record_checker() : dnsResolver(dns_resolver::getInstance()) {
+        dnsResolver->initialize(DNS_SERVER_IP);
+    }
+
+    bool record_checker::is_svcb_valid() {
+        return true;
+    }
+
+    void LocalResolverCallback(void *data, int status, int timeouts,
                 unsigned char *abuf, int alen) {
-        LOG_DEBUG("ResolverCallback is called")
-        auto result = reinterpret_cast<ServiceData*>(data);
+        LOG_DEBUG("LocalResolverCallback is called")
+        auto result = reinterpret_cast<LocalServiceData*>(data);
         
         if (status) {
             std::cout << "Bad DNS response" << std::endl;
@@ -41,23 +49,56 @@ namespace vsomeip_v3 {
         
         delete result;
         delete[] copy;
-        //processRequest(result);
     }
 
-
-    record_checker::record_checker() : dnsResolver(dns_resolver::getInstance()) {
-        dnsResolver->initialize(DNS_SERVER_IP);
-    }
-
-    bool record_checker::is_svcb_valid() {
-        return true;
-    }
-
-    void record_checker::resolveSomeipService(ServiceData* serviceData) {
+    void record_checker::resolveLocalSomeipService(LocalServiceData* serviceData) {
         std::string request("_someip._udp.");
         request.append(std::to_string(serviceData->service));
         request.append(".service.");
-        dnsResolver->resolve(request.c_str(), C_IN, T_SVCB, ResolverCallback, serviceData);
+        dnsResolver->resolve(request.c_str(), C_IN, T_SVCB, LocalResolverCallback, serviceData);
+    }
+
+    void RemoteResolverCallback(void *data, int status, int timeouts,
+                unsigned char *abuf, int alen) {
+        LOG_DEBUG("LocalResolverCallback is called")
+        auto result = reinterpret_cast<RemoteServiceData*>(data);
+        
+        if (status) {
+            std::cout << "Bad DNS response" << std::endl;
+            return;
+        }
+
+        unsigned char* copy = new unsigned char[alen];
+        memcpy(copy, abuf, alen);
+        SVCB_Reply* svcbReply;
+        if ((parse_svcb_reply(copy, alen, &svcbReply)) != ARES_SUCCESS) {
+            std::cout << "Parsing SVCB reply failed" << std::endl;
+            delete_svcb_reply(svcbReply);
+            return;
+        }
+        
+        SVCB_Reply* svcbReplyPtr = svcbReply;
+        while (svcbReplyPtr != nullptr) {
+            std::cout << "record checker\n" << *svcbReplyPtr << std::endl;
+            if (result->instance == std::stoi(svcbReplyPtr->getSVCBKey(INSTANCE))
+                && result->major == std::stoi(svcbReplyPtr->getSVCBKey(MAJOR_VERSION))
+                && result->minor == std::stoi(svcbReplyPtr->getSVCBKey(MINOR_VERSION))) {
+                    result->callback(result->service, result->instance, result->major, result->minor,
+                                     0xFFFFFF, "", 0, svcbReplyPtr->ipv4AddressString, svcbReplyPtr->port);
+                }
+            svcbReplyPtr = svcbReplyPtr->svcbReplyNext;
+        }
+        delete_svcb_reply(svcbReply);
+        
+        delete result;
+        delete[] copy;
+    }
+
+    void record_checker::resolveRemoteSomeipService(RemoteServiceData* serviceData) {
+        std::string request("_someip._udp.");
+        request.append(std::to_string(serviceData->service));
+        request.append(".service.");
+        dnsResolver->resolve(request.c_str(), C_IN, T_SVCB, RemoteResolverCallback, serviceData);
     }
 
     bool record_checker::is_tlsa_valid() {
