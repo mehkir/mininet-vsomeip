@@ -53,15 +53,16 @@ namespace vsomeip_v3 {
     }
 
     void record_checker::resolveLocalSomeipService(LocalServiceData* serviceData) {
-        std::string request("_someip._udp.");
+        std::string request(ATTRLEAFBRANCH);
         request.append(std::to_string(serviceData->service));
-        request.append(".service.");
+        request.append(".");
+        request.append(PARENTDOMAIN);
         dnsResolver->resolve(request.c_str(), C_IN, T_SVCB, LocalResolverCallback, serviceData);
     }
 
     void RemoteResolverCallback(void *data, int status, int timeouts,
                 unsigned char *abuf, int alen) {
-        LOG_DEBUG("LocalResolverCallback is called")
+        LOG_DEBUG("RemoteResolverCallback is called")
         auto result = reinterpret_cast<RemoteServiceData*>(data);
         
         if (status) {
@@ -97,9 +98,10 @@ namespace vsomeip_v3 {
     }
 
     void record_checker::resolveRemoteSomeipService(RemoteServiceData* serviceData) {
-        std::string request("_someip._udp.");
+        std::string request(ATTRLEAFBRANCH);
         request.append(std::to_string(serviceData->service));
-        request.append(".service.");
+        request.append(".");
+        request.append(PARENTDOMAIN);
         dnsResolver->resolve(request.c_str(), C_IN, T_SVCB, RemoteResolverCallback, serviceData);
     }
 

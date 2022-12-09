@@ -10,6 +10,9 @@
 #define MAJOR_VERSION 65281
 #define MINOR_VERSION 65282
 
+#define ATTRLEAFBRANCH "_someip."
+#define PARENTDOMAIN "service."
+
 #include "dns_resolver.hpp"
 #include "../../dnssec/include/parse_svcb_reply.hpp"
 #include "../../dnssec/include/logger.hpp"

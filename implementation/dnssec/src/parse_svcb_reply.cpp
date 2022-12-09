@@ -94,8 +94,8 @@ int parse_svcb_reply (const unsigned char *abuf, int alen, SVCB_Reply** pSvcbRep
             }
             currSvcbReply->hostname = hostname;
             LOG_DEBUG("Hostname " << hostname);
-            LOG_DEBUG("SvcPriority " << DNS__16BIT(vptr))
             currSvcbReply->svcPriority = DNS__16BIT(vptr);
+            LOG_DEBUG("SvcPriority " << currSvcbReply->svcPriority)
             vptr += sizeof(unsigned short);
             status = ares_expand_name(vptr, abuf, alen, &target_name, &len);
             if (status != ARES_SUCCESS) {
@@ -133,9 +133,9 @@ int parse_svcb_reply (const unsigned char *abuf, int alen, SVCB_Reply** pSvcbRep
                         vptr += sizeof(unsigned short);
                         int length = DNS__16BIT(vptr);
                         LOG_DEBUG("Length " << length)
-                        vptr += sizeof(unsigned short);
-                        LOG_DEBUG("IP address (numerical) " << DNS__32BIT(vptr))
+                        vptr += sizeof(unsigned short);                        
                         currSvcbReply->ipv4AddressNumerical = DNS__32BIT(vptr);
+                        LOG_DEBUG("IP address (numerical) " << currSvcbReply->ipv4AddressNumerical)
                         std::stringstream sstream;
                         sstream << ((currSvcbReply->ipv4AddressNumerical & 0xff000000) >> 24) << "."
                                 << ((currSvcbReply->ipv4AddressNumerical & 0x00ff0000) >> 16) << "."
@@ -156,8 +156,8 @@ int parse_svcb_reply (const unsigned char *abuf, int alen, SVCB_Reply** pSvcbRep
                         if (DNS__16BIT(vptr) >= SVCB_PARAM_TYPE::LOWERKEY
                             || DNS__16BIT(vptr) <= SVCB_PARAM_TYPE::UPPERKEY) {
                             LOG_DEBUG("key")
-                            LOG_DEBUG("Key number " << DNS__16BIT(vptr))
                             uint16_t keyNumber = DNS__16BIT(vptr);
+                            LOG_DEBUG("Key number " << keyNumber)
                             vptr += sizeof(unsigned short);
                             int length = DNS__16BIT(vptr);
                             LOG_DEBUG("Length " << length)
