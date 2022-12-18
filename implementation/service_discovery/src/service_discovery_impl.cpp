@@ -272,6 +272,7 @@ service_discovery_impl::subscribe(
                     if (its_subscription->add_client(_client)) {
                         its_subscription->set_state(_client,
                                 subscription_state_e::ST_NOT_ACKNOWLEDGED);
+        
                         send_subscription(its_subscription,
                                 _service, _instance, _eventgroup,
                                 _client);
@@ -721,7 +722,7 @@ service_discovery_impl::create_eventgroup_entry(
         service_t _service, instance_t _instance, eventgroup_t _eventgroup,
         const std::shared_ptr<subscription> &_subscription,
         reliability_type_e _reliability_type) {
-
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::create_eventgroup_entry (MEHMET MUELLER DEBUG) <<<<<";
     entry_data_t its_data;
     its_data.entry_ = nullptr;
     its_data.other_ = nullptr;
@@ -1305,7 +1306,7 @@ service_discovery_impl::mimic_offerservice_serviceentry(
         uint16_t _reliable_port,
         std::string _unreliable_address,
         uint16_t _unreliable_port) {
-
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::mimic_offerservice_serviceentry (MEHMET MUELLER DEBUG) <<<<<";
     boost::asio::ip::address reliable_address;
     boost::asio::ip::address unreliable_address = boost::asio::ip::address::from_string(_unreliable_address);
     std::vector<std::shared_ptr<message_impl> > its_resubscribes;
@@ -1329,6 +1330,7 @@ service_discovery_impl::process_offerservice_serviceentry(
         uint16_t _unreliable_port,
         std::vector<std::shared_ptr<message_impl> > &_resubscribes,
         bool _received_via_mcast, const sd_acceptance_state_t& _sd_ac_state) {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_offerservice_serviceentry (MEHMET MUELLER DEBUG) <<<<<";
     std::shared_ptr < runtime > its_runtime = runtime_.lock();
     if (!its_runtime)
         return;
@@ -2206,6 +2208,7 @@ service_discovery_impl::handle_eventgroup_subscription(
         const std::set<client_t> &_clients,
         const sd_acceptance_state_t& _sd_ac_state,
         const std::shared_ptr<eventgroupinfo>& _info) {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::handle_eventgroup_subscription (MEHMET MUELLER DEBUG) <<<<<";
     (void)_counter;
     (void)_reserved;
 
@@ -2517,6 +2520,7 @@ bool
 service_discovery_impl::serialize_and_send(
         const std::vector<std::shared_ptr<message_impl> > &_messages,
         const boost::asio::ip::address &_address) {
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::serialize_and_send (MEHMET MUELLER DEBUG) <<<<<";
     bool its_result(true);
     if (!_address.is_unspecified()) {
         std::lock_guard<std::mutex> its_lock(serialize_mutex_);
@@ -2533,6 +2537,7 @@ service_discovery_impl::serialize_and_send(
                             port_)) {
                         increment_session(_address);
                     }
+
                 } else {
                     VSOMEIP_ERROR << "service_discovery_impl::" << __func__
                             << ": Serialization failed!";

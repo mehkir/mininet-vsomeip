@@ -2767,6 +2767,7 @@ void routing_manager_impl::init_routing_info() {
 void routing_manager_impl::on_remote_subscribe(
         std::shared_ptr<remote_subscription> &_subscription,
         const remote_subscription_callback_t &_callback) {
+    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::on_remote_subscribe (MEHMET MUELLER DEBUG) <<<<<";
     auto its_eventgroupinfo = _subscription->get_eventgroupinfo();
     if (!its_eventgroupinfo) {
         VSOMEIP_ERROR << __func__ << " eventgroupinfo is invalid";
@@ -2903,6 +2904,7 @@ void routing_manager_impl::on_subscribe_ack_with_multicast(
 void routing_manager_impl::on_subscribe_ack(client_t _client,
         service_t _service, instance_t _instance, eventgroup_t _eventgroup,
         event_t _event, remote_subscription_id_t _id) {
+    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::on_subscribe_ack (MEHMET MUELLER DEBUG) <<<<<";
     std::lock_guard<std::mutex> its_lock(remote_subscription_state_mutex_);
     auto its_eventgroup = find_eventgroup(_service, _instance, _eventgroup);
     if (its_eventgroup) {
