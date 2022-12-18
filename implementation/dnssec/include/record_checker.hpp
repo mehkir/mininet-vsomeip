@@ -5,10 +5,11 @@
 #ifndef VSOMEIP_V3_RECORD_CHECKER_H
 #define VSOMEIP_V3_RECORD_CHECKER_H
 
-#define DNS_SERVER_IP 0xAC110002
+#define DNS_SERVER_IP 0xAC110005
 #define INSTANCE 65280
 #define MAJOR_VERSION 65281
 #define MINOR_VERSION 65282
+#define L4PROTOCOL 65283
 
 #define ATTRLEAFBRANCH "_someip."
 #define PARENTDOMAIN "service."
@@ -20,7 +21,7 @@
 #include <functional>
 #include <atomic>
 #include <cstring>
-#include <vsomeip/primitive_types.hpp>
+#include "vsomeip/primitive_types.hpp"
 
 namespace vsomeip_v3 {
     typedef std::function<void(client_t, service_t, instance_t, eventgroup_t, major_version_t, event_t)> LocalCallback;

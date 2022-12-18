@@ -6,6 +6,7 @@
 #include "../include/logger.hpp"
 #include "../include/parse_svcb_reply.hpp"
 #include <arpa/nameser.h>
+#include <netinet/in.h>
 #include <string>
 #include <vsomeip/constants.hpp>
 
@@ -85,9 +86,25 @@ namespace vsomeip_v3 {
             if (result->instance == std::stoi(svcbReplyPtr->getSVCBKey(INSTANCE))
                 && (result->major == ANY_MAJOR || std::stoi(svcbReplyPtr->getSVCBKey(MAJOR_VERSION)) == result->major)
                 && (result->minor == ANY_MINOR || std::stoi(svcbReplyPtr->getSVCBKey(MINOR_VERSION)) == result->minor)) {
+                    std::string reliable_address = "", unreliable_address = "";
+                    uint16_t reliable_port = 0, unreliable_port = 0;
+                    int l4protocol = std::stoi(svcbReplyPtr->getSVCBKey(L4PROTOCOL));
+                    switch (l4protocol)
+                    {
+                    case IPPROTO_UDP:
+                        unreliable_address = svcbReplyPtr->ipv4AddressString;
+                        unreliable_port = svcbReplyPtr->port;
+                        break;
+                    case IPPROTO_TCP:
+                        reliable_address = svcbReplyPtr->ipv4AddressString;
+                        reliable_port = svcbReplyPtr->port;
+                        break;
+                    default:
+                        break;
+                    }
                     result->callback(result->service, result->instance, std::stoi(svcbReplyPtr->getSVCBKey(MAJOR_VERSION)),
-                                    std::stoi(svcbReplyPtr->getSVCBKey(MINOR_VERSION)), 0xFFFFFF, "", 0,
-                                    svcbReplyPtr->ipv4AddressString, svcbReplyPtr->port);
+                                    std::stoi(svcbReplyPtr->getSVCBKey(MINOR_VERSION)), DEFAULT_TTL, reliable_address, reliable_port,
+                                    unreliable_address, unreliable_port);
                 }
             svcbReplyPtr = svcbReplyPtr->svcbReplyNext;
         }
