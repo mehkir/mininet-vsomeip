@@ -556,33 +556,17 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     remoteServiceData->instance = _instance;
     remoteServiceData->major = _major;
     remoteServiceData->minor = _minor;
-    /*
-    service_t serviceID = 4660;
-    instance_t instanceID = 22136;
-    major_version_t major_version = 0;
-    minor_version_t minor_version = 0;
-    ttl_t ttl = DEFAULT_TTL;
-    std::string reliable_address = "";
-    uint16_t reliable_port = 0;
-    std::string unreliable_address = "172.17.0.4";
-    uint16_t unreliable_port = 30509;
-    */
-   remoteServiceData->callback = std::bind(&vsomeip_v3::sd::service_discovery::mimic_offerservice_serviceentry, discovery_,
-                                              std::placeholders::_1,
-                                              std::placeholders::_2,
-                                              std::placeholders::_3,
-                                              std::placeholders::_4,
-                                              std::placeholders::_5,
-                                              std::placeholders::_6,
-                                              std::placeholders::_7,
-                                              std::placeholders::_8,
-                                              std::placeholders::_9);
+    remoteServiceData->callback = std::bind(&vsomeip_v3::sd::service_discovery::mimic_offerservice_serviceentry, discovery_,
+                                            std::placeholders::_1,
+                                            std::placeholders::_2,
+                                            std::placeholders::_3,
+                                            std::placeholders::_4,
+                                            std::placeholders::_5,
+                                            std::placeholders::_6,
+                                            std::placeholders::_7,
+                                            std::placeholders::_8,
+                                            std::placeholders::_9);
     record_checker_.resolveRemoteSomeipService(remoteServiceData);
-    /*                                              
-    discovery_->mimic_offerservice_serviceentry(serviceID, instanceID, major_version,
-                                                minor_version, ttl, reliable_address,
-                                                reliable_port, unreliable_address, unreliable_port);
-    */
 #endif
 }
 
