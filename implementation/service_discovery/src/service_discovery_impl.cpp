@@ -967,6 +967,12 @@ service_discovery_impl::insert_subscription_ack(
         }
     }
 
+    // Service Authentication
+    std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
+    configuration_option.get()->add_item("cert","certdata");
+    configuration_option.get()->add_item("moin","moindata");
+    its_data.options_.push_back(configuration_option);
+
     // Selective
     if (_clients.size() > 1 || (*(_clients.begin())) != 0) {
         auto its_selective_option = std::make_shared<selective_option_impl>();
@@ -2154,11 +2160,13 @@ service_discovery_impl::process_eventgroupentry(
                 std::shared_ptr < configuration_option_impl > its_configuration_option =
                             std::dynamic_pointer_cast < configuration_option_impl
                                     > (its_option);
+                // Service Authentication
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
                     std::cout << its_configuration_option.get()->get_value("cert") << std::endl;
                     std::cout << its_configuration_option.get()->get_value("moin") << std::endl;
                 } else {
-                    // TODO: SUBSCRIBE_EVENTGROUPACK
+                    std::cout << its_configuration_option.get()->get_value("cert") << std::endl;
+                    std::cout << its_configuration_option.get()->get_value("moin") << std::endl;
                 }
                 break;
             }
