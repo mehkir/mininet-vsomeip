@@ -18,6 +18,7 @@
 #include "../include/eventgroupentry_impl.hpp"
 #include "../include/ipv4_option_impl.hpp"
 #include "../include/ipv6_option_impl.hpp"
+#include "../include/configuration_option_impl.hpp"
 #include "../include/selective_option_impl.hpp"
 #include "../include/message_impl.hpp"
 #include "../include/remote_subscription_ack.hpp"
@@ -866,6 +867,11 @@ service_discovery_impl::create_eventgroup_entry(
             return its_data;
         }
     }
+
+    std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
+    configuration_option.get()->add_item("cert","certdata");
+    configuration_option.get()->add_item("moin","moindata");
+    its_data.options_.push_back(configuration_option);
 
     if (its_entry &&_subscription->is_selective()) {
         auto its_selective_option = std::make_shared<selective_option_impl>();
