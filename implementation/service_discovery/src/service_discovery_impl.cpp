@@ -1758,7 +1758,7 @@ service_discovery_impl::process_eventgroupentry(
         const boost::asio::ip::address &_destination,
         bool _is_stop_subscribe_subscribe, bool _force_initial_events,
         const sd_acceptance_state_t& _sd_ac_state) {
-
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_eventgroupentry (MEHMET MUELLER DEBUG) <<<<<";
     std::set<client_t> its_clients({0}); // maybe overridden for selectives
 
     auto its_sender = _acknowledgement->get_target_address();
@@ -2151,6 +2151,15 @@ service_discovery_impl::process_eventgroupentry(
                 }
                 break;
             case option_type_e::CONFIGURATION: {
+                std::shared_ptr < configuration_option_impl > its_configuration_option =
+                            std::dynamic_pointer_cast < configuration_option_impl
+                                    > (its_option);
+                if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
+                    std::cout << its_configuration_option.get()->get_value("cert") << std::endl;
+                    std::cout << its_configuration_option.get()->get_value("moin") << std::endl;
+                } else {
+                    // TODO: SUBSCRIBE_EVENTGROUPACK
+                }
                 break;
             }
             case option_type_e::SELECTIVE: {
