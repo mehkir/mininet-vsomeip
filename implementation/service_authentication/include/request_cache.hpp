@@ -3,12 +3,13 @@
 
 #include <map>
 #include <tuple>
+#include <vector>
 #include <boost/asio/ip/address_v4.hpp>
 #include "vsomeip/primitive_types.hpp"
 
 struct challenger_data {
     int random_nonce;
-    unsigned char* certificate;
+    std::vector<unsigned char> certificate_data;
 };
 
 class request_cache
