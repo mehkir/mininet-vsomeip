@@ -1,6 +1,7 @@
 #ifndef VSOMEIP_REQUEST_CACHE_HPP
 #define VSOMEIP_REQUEST_CACHE_HPP
 
+#include <mutex>
 #include <map>
 #include <tuple>
 #include <vector>
@@ -15,10 +16,13 @@ struct challenger_data {
 class request_cache
 {
 private:
+    request_cache();
+    ~request_cache();
+    static std::mutex mutex_;
+    static request_cache* instance;
     std::map<std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t, vsomeip_v3::instance_t>, challenger_data> request_map;
 public:
-    request_cache(/* args */);
-    ~request_cache();
+    static request_cache* getInstance();
     void addRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId, challenger_data challengerData);
     challenger_data getRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,

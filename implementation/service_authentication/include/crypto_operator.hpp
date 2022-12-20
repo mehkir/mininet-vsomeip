@@ -1,17 +1,21 @@
 #ifndef VSOMEIP_CRYPTO_OPERATOR_HPP
 #define VSOMEIP_CRYPTO_OPERATOR_HPP
 
+#include <mutex>
 #include <cryptopp/osrng.h>
 #include <cryptopp/x509cert.h>
 
 class crypto_operator
 {
 private:
+    crypto_operator();
+    ~crypto_operator();
+    static std::mutex mutex_;
+    static crypto_operator* instance;
     CryptoPP::AutoSeededRandomPool rng;
     void crypto_operator::Load(const std::string& filename, CryptoPP::BufferedTransformation& bt);
 public:
-    crypto_operator();
-    ~crypto_operator();
+    static crypto_operator* getInstance();
     std::vector<CryptoPP::byte> encrypt(CryptoPP::PublicKey &publicKey, std::vector<CryptoPP::byte> data);
     std::vector<CryptoPP::byte> decrypt(CryptoPP::PrivateKey &privateKey, std::vector<CryptoPP::byte> data);
     std::string convertHexByteVectorToHexString(std::vector<CryptoPP::byte> data);
