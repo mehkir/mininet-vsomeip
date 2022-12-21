@@ -32,7 +32,12 @@ crypto_operator* crypto_operator::getInstance() {
 std::vector<CryptoPP::byte> crypto_operator::encrypt(CryptoPP::PublicKey &publicKey, std::vector<CryptoPP::byte> data) {
     std::vector<CryptoPP::byte> encryptedData;
     CryptoPP::RSAES_OAEP_SHA_Encryptor encryptor(publicKey);
-    CryptoPP::VectorSource vectorSource(data, true, new CryptoPP::PK_EncryptorFilter(rng, encryptor, new CryptoPP::VectorSink(encryptedData)));
+    try {
+        CryptoPP::VectorSource vectorSource(data, true, new CryptoPP::PK_EncryptorFilter(rng, encryptor, new CryptoPP::VectorSink(encryptedData)));
+    } catch (std::exception exception) {
+        std::cerr << exception.what() << std::endl;
+        encryptedData.clear();
+    }
     return encryptedData;
 }
 
@@ -41,6 +46,28 @@ std::vector<CryptoPP::byte> crypto_operator::decrypt(CryptoPP::PrivateKey &priva
     CryptoPP::RSAES_OAEP_SHA_Decryptor decryptor(privateKey);
     CryptoPP::VectorSource vectorSource(data, true, new CryptoPP::PK_DecryptorFilter(rng, decryptor, new CryptoPP::VectorSink(decryptedData)));
     return decryptedData;
+}
+
+std::vector<CryptoPP::byte> crypto_operator::sign(CryptoPP::PrivateKey &privateKey, std::vector<CryptoPP::byte> data) {
+    std::vector<CryptoPP::byte> signature;
+    CryptoPP::RSASSA_PKCS1v15_SHA_Signer signer(privateKey);
+    CryptoPP::VectorSource vectorSource(data, true, new CryptoPP::SignerFilter(rng, signer, new CryptoPP::VectorSink(signature)));
+    return signature;
+}
+
+bool crypto_operator::verify(CryptoPP::PublicKey &publicKey, std::vector<CryptoPP::byte> data) {
+    bool verified = false;
+
+    CryptoPP::RSASSA_PKCS1v15_SHA_Verifier verifier(publicKey);
+    try {
+        CryptoPP::VectorSource vectorSource(data, true, new CryptoPP::SignatureVerificationFilter( verifier, NULL, 
+                                                            CryptoPP::SignatureVerificationFilter::THROW_EXCEPTION));
+        //std::cout << "Verified signature on data" << std::endl;
+        verified = true;
+    } catch (CryptoPP::SignatureVerificationFilter::SignatureVerificationFailed exception) {
+        std::cout << exception.GetWhat() << std::endl;
+    }
+    return verified;
 }
 
 std::string crypto_operator::convertHexByteVectorToHexString(std::vector<CryptoPP::byte> data) {
@@ -79,7 +106,8 @@ void crypto_operator::loadCertificateFromString(const std::string& certificateSt
     CryptoPP::PEM_Load(ss, certificate);
 }
 
-void crypto_operator::extractPublicKeyFromCertificate(CryptoPP::X509Certificate& certificate, CryptoPP::X509PublicKey& publicKey) {
+void crypto_operator::extractPublicKeyFromCertificate(CryptoPP::X509Certificate &certificate, CryptoPP::X509PublicKey &publicKey)
+{
     publicKey = certificate.GetSubjectPublicKey();
 }
 
@@ -131,3 +159,19 @@ std::string crypto_operator::convertPEMStringToDERString(const std::string& cert
     }
     return std::string(derMem->data, derMem->length);
 }
+
+CryptoPP::word32 crypto_operator::getRandomWord32() {
+    return rng.GenerateWord32();
+}
+
+std::vector<CryptoPP::byte> crypto_operator::convertStringToByteVector(const std::string& stringToConvert) {
+    std::vector<CryptoPP::byte> byteVector;
+    const char* certificateCharArray = stringToConvert.c_str();
+    byteVector.assign(certificateCharArray, certificateCharArray+strlen(certificateCharArray));
+    return byteVector;
+}
+
+std::string convertByteVectorToString(std::vector<CryptoPP::byte> vectorToConvert) {
+    return std::string((char*)vectorToConvert.data(), 0, vectorToConvert.size());
+}
+
