@@ -18,7 +18,6 @@
 #include "../include/eventgroupentry_impl.hpp"
 #include "../include/ipv4_option_impl.hpp"
 #include "../include/ipv6_option_impl.hpp"
-#include "../include/configuration_option_impl.hpp"
 #include "../include/selective_option_impl.hpp"
 #include "../include/message_impl.hpp"
 #include "../include/remote_subscription_ack.hpp"
@@ -40,6 +39,12 @@
 #include "../../routing/include/eventgroupinfo.hpp"
 #include "../../routing/include/serviceinfo.hpp"
 #include "../../utility/include/byteorder.hpp"
+
+// Additional includes
+#include "../include/configuration_option_impl.hpp"
+
+#define CERTKEY "cert"
+#define NONCEKEY "nonce"
 
 namespace vsomeip_v3 {
 namespace sd {
@@ -74,9 +79,14 @@ service_discovery_impl::service_discovery_impl(
       is_diagnosis_(false),
       last_msg_received_timer_(_host->get_io()),
       last_msg_received_timer_timeout_(VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY +
-                                           (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10)) {
+                                           (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10)),
+    // Additional member initializations for service authentication
+      request_cache_(request_cache::getInstance()),
+      crypto_operator_(crypto_operator::getInstance()) {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
+    std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/client4931.cert.pem");
+    certificateData_ = crypto_operator_->convertStringToByteVector(certificateString);
 }
 
 service_discovery_impl::~service_discovery_impl() {
@@ -869,9 +879,10 @@ service_discovery_impl::create_eventgroup_entry(
     }
 
     // Service Authentication
+    request_cache_->addRequest(unicast_.to_v4(), _service, _instance, challenger_data{crypto_operator_->getRandomWord32(), certificateData_});
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-    configuration_option.get()->add_item("cert","certdata");
-    configuration_option.get()->add_item("moin","moindata");
+    configuration_option.get()->add_item(NONCEKEY, std::to_string(request_cache_->getRequest(unicast_.to_v4(), _service, _instance).random_nonce));
+    configuration_option.get()->add_item(CERTKEY, crypto_operator_->convertByteVectorToString(certificateData_));
     its_data.options_.push_back(configuration_option);
 
     if (its_entry &&_subscription->is_selective()) {
