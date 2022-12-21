@@ -9,7 +9,7 @@
 #include "vsomeip/primitive_types.hpp"
 
 struct challenger_data {
-    int random_nonce;
+    unsigned int random_nonce;
     std::vector<unsigned char> certificate_data;
 };
 
