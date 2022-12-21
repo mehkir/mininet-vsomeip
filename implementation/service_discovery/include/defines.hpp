@@ -7,7 +7,7 @@
 #define VSOMEIP_SD_DEFINES_HPP
 
 #define VSOMEIP_MAX_TCP_SD_PAYLOAD               4075 // Available for entries & options
-#define VSOMEIP_MAX_UDP_SD_PAYLOAD               1380
+#define VSOMEIP_MAX_UDP_SD_PAYLOAD               2000 // 1380
 
 #define VSOMEIP_SOMEIP_SD_DATA_SIZE              12
 #define VSOMEIP_SOMEIP_SD_ENTRY_LENGTH_SIZE      4
