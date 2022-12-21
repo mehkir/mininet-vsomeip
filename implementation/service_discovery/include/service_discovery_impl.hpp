@@ -28,6 +28,10 @@
 #include "deserializer.hpp"
 #include "message_impl.hpp"
 
+// Additional includes for service authentication
+#include "../../service_authentication/include/crypto_operator.hpp"
+#include "../../service_authentication/include/request_cache.hpp"
+
 namespace vsomeip_v3 {
 
 class endpoint;
@@ -475,11 +479,17 @@ private:
     std::mutex offer_mutex_;
     std::mutex check_ttl_mutex_;
 
+// Additional classes ans methods for service authentication
 public:
     void mimic_offerservice_serviceentry(service_t _service, instance_t _instance, major_version_t _major,
                                         minor_version_t _minor, ttl_t _ttl, std::string _reliable_address,
                                         uint16_t _reliable_port, std::string _unreliable_address,
                                         uint16_t _unreliable_port);
+
+private:
+    request_cache* request_cache_;
+    crypto_operator* crypto_operator_;
+    std::vector<CryptoPP::byte> certificateData_;
 };
 
 }  // namespace sd
