@@ -30,7 +30,7 @@ void data_partitioner::partitionCertificateData(std::shared_ptr<configuration_op
 std::vector<unsigned char> data_partitioner::reassembleCertificateData(std::shared_ptr<vsomeip_v3::sd::configuration_option_impl> configuration_option) {
     std::vector<unsigned char> reassembledCertificateData;
     std::string certificatePartition;
-    for(int certPartitionIdx = 0; (certificatePartition = configuration_option->get_value(CERTKEY+std::to_string(certPartitionIdx))).empty(); certPartitionIdx++) {
+    for(int certPartitionIdx = 0; !(certificatePartition = configuration_option->get_value(CERTKEY+std::to_string(certPartitionIdx))).empty(); certPartitionIdx++) {
         reassembledCertificateData.insert(reassembledCertificateData.end(), certificatePartition.begin(), certificatePartition.end());
     }
     return reassembledCertificateData;
