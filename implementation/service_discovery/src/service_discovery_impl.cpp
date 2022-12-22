@@ -2195,8 +2195,11 @@ service_discovery_impl::process_eventgroupentry(
                     //const char* subcert = reinterpret_cast<const char*>(subscriberCertificateData.data());
                     //std::cout << std::string(subcert, subscriberCertificateData.size()) << std::endl;
                 } else {
-                    std::cout << its_configuration_option->get_value(NONCEKEY) << std::endl;
-                    std::cout << its_configuration_option->get_value(CERTKEY) << std::endl;
+                    // TODO authenticate signature here
+                    unsigned int nonce = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).random_nonce;
+                    unsigned int remoteNonce = (unsigned int)std::stoi(its_configuration_option->get_value(NONCEKEY));
+                    std::vector<byte_t> signature = data_partitioner().reassemble_data(SIGNATUREKEY, its_configuration_option);
+                    std::cout << "moin" << std::endl;
                 }
                 break;
             }
