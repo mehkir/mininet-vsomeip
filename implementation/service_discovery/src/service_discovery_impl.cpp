@@ -41,7 +41,6 @@
 #include "../../utility/include/byteorder.hpp"
 
 // Additional includes
-#include <cryptopp/rsa.h>
 #include "../include/configuration_option_impl.hpp"
 #include "../../service_authentication/include/data_partitioner.hpp"
 
@@ -85,14 +84,13 @@ service_discovery_impl::service_discovery_impl(
                                            (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10)),
     // Additional member initializations for service authentication
       request_cache_(request_cache::getInstance()),
-      crypto_operator_(crypto_operator::getInstance()),
-      private_key_(CryptoPP::RSA::PrivateKey()) {
+      crypto_operator_(crypto_operator::getInstance()) {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
-    std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/service4660.cert.pem");
-    crypto_operator_->LoadPrivateKey("certificate-and-privatekey/service4660.key.pem", private_key_);
-    //std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/client4931.cert.pem");
-    //crypto_operator_->LoadPrivateKey("certificate-and-privatekey/client4931.key.pem", private_key_);
+    //std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/service4660.cert.pem");
+    //crypto_operator_->LoadPEMPrivateKey("certificate-and-privatekey/service4660.key.pem", private_key_);
+    std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/client4931.cert.pem");
+    crypto_operator_->LoadPEMPrivateKey("certificate-and-privatekey/client4931.key.pem", private_key_);
     certificateData_ = crypto_operator_->convertStringToByteVector(certificateString);
 }
 
@@ -1802,6 +1800,9 @@ service_discovery_impl::process_eventgroupentry(
     major_version_t its_major = _entry->get_major_version();
     ttl_t its_ttl = _entry->get_ttl();
 
+    // Additional local variable for service authentication
+    bool service_authenticated = true;
+
     auto its_info = host_->find_eventgroup(
             its_service, its_instance, its_eventgroup);
     if (!its_info) {
@@ -2237,7 +2238,7 @@ service_discovery_impl::process_eventgroupentry(
                 handle_eventgroup_subscription_ack(its_service, its_instance,
                         its_eventgroup, its_major, its_ttl, 0,
                         its_clients, _sender,
-                        its_first_address, its_first_port);
+                        its_first_address, its_first_port, service_authenticated);
             } else {
                 handle_eventgroup_subscription_nack(its_service, its_instance, its_eventgroup,
                         0, its_clients);
@@ -2499,7 +2500,7 @@ service_discovery_impl::handle_eventgroup_subscription_ack(
         major_version_t _major, ttl_t _ttl, uint8_t _counter,
         const std::set<client_t> &_clients,
         const boost::asio::ip::address &_sender,
-        const boost::asio::ip::address &_address, uint16_t _port) {
+        const boost::asio::ip::address &_address, uint16_t _port, bool service_authenticated) {
     (void)_major;
     (void)_ttl;
     (void)_counter;
@@ -2518,7 +2519,7 @@ service_discovery_impl::handle_eventgroup_subscription_ack(
                             subscription_state_e::ST_ACKNOWLEDGED);
                         host_->on_subscribe_ack(its_client,
                                 _service, _instance, _eventgroup,
-                                ANY_EVENT, PENDING_SUBSCRIPTION_ID);
+                                ANY_EVENT, PENDING_SUBSCRIPTION_ID, service_authenticated);
                     }
                 }
                 if (_address.is_multicast()) {

@@ -1,5 +1,4 @@
 #include "../include/crypto_operator.hpp"
-#include <cryptopp/rsa.h>
 #include <sstream>
 #include <iomanip>
 #include <cryptopp/files.h>
@@ -88,6 +87,11 @@ void crypto_operator::LoadPrivateKey(const std::string& filename, CryptoPP::Priv
     CryptoPP::ByteQueue queue;
     Load(filename, queue);
     key.Load(queue);    
+}
+
+void crypto_operator::LoadPEMPrivateKey(const std::string& filename, CryptoPP::RSA::PrivateKey& key) {
+    CryptoPP::FileSource file_source(filename.c_str(), true);
+    CryptoPP::PEM_Load(file_source, key);
 }
 
 void crypto_operator::loadCertificateFromFile(const std::string& filename, CryptoPP::X509Certificate& certificate) {

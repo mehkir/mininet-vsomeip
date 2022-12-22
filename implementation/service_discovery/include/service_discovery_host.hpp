@@ -62,7 +62,7 @@ public:
 
     virtual void on_subscribe_ack(client_t _client,
             service_t _service, instance_t _instance, eventgroup_t _eventgroup,
-            event_t _event, remote_subscription_id_t _subscription_id) = 0;
+            event_t _event, remote_subscription_id_t _subscription_id, bool service_authenticated=true) = 0;
 
     virtual void on_subscribe_ack_with_multicast(
             service_t _service, instance_t _instance,

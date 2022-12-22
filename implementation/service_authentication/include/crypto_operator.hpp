@@ -4,6 +4,7 @@
 #include <mutex>
 #include <cryptopp/osrng.h>
 #include <cryptopp/x509cert.h>
+#include <cryptopp/rsa.h>
 
 class crypto_operator
 {
@@ -25,6 +26,7 @@ public:
     std::string loadCertificateFromFile(const std::string& filename);
     void loadCertificateFromString(const std::string& certificateString, CryptoPP::X509Certificate& certificate);
     void LoadPrivateKey(const std::string& filename, CryptoPP::PrivateKey& key);
+    void LoadPEMPrivateKey(const std::string& filename, CryptoPP::RSA::PrivateKey& key);
     void extractPublicKeyFromCertificate(CryptoPP::X509Certificate& certificate, CryptoPP::X509PublicKey& publicKey);
     std::string convertPEMStringToDERString(const std::string& certificateString);
     CryptoPP::word32 getRandomWord32();
