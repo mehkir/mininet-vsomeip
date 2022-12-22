@@ -86,8 +86,8 @@ service_discovery_impl::service_discovery_impl(
       crypto_operator_(crypto_operator::getInstance()) {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
-    //std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/service4660.cert.pem");
-    std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/client4931.cert.pem");
+    std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/service4660.cert.pem");
+    //std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/client4931.cert.pem");
     certificateData_ = crypto_operator_->convertStringToByteVector(certificateString);
 }
 
@@ -884,7 +884,7 @@ service_discovery_impl::create_eventgroup_entry(
     request_cache_->addRequest(unicast_.to_v4(), _service, _instance, challenger_data{crypto_operator_->getRandomWord32(), certificateData_});
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
     configuration_option.get()->add_item(NONCEKEY, std::to_string(request_cache_->getRequest(unicast_.to_v4(), _service, _instance).random_nonce));
-    data_partitioner().partitionData(configuration_option, certificateData_);
+    data_partitioner().partitionCertificateData(configuration_option, certificateData_);
     its_data.options_.push_back(configuration_option);
 
     if (its_entry &&_subscription->is_selective()) {
@@ -2177,7 +2177,8 @@ service_discovery_impl::process_eventgroupentry(
                 // Service Authentication
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
                     std::cout << its_configuration_option.get()->get_value(NONCEKEY) << std::endl;
-                    std::cout << its_configuration_option.get()->get_value(CERTKEY) << std::endl;
+                    std::vector<byte_t> subscriberCertificateData;
+                    data_partitioner().reassembleCertificateData(its_configuration_option);
                 } else {
                     std::cout << its_configuration_option.get()->get_value(NONCEKEY) << std::endl;
                     std::cout << its_configuration_option.get()->get_value(CERTKEY) << std::endl;
