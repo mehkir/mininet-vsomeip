@@ -42,6 +42,7 @@
 
 // Additional includes
 #include "../include/configuration_option_impl.hpp"
+#include "../../service_authentication/include/data_partitioner.hpp"
 
 #define CERTKEY "cert"
 #define NONCEKEY "nonce"
@@ -85,8 +86,8 @@ service_discovery_impl::service_discovery_impl(
       crypto_operator_(crypto_operator::getInstance()) {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
-    std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/service4660.cert.pem");
-    //std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/client4931.cert.pem");
+    //std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/service4660.cert.pem");
+    std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/client4931.cert.pem");
     certificateData_ = crypto_operator_->convertStringToByteVector(certificateString);
 }
 
@@ -883,7 +884,7 @@ service_discovery_impl::create_eventgroup_entry(
     request_cache_->addRequest(unicast_.to_v4(), _service, _instance, challenger_data{crypto_operator_->getRandomWord32(), certificateData_});
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
     configuration_option.get()->add_item(NONCEKEY, std::to_string(request_cache_->getRequest(unicast_.to_v4(), _service, _instance).random_nonce));
-    configuration_option.get()->add_item(CERTKEY, crypto_operator_->convertByteVectorToString(certificateData_));
+    data_partitioner().partitionData(configuration_option, certificateData_);
     its_data.options_.push_back(configuration_option);
 
     if (its_entry &&_subscription->is_selective()) {
