@@ -87,10 +87,10 @@ service_discovery_impl::service_discovery_impl(
       crypto_operator_(crypto_operator::getInstance()) {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
-    //std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/service4660.cert.pem");
-    //crypto_operator_->LoadPEMPrivateKey("certificate-and-privatekey/service4660.key.pem", private_key_);
-    std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/client4931.cert.pem");
-    crypto_operator_->LoadPEMPrivateKey("certificate-and-privatekey/client4931.key.pem", private_key_);
+    std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/service4660.cert.pem");
+    crypto_operator_->LoadPEMPrivateKey("certificate-and-privatekey/service4660.key.pem", private_key_);
+    //std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/client4931.cert.pem");
+    //crypto_operator_->LoadPEMPrivateKey("certificate-and-privatekey/client4931.key.pem", private_key_);
     certificateData_ = crypto_operator_->convertStringToByteVector(certificateString);
 }
 
@@ -993,7 +993,7 @@ service_discovery_impl::insert_subscription_ack(
     std::vector<CryptoPP::byte> nonce_data;
     nonce_data.insert(nonce_data.end(), nonceString.begin(), nonceString.end());
     std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
-    configuration_option->add_item(SIGNATUREKEY, std::string((char*)signature.data(), 0, signature.size()));
+    data_partitioner().partition_data(SIGNATUREKEY, configuration_option, signature);
     its_data.options_.push_back(configuration_option);
 
     // Selective
