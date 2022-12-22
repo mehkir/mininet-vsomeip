@@ -28,12 +28,12 @@ void data_partitioner::partition_data(const std::string& key_name, std::shared_p
 }
 
 std::vector<unsigned char> data_partitioner::reassemble_data(const std::string& key_name, std::shared_ptr<vsomeip_v3::sd::configuration_option_impl> configuration_option) {
-    std::vector<unsigned char> reassembledCertificateData;
-    std::string certificatePartition;
-    for(int certPartitionIdx = 0; !(certificatePartition = configuration_option->get_value(key_name+std::to_string(certPartitionIdx))).empty(); certPartitionIdx++) {
-        reassembledCertificateData.insert(reassembledCertificateData.end(), certificatePartition.begin(), certificatePartition.end());
+    std::vector<unsigned char> reassembled_data;
+    std::string partial_data;
+    for(int partial_data_idx = 0; !(partial_data = configuration_option->get_value(key_name+std::to_string(partial_data_idx))).empty(); partial_data_idx++) {
+        reassembled_data.insert(reassembled_data.end(), partial_data.begin(), partial_data.end());
     }
-    return reassembledCertificateData;
+    return reassembled_data;
 }
 
 }
