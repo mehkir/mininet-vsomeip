@@ -41,11 +41,13 @@
 #include "../../utility/include/byteorder.hpp"
 
 // Additional includes
+#include <cryptopp/rsa.h>
 #include "../include/configuration_option_impl.hpp"
 #include "../../service_authentication/include/data_partitioner.hpp"
 
 #define CERTKEY "cert"
 #define NONCEKEY "nonce"
+#define SIGNATUREKEY "sig"
 
 namespace vsomeip_v3 {
 namespace sd {
@@ -83,11 +85,14 @@ service_discovery_impl::service_discovery_impl(
                                            (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10)),
     // Additional member initializations for service authentication
       request_cache_(request_cache::getInstance()),
-      crypto_operator_(crypto_operator::getInstance()) {
+      crypto_operator_(crypto_operator::getInstance()),
+      private_key_(CryptoPP::RSA::PrivateKey()) {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
     std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/service4660.cert.pem");
+    crypto_operator_->LoadPrivateKey("certificate-and-privatekey/service4660.key.pem", private_key_);
     //std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/client4931.cert.pem");
+    //crypto_operator_->LoadPrivateKey("certificate-and-privatekey/client4931.key.pem", private_key_);
     certificateData_ = crypto_operator_->convertStringToByteVector(certificateString);
 }
 
@@ -884,7 +889,7 @@ service_discovery_impl::create_eventgroup_entry(
     request_cache_->addRequest(unicast_.to_v4(), _service, _instance, challenger_data{crypto_operator_->getRandomWord32(), certificateData_});
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
     configuration_option.get()->add_item(NONCEKEY, std::to_string(request_cache_->getRequest(unicast_.to_v4(), _service, _instance).random_nonce));
-    data_partitioner().partitionCertificateData(configuration_option, certificateData_);
+    data_partitioner().partition_data(CERTKEY, configuration_option, certificateData_);
     its_data.options_.push_back(configuration_option);
 
     if (its_entry &&_subscription->is_selective()) {
@@ -2177,7 +2182,7 @@ service_discovery_impl::process_eventgroupentry(
                 // Service Authentication
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
                     std::vector<byte_t> subscriberCertificateData;
-                    subscriberCertificateData = data_partitioner().reassembleCertificateData(its_configuration_option);
+                    subscriberCertificateData = data_partitioner().reassemble_data(CERTKEY, its_configuration_option);
                     unsigned int nonce = (unsigned int)std::stoi(its_configuration_option.get()->get_value(NONCEKEY));
                     request_cache_->addRequest(_sender.to_v4(), its_service, its_instance, challenger_data{nonce, subscriberCertificateData});
                     //const char* subcert = reinterpret_cast<const char*>(subscriberCertificateData.data());

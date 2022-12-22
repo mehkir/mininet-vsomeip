@@ -14,9 +14,9 @@ private:
 public:
     data_partitioner();
     ~data_partitioner();
-    void partitionCertificateData(std::shared_ptr<vsomeip_v3::sd::configuration_option_impl> configuration_option, 
+    void partition_data(const std::string& key_name, std::shared_ptr<vsomeip_v3::sd::configuration_option_impl> configuration_option, 
                                        std::vector<unsigned char> data);
-    std::vector<unsigned char> reassembleCertificateData(std::shared_ptr<vsomeip_v3::sd::configuration_option_impl> configuration_option);
+    std::vector<unsigned char> reassemble_data(const std::string& key_name, std::shared_ptr<vsomeip_v3::sd::configuration_option_impl> configuration_option);
 };
 }
 #endif /* VSOMEIP_DATA_PARTITIONER_HPP */

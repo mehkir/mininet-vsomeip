@@ -490,6 +490,7 @@ private:
     request_cache* request_cache_;
     crypto_operator* crypto_operator_;
     std::vector<CryptoPP::byte> certificateData_;
+    CryptoPP::PrivateKey&& private_key_;
 };
 
 }  // namespace sd
