@@ -2178,7 +2178,7 @@ service_discovery_impl::process_eventgroupentry(
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
                     std::cout << its_configuration_option.get()->get_value(NONCEKEY) << std::endl;
                     std::vector<byte_t> subscriberCertificateData;
-                    data_partitioner().reassembleCertificateData(its_configuration_option);
+                    subscriberCertificateData = data_partitioner().reassembleCertificateData(its_configuration_option);
                 } else {
                     std::cout << its_configuration_option.get()->get_value(NONCEKEY) << std::endl;
                     std::cout << its_configuration_option.get()->get_value(CERTKEY) << std::endl;
