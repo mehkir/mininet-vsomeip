@@ -888,7 +888,7 @@ service_discovery_impl::create_eventgroup_entry(
     // Service Authentication
     request_cache_->addRequest(unicast_.to_v4(), _service, _instance, challenger_data{crypto_operator_->getRandomWord32(), certificateData_});
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-    configuration_option.get()->add_item(NONCEKEY, std::to_string(request_cache_->getRequest(unicast_.to_v4(), _service, _instance).random_nonce));
+    configuration_option->add_item(NONCEKEY, std::to_string(request_cache_->getRequest(unicast_.to_v4(), _service, _instance).random_nonce));
     data_partitioner().partition_data(CERTKEY, configuration_option, certificateData_);
     its_data.options_.push_back(configuration_option);
 
@@ -988,8 +988,14 @@ service_discovery_impl::insert_subscription_ack(
 
     // Service Authentication
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-    configuration_option.get()->add_item("cert","certdata");
-    configuration_option.get()->add_item("moin","moindata");
+    // Add nonce
+    std::string nonceString = std::to_string(request_cache_->getRequest(_target->get_address().to_v4(), its_service, its_instance).random_nonce);
+    configuration_option->add_item(NONCEKEY, nonceString);
+    // Sign and add nonce
+    std::vector<CryptoPP::byte> nonce_data;
+    nonce_data.insert(nonce_data.end(), nonceString.begin(), nonceString.end());
+    std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
+    configuration_option->add_item(SIGNATUREKEY, std::string((char*)signature.data(), 0, signature.size()));
     its_data.options_.push_back(configuration_option);
 
     // Selective
@@ -2183,13 +2189,13 @@ service_discovery_impl::process_eventgroupentry(
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
                     std::vector<byte_t> subscriberCertificateData;
                     subscriberCertificateData = data_partitioner().reassemble_data(CERTKEY, its_configuration_option);
-                    unsigned int nonce = (unsigned int)std::stoi(its_configuration_option.get()->get_value(NONCEKEY));
+                    unsigned int nonce = (unsigned int)std::stoi(its_configuration_option->get_value(NONCEKEY));
                     request_cache_->addRequest(_sender.to_v4(), its_service, its_instance, challenger_data{nonce, subscriberCertificateData});
                     //const char* subcert = reinterpret_cast<const char*>(subscriberCertificateData.data());
                     //std::cout << std::string(subcert, subscriberCertificateData.size()) << std::endl;
                 } else {
-                    std::cout << its_configuration_option.get()->get_value(NONCEKEY) << std::endl;
-                    std::cout << its_configuration_option.get()->get_value(CERTKEY) << std::endl;
+                    std::cout << its_configuration_option->get_value(NONCEKEY) << std::endl;
+                    std::cout << its_configuration_option->get_value(CERTKEY) << std::endl;
                 }
                 break;
             }
