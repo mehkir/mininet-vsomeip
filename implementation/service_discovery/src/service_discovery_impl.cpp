@@ -2176,9 +2176,10 @@ service_discovery_impl::process_eventgroupentry(
                                     > (its_option);
                 // Service Authentication
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
-                    std::cout << its_configuration_option.get()->get_value(NONCEKEY) << std::endl;
                     std::vector<byte_t> subscriberCertificateData;
                     subscriberCertificateData = data_partitioner().reassembleCertificateData(its_configuration_option);
+                    unsigned int nonce = std::stoi(its_configuration_option.get()->get_value(NONCEKEY));
+                    request_cache_->addRequest(_sender.to_v4(), its_service, its_instance, challenger_data{nonce, subscriberCertificateData});
                 } else {
                     std::cout << its_configuration_option.get()->get_value(NONCEKEY) << std::endl;
                     std::cout << its_configuration_option.get()->get_value(CERTKEY) << std::endl;
