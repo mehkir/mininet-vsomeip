@@ -131,6 +131,7 @@ void routing_manager_impl::init() {
             VSOMEIP_INFO << "Service Discovery module loaded.";
             discovery_ = std::dynamic_pointer_cast<sd::runtime>(its_plugin)->create_service_discovery(this, configuration_);
             discovery_->init();
+            discovery_->set_request_cache(request_cache_);
         } else {
             VSOMEIP_ERROR << "Service Discovery module could not be loaded!";
             std::exit(EXIT_FAILURE);
@@ -551,7 +552,6 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     }
 
 #ifndef ENABLE_FIND_AND_OFFER
-    discovery_->set_request_cache(request_cache_);
     //Mimic incoming offer entry
     RemoteServiceData* remoteServiceData = new RemoteServiceData();
     remoteServiceData->service = _service;
