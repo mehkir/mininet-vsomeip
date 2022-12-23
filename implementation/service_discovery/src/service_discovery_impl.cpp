@@ -883,12 +883,15 @@ service_discovery_impl::create_eventgroup_entry(
         }
     }
 
+#ifndef ENABLE_FIND_AND_OFFER
     // Service Authentication
-    request_cache_->addRequest(unicast_.to_v4(), _service, _instance, challenger_data{crypto_operator_->getRandomWord32(), certificateData_});
+    request_cache_->addRequestNonce(unicast_.to_v4(), _service, _instance, crypto_operator_->getRandomWord32());
+    request_cache_->addRequestCertificate(unicast_.to_v4(), _service, _instance, certificateData_);
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
     configuration_option->add_item(NONCEKEY, std::to_string(request_cache_->getRequest(unicast_.to_v4(), _service, _instance).random_nonce));
     data_partitioner().partition_data(CERTKEY, configuration_option, certificateData_);
     its_data.options_.push_back(configuration_option);
+#endif
 
     if (its_entry &&_subscription->is_selective()) {
         auto its_selective_option = std::make_shared<selective_option_impl>();
@@ -984,6 +987,7 @@ service_discovery_impl::insert_subscription_ack(
         }
     }
 
+#ifndef ENABLE_FIND_AND_OFFER
     // Service Authentication
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
     // Add nonce
@@ -995,6 +999,7 @@ service_discovery_impl::insert_subscription_ack(
     std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
     data_partitioner().partition_data(SIGNATUREKEY, configuration_option, signature);
     its_data.options_.push_back(configuration_option);
+#endif
 
     // Selective
     if (_clients.size() > 1 || (*(_clients.begin())) != 0) {
@@ -2186,6 +2191,8 @@ service_discovery_impl::process_eventgroupentry(
                 std::shared_ptr < configuration_option_impl > its_configuration_option =
                             std::dynamic_pointer_cast < configuration_option_impl
                                     > (its_option);
+
+#ifndef ENABLE_FIND_AND_OFFER
                 // Service Authentication
                 std::string nonce_string = its_configuration_option->get_value(NONCEKEY);
                 std::stringstream ss;
@@ -2195,14 +2202,33 @@ service_discovery_impl::process_eventgroupentry(
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
                     std::vector<byte_t> subscriberCertificateData;
                     subscriberCertificateData = data_partitioner().reassemble_data(CERTKEY, its_configuration_option);
-                    request_cache_->addRequest(_sender.to_v4(), its_service, its_instance, challenger_data{nonce, subscriberCertificateData});
+                    request_cache_->addRequestNonce(_sender.to_v4(), its_service, its_instance, nonce);
+                    request_cache_->addRequestCertificate(_sender.to_v4(), its_service, its_instance, subscriberCertificateData);
                     //const char* subcert = reinterpret_cast<const char*>(subscriberCertificateData.data());
                     //std::cout << std::string(subcert, subscriberCertificateData.size()) << std::endl;
                 } else {
                     // TODO authenticate signature here
                     unsigned int its_nonce = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).random_nonce;
-                    std::vector<byte_t> signature = data_partitioner().reassemble_data(SIGNATUREKEY, its_configuration_option);
+                    // Check if nonce is equal
+                    if (nonce != its_nonce) {service_authenticated = false;}
+                    // Check if a valid public key can be retained from self signed certificate
+                    CryptoPP::RSA::PublicKey public_key;
+                    if (service_authenticated) {
+                        std::vector<byte_t> certificate_data = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).certificate_data;
+                        certificate_data = crypto_operator_->hex_decode(certificate_data);
+                        std::string pem_certificate_string = crypto_operator_->convertDERStringToPEMString(std::string((char*)certificate_data.data(), 0, certificate_data.size()));
+                        service_authenticated = crypto_operator_->extractPublicKeyFromCertificate(pem_certificate_string, public_key);
+                    }
+                    // Check if signature can be verified
+                    if (service_authenticated) {
+                        std::vector<byte_t> signature = data_partitioner().reassemble_data(SIGNATUREKEY, its_configuration_option);
+                        std::vector<byte_t> data_to_be_verified;
+                        data_to_be_verified.insert(data_to_be_verified.end(), nonce_string.begin(), nonce_string.end());
+                        data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
+                        service_authenticated = crypto_operator_->verify(public_key, data_to_be_verified);
+                    }
                 }
+#endif
                 break;
             }
             case option_type_e::SELECTIVE: {
