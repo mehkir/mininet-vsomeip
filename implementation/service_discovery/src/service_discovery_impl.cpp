@@ -886,7 +886,7 @@ service_discovery_impl::create_eventgroup_entry(
 #ifndef ENABLE_FIND_AND_OFFER
     // Service Authentication
     request_cache_->addRequestNonce(unicast_.to_v4(), _service, _instance, crypto_operator_->getRandomWord32());
-    request_cache_->addRequestCertificate(unicast_.to_v4(), _service, _instance, certificateData_);
+    //request_cache_->addRequestCertificate(unicast_.to_v4(), _service, _instance, certificateData_);
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
     configuration_option->add_item(NONCEKEY, std::to_string(request_cache_->getRequest(unicast_.to_v4(), _service, _instance).random_nonce));
     data_partitioner().partition_data(CERTKEY, configuration_option, certificateData_);

@@ -580,6 +580,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
                                             std::placeholders::_4);
+    record_checker_.resolveRemoteSomeipServiceCertificate(remoteServiceData);
 #endif
 }
 

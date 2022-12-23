@@ -157,7 +157,7 @@ namespace vsomeip_v3 {
         request.append(std::to_string(serviceData->service));
         request.append(".");
         request.append(PARENTDOMAIN);
-        dnsResolver->resolve(request.c_str(), C_IN, T_TLSA, RemoteResolverCallback, serviceData);
+        dnsResolver->resolve(request.c_str(), C_IN, T_TLSA, RemoteCertificateResolverCallback, serviceData);
     }
 
     bool record_checker::is_tlsa_valid() {
