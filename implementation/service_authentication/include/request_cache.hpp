@@ -23,8 +23,10 @@ private:
     std::map<std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t, vsomeip_v3::instance_t>, challenger_data> request_map;
 public:
     static request_cache* getInstance();
-    void addRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
-                    vsomeip_v3::instance_t instanceId, challenger_data challengerData);
+    void addRequestNonce(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+                    vsomeip_v3::instance_t instanceId, unsigned nonce);
+    void addRequestCertificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+                    vsomeip_v3::instance_t instanceId, std::vector<unsigned char> certificate_data);
     challenger_data getRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId);
     void removeRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
