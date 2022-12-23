@@ -32,7 +32,8 @@ void request_cache::addRequestCertificate(boost::asio::ip::address_v4 ipAddress,
     if (!request_map.count({ipAddress, serviceId, instanceId})) {
         request_map[{ipAddress, serviceId, instanceId}] = challenger_data();
     }
-    request_map[{ipAddress, serviceId, instanceId}].certificate_data = certificate_data;
+    std::vector<unsigned char>& data = request_map[{ipAddress, serviceId, instanceId}].certificate_data;
+    data.insert(data.end(), certificate_data.begin(), certificate_data.end());
 }
 
 challenger_data request_cache::getRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,

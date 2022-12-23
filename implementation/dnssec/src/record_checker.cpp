@@ -135,6 +135,7 @@ namespace vsomeip_v3 {
 
         TLSA_Reply* tlsa_reply_ptr = tlsa_reply;
         while (tlsa_reply_ptr != nullptr) {
+            std::cout << "record checker\n" << *tlsa_reply_ptr << std::endl;
             result->certificate_callback(result->ip_address, result->service, result->instance, tlsa_reply_ptr->certificate_association_data);
             tlsa_reply_ptr = tlsa_reply_ptr->tlsaReplyNext;
         }
