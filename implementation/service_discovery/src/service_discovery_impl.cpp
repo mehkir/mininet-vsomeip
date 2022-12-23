@@ -87,10 +87,10 @@ service_discovery_impl::service_discovery_impl(
       crypto_operator_(crypto_operator::getInstance()) {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
-    std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/service4660.cert.pem");
-    crypto_operator_->LoadPEMPrivateKey("certificate-and-privatekey/service4660.key.pem", private_key_);
-    //std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/client4931.cert.pem");
-    //crypto_operator_->LoadPEMPrivateKey("certificate-and-privatekey/client4931.key.pem", private_key_);
+    //std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/service4660.cert.pem");
+    //crypto_operator_->LoadPEMPrivateKey("certificate-and-privatekey/service4660.key.pem", private_key_);
+    std::string certificateString = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/client4931.cert.pem");
+    crypto_operator_->LoadPEMPrivateKey("certificate-and-privatekey/client4931.key.pem", private_key_);
     certificateData_ = crypto_operator_->convertStringToByteVector(certificateString);
 }
 
@@ -2202,7 +2202,6 @@ service_discovery_impl::process_eventgroupentry(
                     // TODO authenticate signature here
                     unsigned int its_nonce = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).random_nonce;
                     std::vector<byte_t> signature = data_partitioner().reassemble_data(SIGNATUREKEY, its_configuration_option);
-                    std::cout << "moin" << std::endl;
                 }
                 break;
             }

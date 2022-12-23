@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <cryptopp/files.h>
 #include <cryptopp/pem.h>
+#include <cryptopp/hex.h>
 #include <openssl/x509.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
@@ -164,6 +165,35 @@ std::string crypto_operator::convertPEMStringToDERString(const std::string& cert
     return std::string(derMem->data, derMem->length);
 }
 
+std::string crypto_operator::convertDERStringToPEMString(const std::string& certificateString) {
+    int rc = 0;
+    unsigned long err = 0;
+    X509* pem_certificate;
+    const unsigned char* p = (unsigned char*)certificateString.c_str();
+    pem_certificate = d2i_X509(NULL, &p, certificateString.length());
+    BIO_MEM_ptr pem_bio_ptr(BIO_new(BIO_s_mem()), ::BIO_free);
+    rc = PEM_write_bio_X509(pem_bio_ptr.get(), pem_certificate);
+    err = ERR_get_error();
+    if (rc != 1)
+    {
+        std::cerr << "PEM_write_bio_X509 failed, error " << err << ", ";
+        std::cerr << std::hex << "0x" << err;
+        exit(1);
+    }
+
+    // Load certificate from BIO into memory buffer
+    BUF_MEM *pem_memory = NULL;
+    BIO_get_mem_ptr(pem_bio_ptr.get(), &pem_memory);
+    err = ERR_get_error();
+    if (!pem_memory || !pem_memory->data || !pem_memory->length)
+    {
+        std::cerr << "BIO_get_mem_ptr failed, error " << err << ", ";
+        std::cerr << std::hex << "0x" << err;
+        exit(2);
+    }
+    std::string pemmedString(pem_memory->data, pem_memory->length);
+}
+
 CryptoPP::word32 crypto_operator::getRandomWord32() {
     return rng.GenerateWord32();
 }
@@ -179,3 +209,14 @@ std::string crypto_operator::convertByteVectorToString(std::vector<CryptoPP::byt
     return std::string((char*)vectorToConvert.data(), 0, vectorToConvert.size());
 }
 
+std::vector<CryptoPP::byte> crypto_operator::hex_encode(std::vector<CryptoPP::byte> data) {
+    std::vector<CryptoPP::byte> hex_encoded;
+    CryptoPP::VectorSource vector_source(data, true, new CryptoPP::HexEncoder(new CryptoPP::VectorSink(hex_encoded)));
+    return hex_encoded;
+}
+
+std::vector<CryptoPP::byte> crypto_operator::hex_decode(std::vector<CryptoPP::byte> data) {
+    std::vector<CryptoPP::byte> hex_decoded;
+    CryptoPP::VectorSource vector_source(data, true, new CryptoPP::HexDecoder(new CryptoPP::VectorSink(hex_decoded)));
+    return hex_decoded;
+}

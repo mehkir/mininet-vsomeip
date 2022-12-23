@@ -29,9 +29,12 @@ public:
     void LoadPEMPrivateKey(const std::string& filename, CryptoPP::RSA::PrivateKey& key);
     void extractPublicKeyFromCertificate(CryptoPP::X509Certificate& certificate, CryptoPP::X509PublicKey& publicKey);
     std::string convertPEMStringToDERString(const std::string& certificateString);
+    std::string convertDERStringToPEMString(const std::string& certificateString);
     CryptoPP::word32 getRandomWord32();
     std::vector<CryptoPP::byte> convertStringToByteVector(const std::string& stringToConvert);
     std::string convertByteVectorToString(std::vector<CryptoPP::byte> vectorToConvert);
+    std::vector<CryptoPP::byte> hex_encode(std::vector<CryptoPP::byte> data);
+    std::vector<CryptoPP::byte> hex_decode(std::vector<CryptoPP::byte> data);
 };
 
 #endif /* VSOMEIP_CRYPTO_OPERATOR_HPP */
