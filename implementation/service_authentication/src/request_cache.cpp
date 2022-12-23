@@ -21,22 +21,23 @@ request_cache* request_cache::getInstance() {
 
 void request_cache::addRequestNonce(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                                vsomeip_v3::instance_t instanceId, unsigned int nonce) {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (!request_map.count({ipAddress, serviceId, instanceId})) {
-        request_map[{ipAddress, serviceId, instanceId}] = challenger_data();
+        request_map[{ipAddress, serviceId, instanceId}] = challenge_response_data();
     }
     request_map[{ipAddress, serviceId, instanceId}].random_nonce = nonce;
 }
 
 void request_cache::addRequestCertificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId, std::vector<unsigned char> certificate_data) {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (!request_map.count({ipAddress, serviceId, instanceId})) {
-        request_map[{ipAddress, serviceId, instanceId}] = challenger_data();
+        request_map[{ipAddress, serviceId, instanceId}] = challenge_response_data();
     }
-    std::vector<unsigned char>& data = request_map[{ipAddress, serviceId, instanceId}].certificate_data;
-    data.insert(data.end(), certificate_data.begin(), certificate_data.end());
+    request_map[{ipAddress, serviceId, instanceId}].certificate_data = certificate_data;
 }
 
-challenger_data request_cache::getRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+challenge_response_data request_cache::getRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId) {
     return request_map[{ipAddress, serviceId, instanceId}];
 }
