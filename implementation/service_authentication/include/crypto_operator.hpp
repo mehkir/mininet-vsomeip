@@ -27,7 +27,7 @@ public:
     void loadCertificateFromString(const std::string& certificateString, CryptoPP::X509Certificate& certificate);
     void LoadPrivateKey(const std::string& filename, CryptoPP::PrivateKey& key);
     void LoadPEMPrivateKey(const std::string& filename, CryptoPP::RSA::PrivateKey& key);
-    void extractPublicKeyFromCertificate(CryptoPP::X509Certificate& certificate, CryptoPP::X509PublicKey& publicKey);
+    bool extractPublicKeyFromCertificate(const std::string& pem_certificate_string, CryptoPP::RSA::PublicKey& public_key);
     std::string convertPEMStringToDERString(const std::string& certificateString);
     std::string convertDERStringToPEMString(const std::string& certificateString);
     CryptoPP::word32 getRandomWord32();

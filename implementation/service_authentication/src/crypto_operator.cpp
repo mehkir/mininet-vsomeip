@@ -111,9 +111,20 @@ void crypto_operator::loadCertificateFromString(const std::string& certificateSt
     CryptoPP::PEM_Load(ss, certificate);
 }
 
-void crypto_operator::extractPublicKeyFromCertificate(CryptoPP::X509Certificate &certificate, CryptoPP::X509PublicKey &publicKey)
+bool crypto_operator::extractPublicKeyFromCertificate(const std::string& pem_certificate_string, CryptoPP::RSA::PublicKey& public_key)
 {
-    publicKey = certificate.GetSubjectPublicKey();
+    // Load certificate from string
+    CryptoPP::X509Certificate certificate;
+    CryptoPP::StringSource ss(pem_certificate_string, true);
+    CryptoPP::PEM_Load(ss, certificate);
+    const CryptoPP::SecByteBlock& signature = certificate.GetCertificateSignature();
+    const CryptoPP::SecByteBlock& toBeSigned = certificate.GetToBeSigned();
+    const CryptoPP::X509PublicKey& publicKey = certificate.GetSubjectPublicKey();
+    // Verify self signed certificate
+    CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier verifier(publicKey);
+    bool result = verifier.VerifyMessage(toBeSigned, toBeSigned.size(), signature, signature.size());
+    public_key = verifier.AccessKey();
+    return result;
 }
 
 using BIO_MEM_ptr = std::unique_ptr<BIO, decltype(&::BIO_free)>;
