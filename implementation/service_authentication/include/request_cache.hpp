@@ -23,6 +23,12 @@ private:
     std::map<std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t, vsomeip_v3::instance_t>, challenge_response_data> request_map;
 public:
     static request_cache* getInstance();
+
+    request_cache(request_cache const&) = delete;
+    request_cache(request_cache&&) = delete;
+    request_cache& operator=(request_cache &) = delete;
+    request_cache& operator=(request_cache &&) = delete;
+
     void addRequestNonce(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId, unsigned nonce);
     void addRequestCertificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
@@ -30,6 +36,9 @@ public:
     challenge_response_data getRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId);
     void removeRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+                    vsomeip_v3::instance_t instanceId);
+    std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t,
+                    vsomeip_v3::instance_t> makeKeyTuple(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId);
 };
 

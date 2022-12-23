@@ -83,7 +83,6 @@ service_discovery_impl::service_discovery_impl(
       last_msg_received_timer_timeout_(VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY +
                                            (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10)),
     // Additional member initializations for service authentication
-      request_cache_(request_cache::getInstance()),
       crypto_operator_(crypto_operator::getInstance()) {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
@@ -1361,6 +1360,11 @@ service_discovery_impl::mimic_offerservice_serviceentry(
 }
 
 void
+service_discovery_impl::set_request_cache(request_cache* _request_cache) {
+    this->request_cache_ = _request_cache;
+}
+
+void
 service_discovery_impl::process_offerservice_serviceentry(
         service_t _service, instance_t _instance, major_version_t _major,
         minor_version_t _minor, ttl_t _ttl,
@@ -2214,7 +2218,13 @@ service_discovery_impl::process_eventgroupentry(
                     // Check if a valid public key can be retained from self signed certificate
                     CryptoPP::RSA::PublicKey public_key;
                     if (service_authenticated) {
+                        //std::vector<byte_t> certificate_data = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).certificate_data;
                         std::vector<byte_t> certificate_data = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).certificate_data;
+                        while (certificate_data.empty()) {
+                            certificate_data = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).certificate_data;
+                            sleep(1);
+                            VSOMEIP_DEBUG << "TLSA record still not arrived";
+                        }
                         certificate_data = crypto_operator_->hex_decode(certificate_data);
                         std::string pem_certificate_string = crypto_operator_->convertDERStringToPEMString(std::string((char*)certificate_data.data(), 0, certificate_data.size()));
                         service_authenticated = crypto_operator_->extractPublicKeyFromCertificate(pem_certificate_string, public_key);

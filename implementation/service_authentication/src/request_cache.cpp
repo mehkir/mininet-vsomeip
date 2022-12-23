@@ -1,4 +1,5 @@
 #include "../include/request_cache.hpp"
+#include <iostream>
 
 std::mutex request_cache::mutex_;
 request_cache* request_cache::instance;
@@ -21,28 +22,44 @@ request_cache* request_cache::getInstance() {
 
 void request_cache::addRequestNonce(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                                vsomeip_v3::instance_t instanceId, unsigned int nonce) {
+    static int o = 0;
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (!request_map.count({ipAddress, serviceId, instanceId})) {
-        request_map[{ipAddress, serviceId, instanceId}] = challenge_response_data();
+    auto keyTuple = makeKeyTuple(ipAddress, serviceId, instanceId);
+    if (!request_map.count(keyTuple)) {
+        request_map[keyTuple] = challenge_response_data();
+        std::cout << "addRequestNonce Zaehler " << o++ << std::endl;
     }
-    request_map[{ipAddress, serviceId, instanceId}].random_nonce = nonce;
+    request_map[keyTuple].random_nonce = nonce;
+    std::cout << std::hex << this << std::endl;
 }
 
 void request_cache::addRequestCertificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId, std::vector<unsigned char> certificate_data) {
+    static int o = 0;
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (!request_map.count({ipAddress, serviceId, instanceId})) {
-        request_map[{ipAddress, serviceId, instanceId}] = challenge_response_data();
+    auto keyTuple = makeKeyTuple(ipAddress, serviceId, instanceId);
+    if (!request_map.count(keyTuple)) {
+        request_map[keyTuple] = challenge_response_data();
+        std::cout << "addRequestCertificate Zaehler " << o++ << std::endl;
     }
-    request_map[{ipAddress, serviceId, instanceId}].certificate_data = certificate_data;
+    request_map[keyTuple].certificate_data = certificate_data;
+    std::cout << std::hex << this << std::endl;
 }
 
 challenge_response_data request_cache::getRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId) {
-    return request_map[{ipAddress, serviceId, instanceId}];
+    auto keyTuple = makeKeyTuple(ipAddress, serviceId, instanceId);
+    return request_map[keyTuple];
 }
 
 void request_cache::removeRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                 vsomeip_v3::instance_t instanceId) {
-    request_map.erase({ipAddress, serviceId, instanceId});
+    auto keyTuple = makeKeyTuple(ipAddress, serviceId, instanceId);
+    request_map.erase(keyTuple);
+}
+
+std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t,
+                    vsomeip_v3::instance_t> request_cache::makeKeyTuple(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+                    vsomeip_v3::instance_t instanceId) {
+    return std::make_tuple(ipAddress, serviceId, instanceId);
 }

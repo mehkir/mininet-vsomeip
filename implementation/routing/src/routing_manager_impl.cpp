@@ -64,9 +64,6 @@
 #include "../../tracing/include/connector_impl.hpp"
 #endif
 
-//Additional includes for service authentication
-#include "../../service_authentication/include/request_cache.hpp"
-
 namespace vsomeip_v3 {
 
 #ifdef ANDROID
@@ -87,7 +84,8 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         pending_remote_offer_id_(0),
         last_resume_(std::chrono::steady_clock::now().min()),
         statistics_log_timer_(_host->get_io()),
-        ignored_statistics_counter_(0)
+        ignored_statistics_counter_(0),
+        request_cache_(request_cache::getInstance())
 {
 }
 
@@ -553,6 +551,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     }
 
 #ifndef ENABLE_FIND_AND_OFFER
+    discovery_->set_request_cache(request_cache_);
     //Mimic incoming offer entry
     RemoteServiceData* remoteServiceData = new RemoteServiceData();
     remoteServiceData->service = _service;
@@ -575,7 +574,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     remoteServiceData->service = _service;
     remoteServiceData->instance = _instance;
     remoteServiceData->ip_address = configuration_->get_unicast_address().to_v4();
-    remoteServiceData->certificate_callback = std::bind(&request_cache::addRequestCertificate, request_cache::getInstance(),
+    remoteServiceData->certificate_callback = std::bind(&request_cache::addRequestCertificate, request_cache_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,

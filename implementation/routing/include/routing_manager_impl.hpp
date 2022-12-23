@@ -28,6 +28,8 @@
 #include "../../service_discovery/include/service_discovery_host.hpp"
 #include "../../endpoints/include/endpoint_manager_impl.hpp"
 
+//Additional includes for service authentication
+#include "../../service_authentication/include/request_cache.hpp"
 
 namespace vsomeip_v3 {
 
@@ -493,6 +495,9 @@ private:
         msg_statistic_t> message_statistics_;
     std::tuple<service_t, instance_t, method_t> message_to_discard_;
     uint32_t ignored_statistics_counter_;
+
+    //Addition for service authentication
+    request_cache* request_cache_;
 };
 
 }  // namespace vsomeip_v3

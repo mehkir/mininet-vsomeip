@@ -16,6 +16,9 @@
 #include "../../endpoints/include/endpoint.hpp"
 #include "../include/service_discovery_host.hpp"
 
+//Additional includes for service authentication
+#include "../../service_authentication/include/request_cache.hpp"
+
 namespace vsomeip_v3 {
 
 class configuration;
@@ -76,6 +79,8 @@ public:
                                         minor_version_t _minor, ttl_t _ttl, std::string _reliable_address,
                                         uint16_t _reliable_port, std::string _unreliable_address,
                                         uint16_t _unreliable_port) = 0;
+
+    virtual void set_request_cache(request_cache* _request_cache) = 0;
 };
 
 } // namespace sd

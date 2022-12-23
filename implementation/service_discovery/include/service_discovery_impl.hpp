@@ -30,7 +30,6 @@
 
 // Additional includes for service authentication
 #include "../../service_authentication/include/crypto_operator.hpp"
-#include "../../service_authentication/include/request_cache.hpp"
 
 namespace vsomeip_v3 {
 
@@ -485,6 +484,8 @@ public:
                                         minor_version_t _minor, ttl_t _ttl, std::string _reliable_address,
                                         uint16_t _reliable_port, std::string _unreliable_address,
                                         uint16_t _unreliable_port);
+
+    void set_request_cache(request_cache* _request_cache);
 
 private:
     request_cache* request_cache_;
