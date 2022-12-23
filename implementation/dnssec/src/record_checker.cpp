@@ -5,6 +5,7 @@
 #include "../include/record_checker.hpp"
 #include "../include/logger.hpp"
 #include "../include/parse_svcb_reply.hpp"
+#include "../include/parse_tlsa_reply.hpp"
 #include <arpa/nameser.h>
 #include <netinet/in.h>
 #include <string>
@@ -114,12 +115,49 @@ namespace vsomeip_v3 {
         delete[] copy;
     }
 
+    void RemoteCertificateResolverCallback(void *data, int status, int timeouts,
+                unsigned char *abuf, int alen) {
+        auto result = reinterpret_cast<RemoteServiceData*>(data);
+        
+        if (status) {
+            std::cout << "Bad DNS response" << std::endl;
+            return;
+        }
+
+        unsigned char* copy = new unsigned char[alen];
+        memcpy(copy, abuf, alen);
+        TLSA_Reply* tlsa_reply;
+        if ((parse_tlsa_reply(copy, alen, &tlsa_reply)) != ARES_SUCCESS) {
+            std::cout << "Parsing TLSA reply failed" << std::endl;
+            delete_tlsa_reply(tlsa_reply);
+            return;
+        }
+
+        TLSA_Reply* tlsa_reply_ptr = tlsa_reply;
+        while (tlsa_reply_ptr != nullptr) {
+            result->certificate_callback(result->ip_address, result->service, result->instance, tlsa_reply_ptr->certificate_association_data);
+            tlsa_reply_ptr = tlsa_reply_ptr->tlsaReplyNext;
+        }
+        delete_tlsa_reply(tlsa_reply);
+        
+        delete result;
+        delete[] copy;
+    }
+
     void record_checker::resolveRemoteSomeipService(RemoteServiceData* serviceData) {
         std::string request(ATTRLEAFBRANCH);
         request.append(std::to_string(serviceData->service));
         request.append(".");
         request.append(PARENTDOMAIN);
         dnsResolver->resolve(request.c_str(), C_IN, T_SVCB, RemoteResolverCallback, serviceData);
+    }
+
+    void record_checker::resolveRemoteSomeipServiceCertificate(RemoteServiceData* serviceData) {
+        std::string request(ATTRLEAFBRANCH);
+        request.append(std::to_string(serviceData->service));
+        request.append(".");
+        request.append(PARENTDOMAIN);
+        dnsResolver->resolve(request.c_str(), C_IN, T_TLSA, RemoteResolverCallback, serviceData);
     }
 
     bool record_checker::is_tlsa_valid() {
