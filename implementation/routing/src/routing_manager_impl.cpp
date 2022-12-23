@@ -64,6 +64,9 @@
 #include "../../tracing/include/connector_impl.hpp"
 #endif
 
+//Additional includes for service authentication
+#include "../../service_authentication/include/request_cache.hpp"
+
 namespace vsomeip_v3 {
 
 #ifdef ANDROID
@@ -567,6 +570,16 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_8,
                                             std::placeholders::_9);
     record_checker_.resolveRemoteSomeipService(remoteServiceData);
+    //Request certificate
+    remoteServiceData = new RemoteServiceData();
+    remoteServiceData->service = _service;
+    remoteServiceData->instance = _instance;
+    remoteServiceData->ip_address = configuration_->get_unicast_address().to_v4();
+    remoteServiceData->certificate_callback = std::bind(&request_cache::addRequestCertificate, request_cache::getInstance(),
+                                            std::placeholders::_1,
+                                            std::placeholders::_2,
+                                            std::placeholders::_3,
+                                            std::placeholders::_4);
 #endif
 }
 
