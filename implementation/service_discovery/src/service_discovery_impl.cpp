@@ -2222,10 +2222,13 @@ service_discovery_impl::process_eventgroupentry(
                     // Check if signature can be verified
                     if (service_authenticated) {
                         std::vector<byte_t> signature = data_partitioner().reassemble_data(SIGNATUREKEY, its_configuration_option);
-                        std::vector<byte_t> data_to_be_verified;
-                        data_to_be_verified.insert(data_to_be_verified.end(), nonce_string.begin(), nonce_string.end());
-                        data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
-                        service_authenticated = crypto_operator_->verify(public_key, data_to_be_verified);
+                        service_authenticated = false;
+                        if (!signature.empty()) {
+                            std::vector<byte_t> data_to_be_verified;
+                            data_to_be_verified.insert(data_to_be_verified.end(), nonce_string.begin(), nonce_string.end());
+                            data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
+                            service_authenticated = crypto_operator_->verify(public_key, data_to_be_verified);
+                        }
                     }
                 }
 #endif
