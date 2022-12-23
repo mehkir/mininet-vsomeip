@@ -19,8 +19,7 @@ void data_partitioner::partition_data(const std::string& key_name, std::shared_p
     for(int dataKeyIdx = 0; remainingBytes > 0; dataKeyIdx++) {
         keyName = key_name+std::to_string(dataKeyIdx);
         int allowedSize = maximumKeyValuePairSize-keyName.size()-1; // 1 for equal sign
-        if (remainingBytes < allowedSize)
-            allowedSize = remainingBytes;
+        if (remainingBytes < allowedSize) {allowedSize = remainingBytes;}
         configuration_option->add_item(keyName, std::string((char*)data.data(), dataPartitionPos, allowedSize));
         remainingBytes = remainingBytes - allowedSize;
         dataPartitionPos = dataPartitionPos + allowedSize;
