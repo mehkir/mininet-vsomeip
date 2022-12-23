@@ -2187,17 +2187,20 @@ service_discovery_impl::process_eventgroupentry(
                             std::dynamic_pointer_cast < configuration_option_impl
                                     > (its_option);
                 // Service Authentication
+                std::string nonce_string = its_configuration_option->get_value(NONCEKEY);
+                std::stringstream ss;
+                ss << nonce_string;
+                unsigned int nonce;
+                ss >> nonce;
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
                     std::vector<byte_t> subscriberCertificateData;
                     subscriberCertificateData = data_partitioner().reassemble_data(CERTKEY, its_configuration_option);
-                    unsigned int nonce = (unsigned int)std::stoi(its_configuration_option->get_value(NONCEKEY));
                     request_cache_->addRequest(_sender.to_v4(), its_service, its_instance, challenger_data{nonce, subscriberCertificateData});
                     //const char* subcert = reinterpret_cast<const char*>(subscriberCertificateData.data());
                     //std::cout << std::string(subcert, subscriberCertificateData.size()) << std::endl;
                 } else {
                     // TODO authenticate signature here
-                    unsigned int nonce = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).random_nonce;
-                    unsigned int remoteNonce = (unsigned int)std::stoi(its_configuration_option->get_value(NONCEKEY));
+                    unsigned int its_nonce = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).random_nonce;
                     std::vector<byte_t> signature = data_partitioner().reassemble_data(SIGNATUREKEY, its_configuration_option);
                     std::cout << "moin" << std::endl;
                 }
