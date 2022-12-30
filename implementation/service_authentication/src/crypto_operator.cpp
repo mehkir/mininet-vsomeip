@@ -217,7 +217,7 @@ std::vector<CryptoPP::byte> crypto_operator::convertStringToByteVector(const std
 }
 
 std::string crypto_operator::convertByteVectorToString(std::vector<CryptoPP::byte> vectorToConvert) {
-    return std::string((char*)vectorToConvert.data(), 0, vectorToConvert.size());
+    return std::string(vectorToConvert.begin(), vectorToConvert.end());
 }
 
 std::vector<CryptoPP::byte> crypto_operator::hex_encode(std::vector<CryptoPP::byte> data) {
