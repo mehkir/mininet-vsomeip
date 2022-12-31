@@ -2225,9 +2225,9 @@ service_discovery_impl::process_eventgroupentry(
                             sleep(1);
                             VSOMEIP_DEBUG << "TLSA record still not arrived";
                         }
-                        certificate_data = crypto_operator_->hex_decode(certificate_data);
-                        std::string pem_certificate_string = crypto_operator_->convertDERStringToPEMString(std::string((char*)certificate_data.data(), 0, certificate_data.size()));
-                        service_authenticated = crypto_operator_->extractPublicKeyFromCertificate(pem_certificate_string, public_key);
+                        //certificate_data = crypto_operator_->hex_decode(certificate_data);
+                        certificate_data = crypto_operator_->convertDERToPEM(certificate_data);
+                        service_authenticated = crypto_operator_->extractPublicKeyFromCertificate(certificate_data, public_key);
                     }
                     // Check if signature can be verified
                     if (service_authenticated) {
