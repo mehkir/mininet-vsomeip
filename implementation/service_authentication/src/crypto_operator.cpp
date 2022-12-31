@@ -100,10 +100,10 @@ void crypto_operator::loadCertificateFromFile(const std::string& filename, Crypt
     CryptoPP::PEM_Load(fs, certificate);
 }
 
-std::string crypto_operator::loadCertificateFromFile(const std::string& filename) {
-    std::string certificateString;
-    CryptoPP::FileSource fs(filename.c_str(), true, new CryptoPP::StringSink(certificateString));
-    return certificateString;
+std::vector<CryptoPP::byte> crypto_operator::loadCertificateFromFile(const std::string& filename) {
+    std::vector<CryptoPP::byte> certificate;
+    CryptoPP::FileSource fs(filename.c_str(), true, new CryptoPP::VectorSink(certificate));
+    return certificate;
 }
 
 void crypto_operator::loadCertificateFromString(const std::string& certificateString, CryptoPP::X509Certificate& certificate) {

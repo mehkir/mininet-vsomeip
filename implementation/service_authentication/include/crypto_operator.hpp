@@ -23,7 +23,7 @@ public:
     bool verify(CryptoPP::PublicKey &publicKey, std::vector<CryptoPP::byte> data);
     std::string convertHexByteVectorToHexString(std::vector<CryptoPP::byte> data);
     void loadCertificateFromFile(const std::string& filename, CryptoPP::X509Certificate& certificate);
-    std::string loadCertificateFromFile(const std::string& filename);
+    std::vector<CryptoPP::byte> loadCertificateFromFile(const std::string& filename);
     void loadCertificateFromString(const std::string& certificateString, CryptoPP::X509Certificate& certificate);
     void LoadPrivateKey(const std::string& filename, CryptoPP::PrivateKey& key);
     void LoadPEMPrivateKey(const std::string& filename, CryptoPP::RSA::PrivateKey& key);
