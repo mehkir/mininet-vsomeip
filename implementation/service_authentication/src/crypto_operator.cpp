@@ -111,12 +111,12 @@ void crypto_operator::loadCertificateFromString(const std::string& certificateSt
     CryptoPP::PEM_Load(ss, certificate);
 }
 
-bool crypto_operator::extractPublicKeyFromCertificate(const std::string& pem_certificate_string, CryptoPP::RSA::PublicKey& public_key)
+bool crypto_operator::extractPublicKeyFromCertificate(std::vector<CryptoPP::byte> certificate_data, CryptoPP::RSA::PublicKey& public_key)
 {
     // Load certificate from string
     CryptoPP::X509Certificate certificate;
-    CryptoPP::StringSource ss(pem_certificate_string, true);
-    CryptoPP::PEM_Load(ss, certificate);
+    CryptoPP::VectorSource vs(certificate_data, true);
+    CryptoPP::PEM_Load(vs, certificate);
     const CryptoPP::SecByteBlock& signature = certificate.GetCertificateSignature();
     const CryptoPP::SecByteBlock& toBeSigned = certificate.GetToBeSigned();
     const CryptoPP::X509PublicKey& publicKey = certificate.GetSubjectPublicKey();
@@ -176,12 +176,12 @@ std::string crypto_operator::convertPEMStringToDERString(const std::string& cert
     return std::string(derMem->data, derMem->length);
 }
 
-std::string crypto_operator::convertDERStringToPEMString(const std::string& certificateString) {
+std::vector<CryptoPP::byte> crypto_operator::convertDERToPEM(const std::vector<CryptoPP::byte> der_certificate) {
     int rc = 0;
     unsigned long err = 0;
     X509* pem_certificate;
-    const unsigned char* p = (unsigned char*)certificateString.c_str();
-    pem_certificate = d2i_X509(NULL, &p, certificateString.length());
+    const unsigned char* p = der_certificate.data();
+    pem_certificate = d2i_X509(NULL, &p, der_certificate.size());
     BIO_MEM_ptr pem_bio_ptr(BIO_new(BIO_s_mem()), ::BIO_free);
     rc = PEM_write_bio_X509(pem_bio_ptr.get(), pem_certificate);
     err = ERR_get_error();
@@ -202,7 +202,7 @@ std::string crypto_operator::convertDERStringToPEMString(const std::string& cert
         std::cerr << std::hex << "0x" << err;
         exit(2);
     }
-    std::string pemmedString(pem_memory->data, pem_memory->length);
+    return std::vector<CryptoPP::byte>(pem_memory->data, pem_memory->data+pem_memory->length);
 }
 
 CryptoPP::word32 crypto_operator::getRandomWord32() {
