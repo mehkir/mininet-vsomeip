@@ -128,7 +128,7 @@ bool crypto_operator::extractPublicKeyFromCertificate(std::vector<CryptoPP::byte
 }
 
 using BIO_MEM_ptr = std::unique_ptr<BIO, decltype(&::BIO_free)>;
-std::string crypto_operator::convertPEMToDER(const std::vector<CryptoPP::byte> pem_certificate) {
+std::vector<CryptoPP::byte> crypto_operator::convertPEMToDER(const std::vector<CryptoPP::byte> pem_certificate) {
     // Load certificate into BIO data type
     BIO_MEM_ptr initialBio(BIO_new(BIO_s_mem()), ::BIO_free);
     BIO_puts(initialBio.get(), (char*)pem_certificate.data());
@@ -173,7 +173,7 @@ std::string crypto_operator::convertPEMToDER(const std::vector<CryptoPP::byte> p
         std::cerr << std::hex << "0x" << err;
         exit(2);
     }
-    return std::string(derMem->data, derMem->length);
+    return std::vector<CryptoPP::byte>(derMem->data, derMem->data+derMem->length);
 }
 
 std::vector<CryptoPP::byte> crypto_operator::convertDERToPEM(const std::vector<CryptoPP::byte> der_certificate) {
