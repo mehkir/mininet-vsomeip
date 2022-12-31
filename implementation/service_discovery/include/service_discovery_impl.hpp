@@ -490,7 +490,7 @@ public:
 private:
     request_cache* request_cache_;
     crypto_operator* crypto_operator_;
-    std::vector<CryptoPP::byte> certificateData_;
+    std::vector<CryptoPP::byte> certificate_data_;
     CryptoPP::RSA::PrivateKey private_key_;
 };
 
