@@ -510,6 +510,8 @@ bool configuration_impl::load_data(const std::vector<configuration_element> &_el
             load_debounce(e);
             load_acceptances(e);
             load_secure_services(e);
+            // Additional method for Service Authentication
+            load_asymmetric_keys(e);
         }
     }
 
@@ -3596,6 +3598,15 @@ void configuration_impl::load_secure_services(const configuration_element &_elem
     }
 }
 
+void configuration_impl::load_asymmetric_keys(const configuration_element& _element) {
+    try {
+        private_key_path_ = _element.tree_.get<std::string>("private-key-path");
+        certificate_path_ = _element.tree_.get<std::string>("certificate-path");
+    } catch (...) {
+        // intentionally left empty!
+    }
+}
+
 void configuration_impl::load_secure_service(const boost::property_tree::ptree &_tree) {
     try {
         service_t its_service(0);
@@ -4000,6 +4011,15 @@ uint32_t configuration_impl::get_statistics_min_freq() const {
 uint32_t configuration_impl::get_statistics_max_messages() const {
     return statistics_max_messages_;
 }
+
+std::string configuration_impl::get_private_key_path() const {
+    return private_key_path_;
+}
+
+std::string configuration_impl::get_certificate_path() const {
+    return certificate_path_;
+}
+
 
 }  // namespace config
 }  // namespace vsomeip_v3
