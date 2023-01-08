@@ -273,6 +273,10 @@ public:
     virtual uint32_t get_statistics_interval() const = 0;
     virtual uint32_t get_statistics_min_freq() const = 0;
     virtual uint32_t get_statistics_max_messages() const = 0;
+
+    // Additional Methods for Service Authentication
+    virtual std::string get_private_key_path() const = 0;
+    virtual std::string get_certificate_path() const = 0;
 };
 
 } // namespace vsomeip_v3

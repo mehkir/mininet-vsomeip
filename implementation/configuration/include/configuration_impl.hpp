@@ -239,6 +239,10 @@ public:
     VSOMEIP_EXPORT uint32_t get_statistics_min_freq() const;
     VSOMEIP_EXPORT uint32_t get_statistics_max_messages() const;
 
+    // Additional Methods for Service Authentication
+    VSOMEIP_EXPORT std::string get_private_key_path() const;
+    VSOMEIP_EXPORT std::string get_certificate_path() const;
+
 private:
     void read_data(const std::set<std::string> &_input,
             std::vector<configuration_element> &_elements,
@@ -378,6 +382,9 @@ private:
 
     void load_secure_services(const configuration_element &_element);
     void load_secure_service(const boost::property_tree::ptree &_tree);
+
+    // Additional Method for Service Authentication
+    void load_asymmetric_keys(const configuration_element& _element);
 
 private:
     std::mutex mutex_;
@@ -563,6 +570,10 @@ protected:
 
     mutable std::mutex secure_services_mutex_;
     std::map<service_t, std::set<instance_t> > secure_services_;
+
+    // Additional Members for Service Authentication
+    std::string certificate_path_;
+    std::string private_key_path_;
 
     bool log_statistics_;
     uint32_t statistics_interval_;
