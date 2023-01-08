@@ -22,28 +22,22 @@ request_cache* request_cache::getInstance() {
 
 void request_cache::addRequestNonce(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                                vsomeip_v3::instance_t instanceId, unsigned int nonce) {
-    static int o = 0;
     std::lock_guard<std::mutex> lockGuard(mutex_);
     auto keyTuple = makeKeyTuple(ipAddress, serviceId, instanceId);
     if (!request_map.count(keyTuple)) {
         request_map[keyTuple] = challenge_response_data();
-        std::cout << "addRequestNonce Zaehler " << o++ << std::endl;
     }
     request_map[keyTuple].random_nonce = nonce;
-    std::cout << std::hex << this << std::endl;
 }
 
 void request_cache::addRequestCertificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId, std::vector<unsigned char> certificate_data) {
-    static int o = 0;
     std::lock_guard<std::mutex> lockGuard(mutex_);
     auto keyTuple = makeKeyTuple(ipAddress, serviceId, instanceId);
     if (!request_map.count(keyTuple)) {
         request_map[keyTuple] = challenge_response_data();
-        std::cout << "addRequestCertificate Zaehler " << o++ << std::endl;
     }
     request_map[keyTuple].certificate_data = certificate_data;
-    std::cout << std::hex << this << std::endl;
 }
 
 challenge_response_data request_cache::getRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
