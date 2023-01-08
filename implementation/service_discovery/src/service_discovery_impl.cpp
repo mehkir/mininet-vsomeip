@@ -86,10 +86,8 @@ service_discovery_impl::service_discovery_impl(
       crypto_operator_(crypto_operator::getInstance()) {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
-    //certificate_data_ = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/service4660.cert.pem");
-    //crypto_operator_->LoadPEMPrivateKey("certificate-and-privatekey/service4660.key.pem", private_key_);
-    certificate_data_ = crypto_operator_->loadCertificateFromFile("certificate-and-privatekey/client4931.cert.pem");
-    crypto_operator_->LoadPEMPrivateKey("certificate-and-privatekey/client4931.key.pem", private_key_);
+    certificate_data_ = crypto_operator_->loadCertificateFromFile(configuration_->get_certificate_path());
+    crypto_operator_->LoadPEMPrivateKey(configuration_->get_private_key_path(), private_key_);
 }
 
 service_discovery_impl::~service_discovery_impl() {
