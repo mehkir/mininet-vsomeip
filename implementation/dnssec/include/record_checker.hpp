@@ -36,18 +36,22 @@ namespace vsomeip_v3 {
         LocalCallback callback;
     };
 
+    //struct remote_service_data;
     typedef std::function<void(service_t, instance_t, major_version_t,
                                minor_version_t, ttl_t, std::string,
-                               uint16_t, std::string, uint16_t)> RemoteCallback;
-    typedef std::function<void(boost::asio::ip::address_v4, service_t, instance_t, std::vector<unsigned char>)> RemoteCertificateCallback;
-    struct RemoteServiceData {
+                               uint16_t, std::string, uint16_t)> mimic_offer_callback;
+    typedef std::function<void(boost::asio::ip::address_v4, service_t, instance_t, std::vector<unsigned char>)> remote_request_cache_callback;
+    typedef std::function<void(void*, std::string)> remote_request_tlsa_record_callback;
+    struct remote_service_data {
         service_t service;
         instance_t instance;
         major_version_t major;
         minor_version_t minor;
-        boost::asio::ip::address_v4 ip_address;
-        RemoteCallback callback;
-        RemoteCertificateCallback certificate_callback;
+        boost::asio::ip::address_v4 local_ip_address;
+        boost::asio::ip::address_v4 remote_ip_address;
+        mimic_offer_callback offer_callback;
+        remote_request_cache_callback request_cache_callback;
+        remote_request_tlsa_record_callback request_tlsa_record_callback;
     };
 
     class record_checker {
@@ -57,9 +61,9 @@ namespace vsomeip_v3 {
         bool is_svcb_valid();
         // Dummy method always returning true
         bool is_tlsa_valid();
-        void resolveLocalSomeipService(LocalServiceData* serviceData);
-        void resolveRemoteSomeipService(RemoteServiceData* serviceData);
-        void resolveRemoteSomeipServiceCertificate(RemoteServiceData* serviceData);
+        void resolveLocalSomeipService(LocalServiceData* service_data);
+        void request_svcb_record(remote_service_data* service_data);
+        void request_tlsa_record(void* service_data, std::string request);
       protected:
       private:
         dns_resolver* dnsResolver;
