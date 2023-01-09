@@ -552,13 +552,13 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     }
 
 #ifndef ENABLE_FIND_AND_OFFER
-    //Mimic incoming offer entry
-    RemoteServiceData* remoteServiceData = new RemoteServiceData();
-    remoteServiceData->service = _service;
-    remoteServiceData->instance = _instance;
-    remoteServiceData->major = _major;
-    remoteServiceData->minor = _minor;
-    remoteServiceData->callback = std::bind(&vsomeip_v3::sd::service_discovery::mimic_offerservice_serviceentry, discovery_,
+    //Addition for Service Authentication
+    remote_service_data* service_data = new remote_service_data();
+    service_data->service = _service;
+    service_data->instance = _instance;
+    service_data->major = _major;
+    service_data->minor = _minor;
+    service_data->offer_callback = std::bind(&vsomeip_v3::sd::service_discovery::mimic_offerservice_serviceentry, discovery_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
@@ -568,18 +568,16 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_7,
                                             std::placeholders::_8,
                                             std::placeholders::_9);
-    record_checker_.resolveRemoteSomeipService(remoteServiceData);
-    //Request certificate
-    remoteServiceData = new RemoteServiceData();
-    remoteServiceData->service = _service;
-    remoteServiceData->instance = _instance;
-    remoteServiceData->ip_address = configuration_->get_unicast_address().to_v4();
-    remoteServiceData->certificate_callback = std::bind(&request_cache::addRequestCertificate, request_cache_,
+    service_data->local_ip_address = configuration_->get_unicast_address().to_v4();
+    service_data->request_cache_callback = std::bind(&request_cache::addRequestCertificate, request_cache_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
                                             std::placeholders::_4);
-    record_checker_.resolveRemoteSomeipServiceCertificate(remoteServiceData);
+    service_data->request_tlsa_record_callback = std::bind(&record_checker::request_tlsa_record, record_checker_,
+                                            std::placeholders::_1,
+                                            std::placeholders::_2);
+    record_checker_.request_svcb_record(service_data);
 #endif
 }
 
