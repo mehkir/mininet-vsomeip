@@ -881,11 +881,31 @@ service_discovery_impl::create_eventgroup_entry(
 
 #ifndef ENABLE_FIND_AND_OFFER
     // Service Authentication
-    request_cache_->addRequestNonce(unicast_.to_v4(), _service, _instance, crypto_operator_->getRandomWord32());
-    //request_cache_->addRequestCertificate(unicast_.to_v4(), _service, _instance, certificate_data_);
+    boost::asio::ip::address its_address;
+    std::shared_ptr<endpoint> its_dummy;
+    switch (_reliability_type) {
+        case reliability_type_e::RT_RELIABLE:
+            if (its_reliable_endpoint) {
+                get_subscription_address(its_reliable_endpoint, its_dummy, its_address);
+            }
+            break;
+        case reliability_type_e::RT_UNRELIABLE:
+            if (its_unreliable_endpoint) {
+                get_subscription_address(its_dummy, its_unreliable_endpoint, its_address);
+            }
+            break;
+        case reliability_type_e::RT_BOTH:
+            if (its_reliable_endpoint && its_unreliable_endpoint) {
+                VSOMEIP_INFO << "Not implemented.";
+            }
+            break;
+        default:
+            break;
+    }
+    request_cache_->addRequestNonce(its_address.to_v4(), _service, _instance, crypto_operator_->getRandomWord32());
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-    configuration_option->add_item(NONCEKEY, std::to_string(request_cache_->getRequest(unicast_.to_v4(), _service, _instance).random_nonce));
-    data_partitioner().partition_data(CERTKEY, configuration_option, certificate_data_);
+    configuration_option->add_item(NONCEKEY, std::to_string(request_cache_->getRequest(its_address.to_v4(), _service, _instance).random_nonce));
+    //data_partitioner().partition_data(CERTKEY, configuration_option, certificate_data_);
     its_data.options_.push_back(configuration_option);
 #endif
 
@@ -2201,22 +2221,20 @@ service_discovery_impl::process_eventgroupentry(
                 unsigned int nonce;
                 ss >> nonce;
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
-                    std::vector<byte_t> subscriberCertificateData;
-                    subscriberCertificateData = data_partitioner().reassemble_data(CERTKEY, its_configuration_option);
-                    request_cache_->addRequestNonce(_sender.to_v4(), its_service, its_instance, nonce);
-                    request_cache_->addRequestCertificate(_sender.to_v4(), its_service, its_instance, subscriberCertificateData);
+                    //std::vector<byte_t> subscriberCertificateData;
+                    //subscriberCertificateData = data_partitioner().reassemble_data(CERTKEY, its_configuration_option);
+                    //request_cache_->addRequestCertificate(_sender.to_v4(), its_service, its_instance, subscriberCertificateData);
                     //const char* subcert = reinterpret_cast<const char*>(subscriberCertificateData.data());
                     //std::cout << std::string(subcert, subscriberCertificateData.size()) << std::endl;
+                    request_cache_->addRequestNonce(_sender.to_v4(), its_service, its_instance, nonce);
                 } else {
-                    // TODO authenticate signature here
-                    unsigned int its_nonce = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).random_nonce;
+                    unsigned int its_nonce = request_cache_->getRequest(_sender.to_v4(), its_service, its_instance).random_nonce;
                     // Check if nonce is equal
                     if (nonce != its_nonce) {service_authenticated = false;}
                     // Check if a valid public key can be retained from self signed certificate
                     CryptoPP::RSA::PublicKey public_key;
                     if (service_authenticated) {
-                        //std::vector<byte_t> certificate_data = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).certificate_data;
-                        std::vector<byte_t> certificate_data = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).certificate_data;
+                        std::vector<byte_t> certificate_data = request_cache_->getRequest(_sender.to_v4(), its_service, its_instance).certificate_data;
                         while (certificate_data.empty()) {
                             certificate_data = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).certificate_data;
                             sleep(1);
