@@ -277,6 +277,7 @@ file(GLOB ${VSOMEIP_NAME}_SRC
     "implementation/utility/src/*.cpp"
     "implementation/dnssec/src/*.cpp"
     "implementation/service_authentication/src/*.cpp"
+    "implementation/timestamps/src/*.cpp"
     "implementation/service_discovery/src/*.cpp"
 )
 if (VSOMEIP_ENABLE_MULTIPLE_ROUTING_MANAGERS EQUAL 1)
