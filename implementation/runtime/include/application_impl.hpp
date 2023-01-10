@@ -440,7 +440,10 @@ private:
 #ifdef VSOMEIP_HAS_SESSION_HANDLING_CONFIG
     bool has_session_handling_;
 #endif // VSOMEIP_HAS_SESSION_HANDLING_CONFIG
-    dns_resolver* dnsResolver;
+    // Addtional Member for Service Authenticity
+    dns_resolver* dns_resolver_;
+    // Additional Member for Time measurement
+    timestamp_collector* timestamp_collector_;
 };
 
 } // namespace vsomeip_v3

@@ -85,8 +85,7 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         last_resume_(std::chrono::steady_clock::now().min()),
         statistics_log_timer_(_host->get_io()),
         ignored_statistics_counter_(0),
-        request_cache_(request_cache::getInstance()),
-        timestamp_collector_(timestamp_collector::getInstance())
+        request_cache_(request_cache::getInstance())
 {
 }
 
@@ -4494,6 +4493,11 @@ void routing_manager_impl::statistics_log_timer_cbk(boost::system::error_code co
                               this, std::placeholders::_1));
         }
     }
+}
+
+// Additional method for time measurement
+void routing_manager_impl::set_timestamp_collector(timestamp_collector* _timestamp_collector) {
+    timestamp_collector_ = _timestamp_collector;
 }
 
 } // namespace vsomeip_v3

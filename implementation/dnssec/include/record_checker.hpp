@@ -66,7 +66,7 @@ namespace vsomeip_v3 {
         void request_tlsa_record(void* service_data, std::string request);
       protected:
       private:
-        dns_resolver* dnsResolver;
+        dns_resolver* dns_resolver_;
     };
 
 } // namespace vsomeip_v3

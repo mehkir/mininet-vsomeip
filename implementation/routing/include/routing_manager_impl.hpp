@@ -299,6 +299,8 @@ public:
     bool remove_security_policy_configuration(uint32_t _uid, uint32_t _gid,
             const security_update_handler_t &_handler);
 
+    // Additional method for time measurement
+    void set_timestamp_collector(timestamp_collector* _timestamp_collector);
 private:
     bool offer_service(client_t _client,
             service_t _service, instance_t _instance,

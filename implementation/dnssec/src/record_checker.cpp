@@ -14,8 +14,8 @@
 
 namespace vsomeip_v3 {
 
-    record_checker::record_checker() : dnsResolver(dns_resolver::getInstance()) {
-        dnsResolver->initialize(DNS_SERVER_IP);
+    record_checker::record_checker() : dns_resolver_(dns_resolver::getInstance()) {
+        dns_resolver_->initialize(DNS_SERVER_IP);
     }
 
     bool record_checker::is_svcb_valid() {
@@ -60,7 +60,7 @@ namespace vsomeip_v3 {
         request.append(std::to_string(serviceData->service));
         request.append(".");
         request.append(PARENTDOMAIN);
-        dnsResolver->resolve(request.c_str(), C_IN, T_SVCB, LocalResolverCallback, serviceData);
+        dns_resolver_->resolve(request.c_str(), C_IN, T_SVCB, LocalResolverCallback, serviceData);
     }
 
     void svcb_resolve_callback(void *data, int status, int timeouts,
@@ -183,11 +183,11 @@ namespace vsomeip_v3 {
         request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << service_data->service;
         request << ".";
         request << PARENTDOMAIN;
-        dnsResolver->resolve(request.str().c_str(), C_IN, T_SVCB, svcb_resolve_callback, service_data);
+        dns_resolver_->resolve(request.str().c_str(), C_IN, T_SVCB, svcb_resolve_callback, service_data);
     }
 
     void record_checker::request_tlsa_record(void* service_data, std::string tlsa_request) {
-        dnsResolver->resolve(tlsa_request.c_str(), C_IN, T_TLSA, tlsa_resolve_callback, reinterpret_cast<remote_service_data*>(service_data));
+        dns_resolver_->resolve(tlsa_request.c_str(), C_IN, T_TLSA, tlsa_resolve_callback, reinterpret_cast<remote_service_data*>(service_data));
     }
 
     bool record_checker::is_tlsa_valid() {

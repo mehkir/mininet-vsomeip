@@ -68,7 +68,8 @@ application_impl::application_impl(const std::string &_name)
           stopped_called_(false),
           watchdog_timer_(io_),
           client_side_logging_(false),
-          dnsResolver(dns_resolver::getInstance())
+          dns_resolver_(dns_resolver::getInstance()),
+          timestamp_collector_(timestamp_collector::getInstance())
 #ifdef VSOMEIP_HAS_SESSION_HANDLING_CONFIG
           , has_session_handling_(true)
 #endif // VSOMEIP_HAS_SESSION_HANDLING_CONFIG
@@ -270,6 +271,7 @@ bool application_impl::init() {
                 utility::request_client_id(configuration_, name_, client_);
             }
             routing_ = std::make_shared<routing_manager_impl>(this);
+            dynamic_cast<routing_manager_impl*>(routing_.get())->set_timestamp_collector(timestamp_collector_);
         } else {
             VSOMEIP_INFO << "Instantiating routing manager [Proxy].";
             routing_ = std::make_shared<routing_manager_proxy>(this, client_side_logging_, client_side_logging_filter_);
@@ -553,7 +555,7 @@ void application_impl::stop() {
         block_stopping_ = false;
     }
     VSOMEIP_INFO << "Cleanup DNS resolver";
-    dnsResolver->cleanup();
+    dns_resolver_->cleanup();
 }
 
 void application_impl::process(int _number) {
