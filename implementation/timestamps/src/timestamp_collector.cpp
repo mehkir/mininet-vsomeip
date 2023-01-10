@@ -55,7 +55,7 @@ namespace vsomeip_v3 {
         filename << "timepoints #" << filecount << ".csv";
         struct stat buffer;
         for(filecount = 1; (stat(filename.str().c_str(), &buffer) == 0); filecount++) {
-            filename.clear();
+            filename.str("");
             filename << "timepoints #" << filecount << ".csv";
         }
         timepoints_file.open(filename.str());
