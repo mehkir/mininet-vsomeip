@@ -30,6 +30,8 @@
 
 //Additional includes for service authentication
 #include "../../service_authentication/include/request_cache.hpp"
+//Additional include for time measurement
+#include "../../timestamps/include/timestamp_collector.hpp"
 
 namespace vsomeip_v3 {
 
@@ -498,6 +500,8 @@ private:
 
     //Addition for service authentication
     request_cache* request_cache_;
+    //Addition for time measurement
+    timestamp_collector* timestamp_collector_;
 };
 
 }  // namespace vsomeip_v3

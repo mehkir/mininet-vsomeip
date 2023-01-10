@@ -1382,6 +1382,11 @@ service_discovery_impl::set_request_cache(request_cache* _request_cache) {
 }
 
 void
+service_discovery_impl::set_timestamp_collector(timestamp_collector* _timestamp_collector) {
+    this->timestamp_collector_ = _timestamp_collector;
+}
+
+void
 service_discovery_impl::process_offerservice_serviceentry(
         service_t _service, instance_t _instance, major_version_t _major,
         minor_version_t _minor, ttl_t _ttl,

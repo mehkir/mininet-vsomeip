@@ -1,6 +1,8 @@
 #include "../include/request_cache.hpp"
 #include <iostream>
 
+namespace vsomeip_v3 {
+
 std::mutex request_cache::mutex_;
 request_cache* request_cache::instance;
 
@@ -57,3 +59,4 @@ std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t,
                     vsomeip_v3::instance_t instanceId) {
     return std::make_tuple(ipAddress, serviceId, instanceId);
 }
+} /* end namespace vsomeip_v3 */

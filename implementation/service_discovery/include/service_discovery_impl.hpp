@@ -486,9 +486,11 @@ public:
                                         uint16_t _unreliable_port);
 
     void set_request_cache(request_cache* _request_cache);
+    void set_timestamp_collector(timestamp_collector* _timestamp_collector);
 
 private:
     request_cache* request_cache_;
+    timestamp_collector* timestamp_collector_;
     crypto_operator* crypto_operator_;
     std::vector<CryptoPP::byte> certificate_data_;
     CryptoPP::RSA::PrivateKey private_key_;

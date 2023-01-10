@@ -8,6 +8,8 @@
 #include <boost/asio/ip/address_v4.hpp>
 #include "vsomeip/primitive_types.hpp"
 
+namespace vsomeip_v3 {
+
 struct challenge_response_data {
     unsigned int random_nonce;
     std::vector<unsigned char> certificate_data;
@@ -41,5 +43,5 @@ public:
                     vsomeip_v3::instance_t> makeKeyTuple(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId);
 };
-
+} /* end namespace vsomeip_v3*/
 #endif /* VSOMEIP_REQUEST_CACHE_HPP */

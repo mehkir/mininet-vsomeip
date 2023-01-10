@@ -18,6 +18,8 @@
 
 //Additional includes for service authentication
 #include "../../service_authentication/include/request_cache.hpp"
+//Additional include for time measurement
+#include "../../timestamps/include/timestamp_collector.hpp"
 
 namespace vsomeip_v3 {
 
@@ -80,7 +82,10 @@ public:
                                         uint16_t _reliable_port, std::string _unreliable_address,
                                         uint16_t _unreliable_port) = 0;
 
+    // Addition for service authentication
     virtual void set_request_cache(request_cache* _request_cache) = 0;
+    // Addition for time measurement
+    virtual void set_timestamp_collector(timestamp_collector* _timestamp_collector) = 0;
 };
 
 } // namespace sd
