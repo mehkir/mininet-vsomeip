@@ -33,18 +33,18 @@ namespace vsomeip_v3 {
     }
 
     void timestamp_collector::write_timestamps(NODES node) {
-        std::string publisher_timepoints[] = {SUBSCRIBE_ARRIVED, SIGNING_START,
+        std::vector<std::string> publisher_timepoints = {SUBSCRIBE_ARRIVED, SIGNING_START,
                                               SIGNING_END, SUBSCRIBE_ACK_SEND};
-        std::string subscriber_timepoints[] = {APPLICATION_INIT, SVCB_REQUEST, SVCB_RESPONSE, TLSA_REQUEST, TLSA_RESPONSE,
+        std::vector<std::string> subscriber_timepoints = {APPLICATION_INIT, SVCB_REQUEST, SVCB_RESPONSE, TLSA_REQUEST, TLSA_RESPONSE,
                          SUBSCRIBE_SEND, SUBSCRIBE_ACK_ARRIVED, CHECK_SIGNATURE_START, CHECK_SIGNATURE_END};
         std::vector<std::string> timepoints;
         switch (node)
         {
         case PUBLISHER:
-            timepoints.insert(timepoints.end(), publisher_timepoints, publisher_timepoints+publisher_timepoints->size());
+            timepoints = publisher_timepoints;
             break;
         case SUBSCRIBER:
-            timepoints.insert(timepoints.end(), subscriber_timepoints, subscriber_timepoints+subscriber_timepoints->size());
+            timepoints = subscriber_timepoints;
             break;
         default:
             break;
