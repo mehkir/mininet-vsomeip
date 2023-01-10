@@ -1750,8 +1750,8 @@ service_discovery_impl::on_endpoint_connected(
             }
         }
     }
-    timestamp_collector_->record_timestamp(SUBSCRIBE_SEND);
     serialize_and_send(its_messages, its_address);
+    timestamp_collector_->record_timestamp(SUBSCRIBE_SEND);
 }
 
 std::shared_ptr<option_impl>
@@ -2265,6 +2265,7 @@ service_discovery_impl::process_eventgroupentry(
                         }
                     }
                     timestamp_collector_->record_timestamp(CHECK_SIGNATURE_END);
+                    timestamp_collector_->write_timestamps(NODES::SUBSCRIBER);
                 }
 #endif
                 break;
@@ -3792,6 +3793,8 @@ service_discovery_impl::send_subscription_ack(
 
         auto its_messages = _acknowledgement->get_messages();
         serialize_and_send(its_messages, _acknowledgement->get_target_address());
+        timestamp_collector_->record_timestamp(SUBSCRIBE_ACK_SEND);
+        timestamp_collector_->write_timestamps(NODES::PUBLISHER);
         update_subscription_expiration_timer(its_messages);
     }
 
