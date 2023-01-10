@@ -31,6 +31,9 @@
 #endif // ANDROID
 #include "../../routing/include/routing_manager_host.hpp"
 
+// Additional Include for Time Measurement
+#include "../../timestamps/include/timestamp_collector.hpp"
+
 namespace vsomeip_v3 {
 
 class runtime;

@@ -23,6 +23,7 @@
 #include <cstring>
 #include <boost/asio/ip/address_v4.hpp>
 #include "vsomeip/primitive_types.hpp"
+#include "../../timestamps/include/timestamp_collector.hpp"
 
 namespace vsomeip_v3 {
     typedef std::function<void(client_t, service_t, instance_t, eventgroup_t, major_version_t, event_t)> LocalCallback;
@@ -42,6 +43,7 @@ namespace vsomeip_v3 {
                                uint16_t, std::string, uint16_t)> mimic_offer_callback;
     typedef std::function<void(boost::asio::ip::address_v4, service_t, instance_t, std::vector<unsigned char>)> remote_request_cache_callback;
     typedef std::function<void(void*, std::string)> remote_request_tlsa_record_callback;
+    typedef std::function<void(std::string)> record_timestamp_callback;
     struct remote_service_data {
         service_t service;
         instance_t instance;
@@ -52,6 +54,7 @@ namespace vsomeip_v3 {
         mimic_offer_callback offer_callback;
         remote_request_cache_callback request_cache_callback;
         remote_request_tlsa_record_callback request_tlsa_record_callback;
+        record_timestamp_callback record_timestamp_callback_;
     };
 
     class record_checker {

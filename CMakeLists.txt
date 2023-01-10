@@ -307,6 +307,7 @@ target_link_libraries(${VSOMEIP_NAME} PRIVATE ${Boost_LIBRARIES} ${USE_RT} ${DL_
 file(GLOB ${VSOMEIP_NAME}-sd_SRC
     "implementation/service_discovery/src/*.cpp"
     "implementation/service_authentication/src/*.cpp"
+    "implementation/timestamps/src/*.cpp"
 )
 list(SORT ${VSOMEIP_NAME}-sd_SRC)
 

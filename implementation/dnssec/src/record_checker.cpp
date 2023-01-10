@@ -6,6 +6,7 @@
 #include "../include/logger.hpp"
 #include "../include/parse_svcb_reply.hpp"
 #include "../include/parse_tlsa_reply.hpp"
+#include "../../timestamps/include/timestamp_collector.hpp"
 #include <arpa/nameser.h>
 #include <netinet/in.h>
 #include <string>
@@ -67,6 +68,7 @@ namespace vsomeip_v3 {
                 unsigned char *abuf, int alen) {
         LOG_DEBUG("svcb_resolve_callback is called")
         remote_service_data* remote_service_data_ = reinterpret_cast<remote_service_data*>(data);
+        remote_service_data_->record_timestamp_callback_(SVCB_RESPONSE);
         
         if (status) {
             std::cout << "Bad DNS response" << std::endl;
@@ -137,7 +139,8 @@ namespace vsomeip_v3 {
 
     void tlsa_resolve_callback(void *data, int status, int timeouts,
                 unsigned char *abuf, int alen) {
-        remote_service_data* result = reinterpret_cast<remote_service_data*>(data);
+        remote_service_data* remote_service_data_ = reinterpret_cast<remote_service_data*>(data);
+        remote_service_data_->record_timestamp_callback_(TLSA_RESPONSE);
         
         if (status) {
             std::cout << "Bad DNS response" << std::endl;
@@ -156,16 +159,17 @@ namespace vsomeip_v3 {
         TLSA_Reply* tlsa_reply_ptr = tlsa_reply;
         while (tlsa_reply_ptr != nullptr) {
             std::cout << "record checker\n" << *tlsa_reply_ptr << std::endl;
-            result->request_cache_callback(result->remote_ip_address, result->service, result->instance, tlsa_reply_ptr->certificate_association_data);
+            remote_service_data_->request_cache_callback(remote_service_data_->remote_ip_address, remote_service_data_->service, remote_service_data_->instance, tlsa_reply_ptr->certificate_association_data);
             tlsa_reply_ptr = tlsa_reply_ptr->tlsaReplyNext;
         }
         delete_tlsa_reply(tlsa_reply);
         
-        delete result;
+        delete remote_service_data_;
         delete[] copy;
     }
 
     void record_checker::request_svcb_record(remote_service_data* service_data) {
+        service_data->record_timestamp_callback_(SVCB_REQUEST);
         std::stringstream request;
         request << ATTRLEAFBRANCH;
         if (service_data->minor != ANY_MINOR) {
@@ -187,7 +191,8 @@ namespace vsomeip_v3 {
     }
 
     void record_checker::request_tlsa_record(void* service_data, std::string tlsa_request) {
-        dns_resolver_->resolve(tlsa_request.c_str(), C_IN, T_TLSA, tlsa_resolve_callback, reinterpret_cast<remote_service_data*>(service_data));
+        reinterpret_cast<remote_service_data*>(service_data)->record_timestamp_callback_(TLSA_REQUEST);
+        dns_resolver_->resolve(tlsa_request.c_str(), C_IN, T_TLSA, tlsa_resolve_callback, service_data);
     }
 
     bool record_checker::is_tlsa_valid() {

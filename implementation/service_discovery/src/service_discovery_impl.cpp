@@ -1004,6 +1004,7 @@ service_discovery_impl::insert_subscription_ack(
     }
 
 #ifndef ENABLE_FIND_AND_OFFER
+    timestamp_collector_->record_timestamp(SIGNING_START);
     // Service Authentication
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
     // Add nonce
@@ -1015,6 +1016,7 @@ service_discovery_impl::insert_subscription_ack(
     std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
     data_partitioner().partition_data(SIGNATUREKEY, configuration_option, signature);
     its_data.options_.push_back(configuration_option);
+    timestamp_collector_->record_timestamp(SIGNING_END);
 #endif
 
     // Selective
@@ -1748,7 +1750,7 @@ service_discovery_impl::on_endpoint_connected(
             }
         }
     }
-
+    timestamp_collector_->record_timestamp(SUBSCRIBE_SEND);
     serialize_and_send(its_messages, its_address);
 }
 
@@ -2226,6 +2228,7 @@ service_discovery_impl::process_eventgroupentry(
                 unsigned int nonce;
                 ss >> nonce;
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
+                    timestamp_collector_->record_timestamp(SUBSCRIBE_ARRIVED);
                     //std::vector<byte_t> subscriberCertificateData;
                     //subscriberCertificateData = data_partitioner().reassemble_data(CERTKEY, its_configuration_option);
                     //request_cache_->addRequestCertificate(_sender.to_v4(), its_service, its_instance, subscriberCertificateData);
@@ -2233,6 +2236,8 @@ service_discovery_impl::process_eventgroupentry(
                     //std::cout << std::string(subcert, subscriberCertificateData.size()) << std::endl;
                     request_cache_->addRequestNonce(_sender.to_v4(), its_service, its_instance, nonce);
                 } else {
+                    timestamp_collector_->record_timestamp(SUBSCRIBE_ACK_ARRIVED);
+                    timestamp_collector_->record_timestamp(CHECK_SIGNATURE_START);
                     unsigned int its_nonce = request_cache_->getRequest(_sender.to_v4(), its_service, its_instance).random_nonce;
                     // Check if nonce is equal
                     if (nonce != its_nonce) {service_authenticated = false;}
@@ -2259,6 +2264,7 @@ service_discovery_impl::process_eventgroupentry(
                             service_authenticated = crypto_operator_->verify(public_key, data_to_be_verified);
                         }
                     }
+                    timestamp_collector_->record_timestamp(CHECK_SIGNATURE_END);
                 }
 #endif
                 break;

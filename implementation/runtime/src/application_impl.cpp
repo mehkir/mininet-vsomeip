@@ -341,7 +341,7 @@ bool application_impl::init() {
         std::cerr << "Configuration module could not be loaded!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-
+    timestamp_collector_->record_timestamp(APPLICATION_INIT);
     return is_initialized_;
 }
 

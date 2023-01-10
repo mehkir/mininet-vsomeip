@@ -578,6 +578,8 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     service_data->request_tlsa_record_callback = std::bind(&record_checker::request_tlsa_record, record_checker_,
                                             std::placeholders::_1,
                                             std::placeholders::_2);
+    service_data->record_timestamp_callback_ = std::bind(&timestamp_collector::record_timestamp, timestamp_collector_,
+                                            std::placeholders::_1);
     record_checker_.request_svcb_record(service_data);
 #endif
 }

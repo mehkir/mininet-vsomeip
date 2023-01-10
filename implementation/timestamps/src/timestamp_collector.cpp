@@ -3,18 +3,20 @@
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
+#include <vector>
+#include <stdexcept>
 
 namespace vsomeip_v3 {
 
     std::mutex timestamp_collector::mutex_;
-    timestamp_collector* timestamp_collector::instance;
+    timestamp_collector* timestamp_collector::instance_;
 
     timestamp_collector* timestamp_collector::getInstance() {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if(instance == nullptr) {
-        instance = new timestamp_collector();
+    if(instance_ == nullptr) {
+        instance_ = new timestamp_collector();
     }
-    return instance;
+    return instance_;
 }
 
     timestamp_collector::timestamp_collector() {
@@ -24,12 +26,29 @@ namespace vsomeip_v3 {
     }
 
     void timestamp_collector::record_timestamp(std::string timepoint) {
+        if(timestamps_.count(timepoint)) {
+            throw std::runtime_error("There is already a timestamp for the key: " + timepoint);
+        }
         timestamps_[timepoint] = std::chrono::system_clock::now();
     }
 
-    void timestamp_collector::write_timestamps() {
-        std::string timepoints[] = {SERVICE_REQUEST, SVCB_REQUEST, SVCB_RESPONSE, TLSA_REQUEST, TLSA_RESPONSE,
-                         SUBSCRIBE, SUBSCRIBE_ACK, SIGNING_START, SIGNING_END, CHECK_SIGNATURE_START, CHECK_SIGNATURE_END};
+    void timestamp_collector::write_timestamps(NODES node) {
+        std::string publisher_timepoints[] = {SUBSCRIBE_ARRIVED, SIGNING_START,
+                                              SIGNING_END, SUBSCRIBE_ACK_SEND};
+        std::string subscriber_timepoints[] = {APPLICATION_INIT, SVCB_REQUEST, SVCB_RESPONSE, TLSA_REQUEST, TLSA_RESPONSE,
+                         SUBSCRIBE_SEND, SUBSCRIBE_ACK_ARRIVED, CHECK_SIGNATURE_START, CHECK_SIGNATURE_END};
+        std::vector<std::string> timepoints;
+        switch (node)
+        {
+        case PUBLISHER:
+            timepoints.insert(timepoints.end(), publisher_timepoints, publisher_timepoints+publisher_timepoints->size());
+            break;
+        case SUBSCRIBER:
+            timepoints.insert(timepoints.end(), subscriber_timepoints, subscriber_timepoints+subscriber_timepoints->size());
+            break;
+        default:
+            break;
+        }
         std::ofstream timepoints_file;
         int filecount = 0;
         std::stringstream filename;
@@ -41,18 +60,18 @@ namespace vsomeip_v3 {
         }
         timepoints_file.open(filename.str());
         //Write header
-        for(int timepoint_count = 0; timepoint_count < timepoints->size(); timepoint_count++) {
+        for(int timepoint_count = 0; timepoint_count < timepoints.size(); timepoint_count++) {
             timepoints_file << timepoints[timepoint_count];
-            if(timepoint_count != timepoints->size()-1) {
+            if(timepoint_count != timepoints.size()-1) {
                 timepoints_file << ",";
             } else {
                 timepoints_file << "\n";
             }
         }
         //Write values
-        for(int timepoint_count = 0; timepoint_count < timepoints->size(); timepoint_count++) {
+        for(int timepoint_count = 0; timepoint_count < timepoints.size(); timepoint_count++) {
             timepoints_file << timestamps_[timepoints[timepoint_count]].time_since_epoch().count();
-            if(timepoint_count != timepoints->size()-1) {
+            if(timepoint_count != timepoints.size()-1) {
                 timepoints_file << ",";
             } else {
                 timepoints_file << "\n";
