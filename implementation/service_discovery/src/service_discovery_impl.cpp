@@ -3721,6 +3721,7 @@ service_discovery_impl::create_subscription(
 void
 service_discovery_impl::send_subscription_ack(
         const std::shared_ptr<remote_subscription_ack> &_acknowledgement) {
+    bool sent_subscribe_ack_message = false;
 
     if (_acknowledgement->is_done())
         return;
@@ -3779,6 +3780,7 @@ service_discovery_impl::send_subscription_ack(
                             insert_subscription_ack(_acknowledgement, its_info,
                                     its_subscription->get_ttl(),
                                     its_subscription->get_subscriber(), its_acked);
+                            sent_subscribe_ack_message = true;
                         }
 
                         if (0 < its_nacked.size()) {
@@ -3793,8 +3795,10 @@ service_discovery_impl::send_subscription_ack(
 
         auto its_messages = _acknowledgement->get_messages();
         serialize_and_send(its_messages, _acknowledgement->get_target_address());
-        timestamp_collector_->record_timestamp(SUBSCRIBE_ACK_SEND);
-        timestamp_collector_->write_timestamps(NODES::PUBLISHER);
+        if (sent_subscribe_ack_message) {
+            timestamp_collector_->record_timestamp(SUBSCRIBE_ACK_SEND);
+            timestamp_collector_->write_timestamps(NODES::PUBLISHER);
+        }
         update_subscription_expiration_timer(its_messages);
     }
 
