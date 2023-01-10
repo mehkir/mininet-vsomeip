@@ -14,6 +14,7 @@
 #define CHECK_SIGNATURE_END   "CHECK_SIGNATURE_END"
 
 #include <map>
+#include <mutex>
 #include <chrono>
 
 namespace vsomeip_v3 {
@@ -21,10 +22,14 @@ namespace vsomeip_v3 {
     class timestamp_collector
     {
     private:
+        static std::mutex mutex_;
+        static timestamp_collector* instance;
         std::map<std::string,std::chrono::time_point<std::chrono::system_clock>> timestamps_;
-    public:
         timestamp_collector();
         ~timestamp_collector();
+    public:
+        static timestamp_collector* getInstance();
+
         void record_timestamp(std::string timepoint);
         void write_timestamps();
     };

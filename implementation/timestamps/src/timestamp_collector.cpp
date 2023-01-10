@@ -6,6 +6,17 @@
 
 namespace vsomeip_v3 {
 
+    std::mutex timestamp_collector::mutex_;
+    timestamp_collector* timestamp_collector::instance;
+
+    timestamp_collector* timestamp_collector::getInstance() {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    if(instance == nullptr) {
+        instance = new timestamp_collector();
+    }
+    return instance;
+}
+
     timestamp_collector::timestamp_collector() {
     }
 
