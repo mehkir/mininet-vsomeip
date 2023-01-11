@@ -15,7 +15,7 @@ if [[ $# -gt 0 ]]; then
         while [ -z $(pgrep notify-sample) ]; do
             sleep 1
         done
-        ssh vsomeip_client '/home/vsomeip/eval_automization_scripts/start_subscribe_app.bash' 1>/dev/null &
+        ssh vsomeip_client "cd /home/vsomeip/; /home/vsomeip/eval_automization_scripts/start_subscribe_app.bash $1 $MAX_RUNS" 1>/dev/null &
     fi
 else
     printUsage
