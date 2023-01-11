@@ -8,14 +8,15 @@ printUsage() {
 
 if [[ $# -gt 0 ]]; then
     if [[ $1 -lt $((MAX_RUNS-1)) ]]; then
-        pkill notify-sample
+        cd /home/vsomeip/
         /usr/bin/cmake --build /home/vsomeip/build --config Debug --target all --
         /usr/bin/cmake --build /home/vsomeip/build --config Debug --target examples --
         env VSOMEIP_CONFIGURATION=/home/vsomeip/config/vsomeip-udp-service.json VSOMEIP_APPLICATION_NAME=service-sample /home/vsomeip/build/examples/notify-sample &
         while [ -z $(pgrep notify-sample) ]; do
             sleep 1
         done
-        ssh vsomeip_client "cd /home/vsomeip/; /home/vsomeip/eval_automization_scripts/start_subscribe_app.bash $1 $MAX_RUNS" 1>/dev/null &
+        ssh vsomeip_server "pkill subscribe-sample; tmux kill-session -t client-sample"
+        ssh vsomeip_client "tmux new-session -d -s client-sample /home/vsomeip/eval_automization_scripts/start_subscribe_app.bash $1 $MAX_RUNS" 
     fi
 else
     printUsage
