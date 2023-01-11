@@ -44,7 +44,7 @@ namespace vsomeip_v3 {
         
         SVCB_Reply* svcbReplyPtr = svcbReply;
         while (svcbReplyPtr != nullptr) {
-            std::cout << "record checker\n" << *svcbReplyPtr << std::endl;
+            //std::cout << "record checker\n" << *svcbReplyPtr << std::endl;
             svcbReplyPtr->getSVCBKey(INSTANCE);
             svcbReplyPtr->getSVCBKey(MAJOR_VERSION);
             result->callback(result->client, result->service, result->instance, result->eventGroup, result->major, result->event);
@@ -158,7 +158,7 @@ namespace vsomeip_v3 {
 
         TLSA_Reply* tlsa_reply_ptr = tlsa_reply;
         while (tlsa_reply_ptr != nullptr) {
-            std::cout << "record checker\n" << *tlsa_reply_ptr << std::endl;
+            //std::cout << "record checker\n" << *tlsa_reply_ptr << std::endl;
             remote_service_data_->request_cache_callback(remote_service_data_->remote_ip_address, remote_service_data_->service, remote_service_data_->instance, tlsa_reply_ptr->certificate_association_data);
             tlsa_reply_ptr = tlsa_reply_ptr->tlsaReplyNext;
         }

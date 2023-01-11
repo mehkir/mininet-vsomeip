@@ -28,10 +28,12 @@ public:
             std::cerr << "Couldn't initialize application" << std::endl;
             return false;
         }
+        /*
         std::cout << "Client settings [protocol="
                 << (use_tcp_ ? "TCP" : "UDP")
                 << "]"
                 << std::endl;
+        */
 
         app_->register_state_handler(
                 std::bind(&client_sample::on_state, this,
@@ -84,14 +86,17 @@ public:
     }
 
     void on_availability(vsomeip::service_t _service, vsomeip::instance_t _instance, bool _is_available) {
+        /*
         std::cout << "Service ["
                 << std::setw(4) << std::setfill('0') << std::hex << _service << "." << _instance
                 << "] is "
                 << (_is_available ? "available." : "NOT available.")
                 << std::endl;
+        */
     }
 
     void on_message(const std::shared_ptr<vsomeip::message> &_response) {
+        /*
         std::stringstream its_message;
         its_message << "Received a notification for Event ["
                 << std::setw(4)    << std::setfill('0') << std::hex
@@ -105,13 +110,16 @@ public:
                 << std::setw(4) << std::setfill('0') << std::hex
                 << _response->get_session()
                 << "] = ";
+        */
         std::shared_ptr<vsomeip::payload> its_payload =
                 _response->get_payload();
+        /*
         its_message << "(" << std::dec << its_payload->get_length() << ") ";
         for (uint32_t i = 0; i < its_payload->get_length(); ++i)
             its_message << std::hex << std::setw(2) << std::setfill('0')
                 << (int) its_payload->get_data()[i] << " ";
         std::cout << its_message.str() << std::endl;
+        */
 
         if (_response->get_client() == 0) {
             if ((its_payload->get_length() % 5) == 0) {
