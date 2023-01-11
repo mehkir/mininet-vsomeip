@@ -1,12 +1,12 @@
 {
-    "unicast" : "172.17.0.3",
+    "unicast" : "172.17.0.2",
     "netmask" : "255.255.0.0",
     "logging" : 
     {
-        "level" : "debug",
-        "console" : "true",
-        "file" : { "enable" : "true", "path" : "/var/log/vsomeip.log" },
-        "dlt" : "true"
+        "level" : "fatal",
+        "console" : "false",
+        "file" : { "enable" : "false", "path" : "/var/log/vsomeip.log" },
+        "dlt" : "false"
     },
     "applications" :
     [
@@ -49,5 +49,8 @@
         "ttl" : "10",
         "cyclic_offer_delay" : "2000",
         "request_response_delay" : "1500"
-    }
+    },
+
+    "certificate-path" : "certificate-and-privatekey/client4931.cert.pem",
+    "private-key-path" : "certificate-and-privatekey/client4931.key.pem"
 }
