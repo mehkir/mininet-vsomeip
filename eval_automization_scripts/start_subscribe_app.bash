@@ -1,5 +1,5 @@
 #!/bin/bash
-FILE_NUM=0
+RUN_NUM=0
 MAX_RUNS=20
 
 start_app() {
@@ -13,20 +13,24 @@ start_app() {
 }
 
 
-while [[ $FILE_NUM -lt $((MAX_RUNS-1)) ]]; do
-    ssh vsomeip_server "/home/vsomeip/eval_automization_scripts/start_notify_app.bash ${FILE_NUM}" 1>/dev/null &
+while [[ $RUN_NUM -lt $((MAX_RUNS-1)) ]]; do
+    ssh vsomeip_server "/home/vsomeip/eval_automization_scripts/start_notify_app.bash ${RUN_NUM}" 1>/dev/null &
     while [ -z $(ssh vsomeip_server "pgrep notify-samp") ]; do
         sleep 1
     done
-    sleep 5 # maybe choose a smaller value
+    #echo "vsomeip server is started"
+    sleep 5 # give server some time to initialize (maybe choose a smaller value)
     start_app
-    while [ ! -f "/home/vsomeip/timestamp_results/timepoints #${FILE_NUM}.csv" ]; do
+    #echo "vsomeip client is started"
+    while [ ! -f "/home/vsomeip/timestamp_results/timepoints-#${RUN_NUM}.csv" ]; do
         sleep 1
     done
-    while [ -z $(ssh vsomeip_server "ls /home/vsomeip/timestamp_results/timepoints #${FILE_NUM}.csv") ]; do
+    #echo "result file on client is written"
+    while [ -z $(ssh vsomeip_server "ls /home/vsomeip/timestamp_results/timepoints-#${RUN_NUM}.csv") ]; do
         sleep 1
     done
-    FILE_NUM=$((FILE_NUM+1))
+    #echo "result file on server is written"
+    RUN_NUM=$((RUN_NUM+1))
     pkill subscribe-sampl
     ssh vsomeip_server "pkill start_noti; pkill notify-samp;"
 done
