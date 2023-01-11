@@ -52,11 +52,11 @@ namespace vsomeip_v3 {
         std::ofstream timepoints_file;
         int filecount = 0;
         std::stringstream filename;
-        filename << "timestamp_results/timepoints #" << filecount << ".csv";
+        filename << "timestamp_results/timepoints-#" << filecount << ".csv";
         struct stat buffer;
         for(filecount = 1; (stat(filename.str().c_str(), &buffer) == 0); filecount++) {
             filename.str("");
-            filename << "timestamp_results/timepoints #" << filecount << ".csv";
+            filename << "timestamp_results/timepoints-#" << filecount << ".csv";
         }
         timepoints_file.open(filename.str());
         //Write header
