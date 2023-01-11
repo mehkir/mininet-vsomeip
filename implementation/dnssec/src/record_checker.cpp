@@ -44,7 +44,7 @@ namespace vsomeip_v3 {
         
         SVCB_Reply* svcbReplyPtr = svcbReply;
         while (svcbReplyPtr != nullptr) {
-            //std::cout << "record checker\n" << *svcbReplyPtr << std::endl;
+            std::cout << "record checker\n" << *svcbReplyPtr << std::endl;
             svcbReplyPtr->getSVCBKey(INSTANCE);
             svcbReplyPtr->getSVCBKey(MAJOR_VERSION);
             result->callback(result->client, result->service, result->instance, result->eventGroup, result->major, result->event);
@@ -86,7 +86,7 @@ namespace vsomeip_v3 {
         
         SVCB_Reply* svcbReplyPtr = svcbReply;
         while (svcbReplyPtr != nullptr) {
-            std::cout << "record checker\n" << *svcbReplyPtr << std::endl;
+            //std::cout << "record checker\n" << *svcbReplyPtr << std::endl;
             std::string reliable_address = "", unreliable_address = "";
             uint16_t reliable_port = 0, unreliable_port = 0;
             int l4protocol = std::stoi(svcbReplyPtr->getSVCBKey(L4PROTOCOL));
