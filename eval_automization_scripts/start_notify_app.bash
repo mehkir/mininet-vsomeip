@@ -15,7 +15,7 @@ if [[ $# -gt 0 ]]; then
         while [ -z $(pgrep notify-sample) ]; do
             sleep 1
         done
-        ssh vsomeip_server "pkill subscribe-sample; tmux kill-session -t client-sample"
+        ssh vsomeip_client "pkill subscribe-sample; tmux kill-session -t client-sample"
         ssh vsomeip_client "tmux new-session -d -s client-sample /home/vsomeip/eval_automization_scripts/start_subscribe_app.bash $1 $MAX_RUNS" 
     fi
 else
