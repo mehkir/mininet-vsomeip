@@ -5,8 +5,8 @@ FILE_NUM=0
 
 start_app() {
     cd /home/vsomeip/
-    /usr/bin/cmake --build /home/vsomeip/build --config Debug --target all --
-    /usr/bin/cmake --build /home/vsomeip/build --config Debug --target examples --
+    /usr/bin/cmake --build /home/vsomeip/build --config Debug --target all -- 1>/dev/null
+    /usr/bin/cmake --build /home/vsomeip/build --config Debug --target examples -- 1>/dev/null
     env VSOMEIP_CONFIGURATION=/home/vsomeip/config/vsomeip-udp-client.json VSOMEIP_APPLICATION_NAME=client-sample /home/vsomeip/build/examples/subscribe-sample 1>/dev/null &
     while [ -z $(pgrep subscribe-sampl) ]; do
         sleep 1
@@ -15,7 +15,7 @@ start_app() {
 
 ssh vsomeip_server "pkill start_noti; pkill notify-samp;"
 pkill subscribe-sampl
-while [[ $RUN_NUM -lt $((MAX_RUNS-1)) ]]; do
+while [[ $RUN_NUM -lt $MAX_RUNS ]]; do
     while [ -f "/home/vsomeip/timestamp_results/timepoints-#${FILE_NUM}.csv" ]; do
         FILE_NUM=$((FILE_NUM+1))
     done
@@ -35,6 +35,7 @@ while [[ $RUN_NUM -lt $((MAX_RUNS-1)) ]]; do
         sleep 1
     done
     #echo "result file on server is written"
+    echo "RUN $RUN_NUM finished."
     RUN_NUM=$((RUN_NUM+1))
     pkill subscribe-sampl
     ssh vsomeip_server "pkill start_noti; pkill notify-samp;"
