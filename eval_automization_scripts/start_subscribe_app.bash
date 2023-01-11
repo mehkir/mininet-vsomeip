@@ -19,9 +19,6 @@ if [[ $# -gt 0 ]]; then
             sleep 1
         done
         pkill subscribe-sample
-        while [ -n  ]; do
-            sleep 1
-        done
         ssh vsomeip_server "pkill notify-sample; tmux kill-session -t service-sample"
         ssh vsomeip_server "tmux new-session -d -s service-sample /home/vsomeip/eval_automization_scripts/start_notify_app.bash"
     fi
