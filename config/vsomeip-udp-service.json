@@ -1,9 +1,9 @@
 {
-    "unicast" : "172.17.0.4",
+    "unicast" : "172.17.0.3",
     "logging" :
     { 
-        "level" : "debug",
-        "console" : "true",
+        "level" : "fatal",
+        "console" : "false",
         "file" : { "enable" : "false", "path" : "/tmp/vsomeip.log" },
         "dlt" : "false"
     },
@@ -84,5 +84,8 @@
         "ttl" : "3",
         "cyclic_offer_delay" : "2000",
         "request_response_delay" : "1500"
-    }
+    },
+
+    "certificate-path" : "certificate-and-privatekey/service4660.cert.pem",
+    "private-key-path" : "certificate-and-privatekey/service4660.key.pem"
 }

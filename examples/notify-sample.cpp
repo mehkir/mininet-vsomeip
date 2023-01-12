@@ -109,9 +109,11 @@ public:
     }
 
     void on_state(vsomeip::state_type_e _state) {
+        /*
         std::cout << "Application " << app_->get_name() << " is "
         << (_state == vsomeip::state_type_e::ST_REGISTERED ?
                 "registered." : "deregistered.") << std::endl;
+        */
 
         if (_state == vsomeip::state_type_e::ST_REGISTERED) {
             if (!is_registered_) {
@@ -191,7 +193,7 @@ public:
                     std::lock_guard<std::mutex> its_lock(payload_mutex_);
                     payload_->set_data(its_data, its_size);
 
-                    std::cout << "Setting event (Length=" << std::dec << its_size << ")." << std::endl;
+                    //std::cout << "Setting event (Length=" << std::dec << its_size << ")." << std::endl;
                     app_->notify(SAMPLE_SERVICE_ID, SAMPLE_INSTANCE_ID, SAMPLE_EVENT_ID, payload_);
                 }
 
