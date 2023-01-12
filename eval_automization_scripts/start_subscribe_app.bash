@@ -13,6 +13,16 @@ start_app() {
     done
 }
 
+function on_exit() {
+    echo "Terminating processes..."
+    pkill subscribe-sampl
+    ssh vsomeip_server "pkill start_noti; pkill notify-samp;"
+    echo "Terminated processes."
+    exit 1
+}
+
+trap 'on_exit' SIGINT
+
 ssh vsomeip_server "pkill start_noti; pkill notify-samp;"
 pkill subscribe-sampl
 while [[ $RUN_NUM -lt $MAX_RUNS ]]; do
