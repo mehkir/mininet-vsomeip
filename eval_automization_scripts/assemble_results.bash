@@ -1,0 +1,32 @@
+#!/bin/bash
+RESULT_FILE_PATH="/home/vsomeip/assembled_results/"
+RESULT_FILE="${RESULT_FILE_PATH}dns_and_dane-$(date +%F-%T)"
+FILE_NUM=0
+OLDIFS=$IFS
+
+mkdir -p $RESULT_FILE_PATH
+touch $RESULT_FILE
+echo "APPLICATION_INIT,SVCB_REQUEST,SVCB_RESPONSE,TLSA_REQUEST,TLSA_RESPONSE,SUBSCRIBE_SEND,SUBSCRIBE_ACK_ARRIVED,CHECK_SIGNATURE_START,CHECK_SIGNATURE_END,SUBSCRIBE_ARRIVED,SIGNING_START,SIGNING_END,SUBSCRIBE_ACK_SEND" > $RESULT_FILE
+
+while [ -f "/home/vsomeip/timestamp_results/timepoints-#${FILE_NUM}.csv" ]; do
+    CLIENT_RESULTS=""
+    SERVER_RESULTS=""
+    {
+        read # skip header
+        while IFS=, read -r APPLICATION_INIT SVCB_REQUEST SVCB_RESPONSE TLSA_REQUEST TLSA_RESPONSE SUBSCRIBE_SEND SUBSCRIBE_ACK_ARRIVED CHECK_SIGNATURE_START CHECK_SIGNATURE_END; do
+            CLIENT_RESULTS="${APPLICATION_INIT},${SVCB_REQUEST},${SVCB_RESPONSE},${TLSA_REQUEST},${TLSA_RESPONSE},${SUBSCRIBE_SEND},${SUBSCRIBE_ACK_ARRIVED},${CHECK_SIGNATURE_START},${CHECK_SIGNATURE_END},"
+        done
+    } < "/home/vsomeip/timestamp_results/timepoints-#${FILE_NUM}.csv"
+    SERVER_RESULT_FILE="/home/vsomeip/timestamp_results/timepoints-#${FILE_NUM}-server.csv"
+    scp -q vsomeip_server:"/home/vsomeip/timestamp_results/timepoints-#${FILE_NUM}.csv" $SERVER_RESULT_FILE 1> /dev/null
+    {
+        read # skip header
+        while IFS=, read -r SUBSCRIBE_ARRIVED SIGNING_START SIGNING_END SUBSCRIBE_ACK_SEND; do
+            SERVER_RESULTS="${SUBSCRIBE_ARRIVED},${SIGNING_START},${SIGNING_END},${SUBSCRIBE_ACK_SEND}"
+        done
+    } < $SERVER_RESULT_FILE
+    echo "${CLIENT_RESULTS}${SERVER_RESULTS}" >> $RESULT_FILE
+    rm $SERVER_RESULT_FILE
+    FILE_NUM=$((FILE_NUM+1))
+done
+IFS=$OLDIFS
