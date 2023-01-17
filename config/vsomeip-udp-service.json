@@ -1,11 +1,12 @@
 {
     "unicast" : "172.17.0.3",
+    "netmask" : "255.255.0.0",
     "logging" :
     { 
-        "level" : "fatal",
-        "console" : "false",
-        "file" : { "enable" : "false", "path" : "/tmp/vsomeip.log" },
-        "dlt" : "false"
+        "level" : "debug",
+        "console" : "true",
+        "file" : { "enable" : "true", "path" : "/tmp/vsomeip.log" },
+        "dlt" : "true"
     },
     "applications" : 
     [
