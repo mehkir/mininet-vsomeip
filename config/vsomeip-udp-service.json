@@ -3,9 +3,9 @@
     "netmask" : "255.255.0.0",
     "logging" :
     { 
-        "level" : "debug",
+        "level" : "error",
         "console" : "true",
-        "file" : { "enable" : "true", "path" : "/tmp/vsomeip.log" },
+        "file" : { "enable" : "false", "path" : "/tmp/vsomeip.log" },
         "dlt" : "true"
     },
     "applications" : 
