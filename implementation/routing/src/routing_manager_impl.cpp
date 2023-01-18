@@ -2906,7 +2906,7 @@ void routing_manager_impl::on_subscribe_ack(client_t _client,
     // Close endpoint when service authentication was not successful
     if (!service_authenticated) {
         find_or_create_remote_client(_service,_instance, false).get()->stop();
-        VSOMEIP_ERROR << "Endpoint closed! Publisher authenticity was not successful.";
+        std::cerr << "Endpoint closed! Publisher authenticity was not successful." << std::endl;
     }
         
     std::lock_guard<std::mutex> its_lock(remote_subscription_state_mutex_);
