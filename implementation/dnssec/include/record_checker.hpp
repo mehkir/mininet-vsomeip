@@ -24,6 +24,7 @@
 #include <boost/asio/ip/address_v4.hpp>
 #include "vsomeip/primitive_types.hpp"
 #include "../../timestamps/include/timestamp_collector.hpp"
+#include "../../service_authentication/include/crypto_operator.hpp"
 
 namespace vsomeip_v3 {
     typedef std::function<void(client_t, service_t, instance_t, eventgroup_t, major_version_t, event_t)> LocalCallback;
@@ -44,6 +45,7 @@ namespace vsomeip_v3 {
     typedef std::function<void(boost::asio::ip::address_v4, service_t, instance_t, std::vector<unsigned char>)> remote_request_cache_callback;
     typedef std::function<void(void*, std::string)> remote_request_tlsa_record_callback;
     typedef std::function<void(std::string)> record_timestamp_callback;
+    typedef std::function<std::vector<CryptoPP::byte>(const std::vector<CryptoPP::byte>)> convert_DER_to_PEM_callback;
     struct remote_service_data {
         service_t service;
         instance_t instance;
@@ -55,6 +57,7 @@ namespace vsomeip_v3 {
         remote_request_cache_callback request_cache_callback;
         remote_request_tlsa_record_callback request_tlsa_record_callback;
         record_timestamp_callback record_timestamp_callback_;
+        convert_DER_to_PEM_callback convert_DER_to_PEM_callback_;
     };
 
     class record_checker {

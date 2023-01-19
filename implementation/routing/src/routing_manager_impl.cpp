@@ -580,6 +580,8 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_2);
     service_data->record_timestamp_callback_ = std::bind(&timestamp_collector::record_timestamp, timestamp_collector_,
                                             std::placeholders::_1);
+    service_data->convert_DER_to_PEM_callback_ = std::bind(&crypto_operator::convertDERToPEM, crypto_operator::getInstance(),
+                                            std::placeholders::_1);
     record_checker_.request_svcb_record(service_data);
 #endif
 }
