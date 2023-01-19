@@ -48,7 +48,7 @@
         "repetitions_max" : "3",
         "ttl" : "10",
         "cyclic_offer_delay" : "2000",
-        "request_response_delay" : "1500"
+        "request_response_delay" : "0"
     },
 
     "certificate-path" : "certificate-and-privatekey/client4931.cert.pem",
