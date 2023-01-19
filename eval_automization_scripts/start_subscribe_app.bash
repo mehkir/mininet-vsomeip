@@ -1,6 +1,5 @@
 #!/bin/bash
 RUN_NUM=0
-MAX_RUNS=20
 FILE_NUM=0
 
 compile() {
@@ -27,13 +26,18 @@ function on_exit() {
     exit 1
 }
 
+if [ $# -le 0 ] || [ $1 -le 0 ]; then
+    echo "Please specify a parameter greater than zero for the sample count." 1>&2
+    exit 1
+fi
+
 trap 'on_exit' SIGINT
 
 ssh vsomeip_server "pkill notify-samp; pkill start_noti;"
 pkill subscribe-sampl
 ssh vsomeip_server "/home/vsomeip/eval_automization_scripts/start_notify_app.bash compile"
 compile
-while [[ $RUN_NUM -lt $MAX_RUNS ]]; do
+while [[ $RUN_NUM -lt $1 ]]; do
     while [ -f "/home/vsomeip/timestamp_results/timepoints-#${FILE_NUM}.csv" ]; do
         FILE_NUM=$((FILE_NUM+1))
     done
