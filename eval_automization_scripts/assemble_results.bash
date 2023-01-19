@@ -1,6 +1,6 @@
 #!/bin/bash
 RESULT_FILE_PATH="/home/vsomeip/assembled_results/"
-RESULT_FILE="${RESULT_FILE_PATH}dns_and_dane-$(date +%F-%T).csv"
+RESULT_FILE="${RESULT_FILE_PATH}dns_and_dane-$(date +%F-%H-%M-%S).csv"
 FILE_NUM=0
 OLDIFS=$IFS
 
