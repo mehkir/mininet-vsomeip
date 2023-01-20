@@ -152,9 +152,13 @@ public:
         std::unique_lock<std::mutex> its_lock(mutex_);
         while (!blocked_)
             condition_.wait(its_lock);
-
+        offer();
+        while(running_) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        }
+        /*
         bool is_offer(true);
-        //while (running_) {
+        while (running_) {
             if (is_offer)
                 offer();
             else
@@ -164,7 +168,8 @@ public:
                 std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
             is_offer = !is_offer;
-        //}
+        }
+        */
     }
 
     void notify() {

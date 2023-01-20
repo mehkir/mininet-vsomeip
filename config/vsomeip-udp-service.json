@@ -84,7 +84,7 @@
         "repetitions_max" : "3",
         "ttl" : "3",
         "cyclic_offer_delay" : "2000",
-        "request_response_delay" : "0"
+        "request_response_delay" : "1500"
     },
 
     "certificate-path" : "certificate-and-privatekey/service4660.cert.pem",

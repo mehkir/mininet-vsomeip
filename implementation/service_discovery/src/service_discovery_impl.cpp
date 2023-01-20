@@ -1551,7 +1551,8 @@ service_discovery_impl::process_offerservice_serviceentry(
                             _unreliable_address, _unreliable_port);
 
     // No need to resubscribe for unicast offers
-    if (_received_via_mcast) {
+    //if (_received_via_mcast) {
+    if (true) {
         std::int32_t its_remaining = VSOMEIP_MAX_UDP_MESSAGE_SIZE;
         its_remaining -= _resubscribes.back()->get_size();
 
