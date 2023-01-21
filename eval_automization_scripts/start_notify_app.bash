@@ -3,8 +3,8 @@
 compile() {
     echo "Compiling notifiy-app..."
     cd /home/vsomeip/
-    /usr/bin/cmake --build /home/vsomeip/build --config Debug --target all --
-    /usr/bin/cmake --build /home/vsomeip/build --config Debug --target examples --
+    /usr/bin/cmake --build /home/vsomeip/build --config Release --target all --
+    /usr/bin/cmake --build /home/vsomeip/build --config Release --target examples --
     echo "done."
 }
 
