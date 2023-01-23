@@ -62,10 +62,10 @@ void request_cache::add_request_certificate(boost::asio::ip::address_v4 ipAddres
     request_map[keyTuple].certificate_data = certificate_data;
 }
 
-challenge_response_data request_cache::get_request(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+std::vector<unsigned char> request_cache::get_request_certificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId) {
     auto keyTuple = make_key_tupe(ipAddress, serviceId, instanceId);
-    return request_map[keyTuple];
+    return request_map[keyTuple].certificate_data;
 }
 
 void request_cache::remove_request(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,

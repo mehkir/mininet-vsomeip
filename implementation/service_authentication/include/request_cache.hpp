@@ -40,7 +40,7 @@ public:
                     vsomeip_v3::instance_t instanceId, uint& nonce);
     void add_request_certificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId, std::vector<unsigned char> certificate_data);
-    challenge_response_data get_request(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+    std::vector<unsigned char> get_request_certificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId);
     void remove_request(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId);

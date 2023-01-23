@@ -881,32 +881,38 @@ service_discovery_impl::create_eventgroup_entry(
 
 #ifndef ENABLE_FIND_AND_OFFER
     // Service Authentication
-    boost::asio::ip::address its_address;
-    std::shared_ptr<endpoint> its_dummy;
-    switch (_reliability_type) {
-        case reliability_type_e::RT_RELIABLE:
-            if (its_reliable_endpoint) {
-                get_subscription_address(its_reliable_endpoint, its_dummy, its_address);
-            }
-            break;
-        case reliability_type_e::RT_UNRELIABLE:
-            if (its_unreliable_endpoint) {
-                get_subscription_address(its_dummy, its_unreliable_endpoint, its_address);
-            }
-            break;
-        case reliability_type_e::RT_BOTH:
-            if (its_reliable_endpoint && its_unreliable_endpoint) {
-                VSOMEIP_INFO << "Not implemented.";
-            }
-            break;
-        default:
-            break;
+    if (its_data.entry_->get_type() == entry_type_e::SUBSCRIBE_EVENTGROUP && its_data.entry_->get_ttl() > 0) {
+        boost::asio::ip::address its_address;
+        std::shared_ptr<endpoint> its_dummy;
+        switch (_reliability_type) {
+            case reliability_type_e::RT_RELIABLE:
+                if (its_reliable_endpoint) {
+                    get_subscription_address(its_reliable_endpoint, its_dummy, its_address);
+                }
+                break;
+            case reliability_type_e::RT_UNRELIABLE:
+                if (its_unreliable_endpoint) {
+                    get_subscription_address(its_dummy, its_unreliable_endpoint, its_address);
+                }
+                break;
+            case reliability_type_e::RT_BOTH:
+                if (its_reliable_endpoint && its_unreliable_endpoint) {
+                    VSOMEIP_INFO << "Not implemented.";
+                }
+                break;
+            default:
+                break;
+        }
+        uint nonce = crypto_operator_->getRandomWord32();
+        request_cache_->add_request_nonce(its_address.to_v4(), _service, _instance, nonce);
+        VSOMEIP_DEBUG << "Generated Nonce"
+        << "(" << its_address.to_v4().to_string() << "," << _service << "," << _instance << ")"
+        << nonce;
+        std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
+        configuration_option->add_item(NONCEKEY, std::to_string(nonce));
+        //data_partitioner().partition_data(CERTKEY, configuration_option, certificate_data_);
+        its_data.options_.push_back(configuration_option);
     }
-    request_cache_->addRequestNonce(its_address.to_v4(), _service, _instance, crypto_operator_->getRandomWord32());
-    std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-    configuration_option->add_item(NONCEKEY, std::to_string(request_cache_->getRequest(its_address.to_v4(), _service, _instance).random_nonce));
-    //data_partitioner().partition_data(CERTKEY, configuration_option, certificate_data_);
-    its_data.options_.push_back(configuration_option);
 #endif
 
     if (its_entry &&_subscription->is_selective()) {
@@ -1004,19 +1010,36 @@ service_discovery_impl::insert_subscription_ack(
     }
 
 #ifndef ENABLE_FIND_AND_OFFER
-    timestamp_collector_->record_timestamp(SIGNING_START);
-    // Service Authentication
-    std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-    // Add nonce
-    std::string nonceString = std::to_string(request_cache_->getRequest(_target->get_address().to_v4(), its_service, its_instance).random_nonce);
-    configuration_option->add_item(NONCEKEY, nonceString);
-    // Sign and add nonce
-    std::vector<CryptoPP::byte> nonce_data;
-    nonce_data.insert(nonce_data.end(), nonceString.begin(), nonceString.end());
-    std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
-    data_partitioner().partition_data(SIGNATUREKEY, configuration_option, signature);
-    its_data.options_.push_back(configuration_option);
-    timestamp_collector_->record_timestamp(SIGNING_END);
+    static bool signing_already_timestamped = false;
+    static std::mutex signing_already_timestamped_mutex;
+    {
+        std::lock_guard<std::mutex> guard(signing_already_timestamped_mutex);
+        if (!signing_already_timestamped) {
+            timestamp_collector_->record_timestamp(SIGNING_START);
+        }
+        // Service Authentication
+        std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
+        uint nonce_to_be_signed;
+        bool result = request_cache_->get_nonce_and_remove(_target->get_address().to_v4(), its_service, its_instance, nonce_to_be_signed);
+        if (!result) {
+            throw std::runtime_error("Was about to sign nonce but there is no nonce anymore!");
+        }
+        VSOMEIP_DEBUG << "Signing Nonce (SIGNING_START)"
+        << "(" << _target->get_address().to_v4().to_string() << "," << its_service << "," << its_instance << ")"
+        << nonce_to_be_signed;
+        std::string nonceString = std::to_string(nonce_to_be_signed);
+        configuration_option->add_item(NONCEKEY, nonceString);
+        // Sign and add nonce
+        std::vector<CryptoPP::byte> nonce_data;
+        nonce_data.insert(nonce_data.end(), nonceString.begin(), nonceString.end());
+        std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
+        data_partitioner().partition_data(SIGNATUREKEY, configuration_option, signature);
+        its_data.options_.push_back(configuration_option);
+        if (!signing_already_timestamped) {
+            timestamp_collector_->record_timestamp(SIGNING_END);
+            signing_already_timestamped = true;
+        }
+    }
 #endif
 
     // Selective
@@ -1752,7 +1775,28 @@ service_discovery_impl::on_endpoint_connected(
         }
     }
     serialize_and_send(its_messages, its_address);
-    timestamp_collector_->record_timestamp(SUBSCRIBE_SEND);
+    // Addition for Time Measurement
+    static bool subscribe_already_sent_timestamped = false;
+    static std::mutex subscribe_already_sent_mutex;
+    {
+        std::lock_guard<std::mutex> guard(subscribe_already_sent_mutex);
+        if (!subscribe_already_sent_timestamped) {
+            for (auto message : its_messages) {
+                for (auto entry : message->get_entries()) {
+                    switch (entry->get_type()) {
+                        case entry_type_e::SUBSCRIBE_EVENTGROUP:
+                            if (entry->get_ttl()) {
+                                timestamp_collector_->record_timestamp(SUBSCRIBE_SEND);
+                                subscribe_already_sent_timestamped = true;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 std::shared_ptr<option_impl>
@@ -2228,26 +2272,45 @@ service_discovery_impl::process_eventgroupentry(
                 ss << nonce_string;
                 unsigned int nonce;
                 ss >> nonce;
-                if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
-                    timestamp_collector_->record_timestamp(SUBSCRIBE_ARRIVED);
+                // Addition for Time Measurement
+                static bool subscribe_arrived_already_timestamped = false;
+                static bool subscribe_ack_arrived_already_timestamped = false;
+                static std::mutex subscribe_arrived_mutex;
+                static std::mutex subscribe_ack_arrived_mutex;
+                if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type && its_ttl > 0) {
+                    std::lock_guard<std::mutex> guard(subscribe_arrived_mutex);
+                    if (!subscribe_arrived_already_timestamped) {
+                        timestamp_collector_->record_timestamp(SUBSCRIBE_ARRIVED);
+                        subscribe_arrived_already_timestamped = true;
+                    }
                     //std::vector<byte_t> subscriberCertificateData;
                     //subscriberCertificateData = data_partitioner().reassemble_data(CERTKEY, its_configuration_option);
                     //request_cache_->addRequestCertificate(_sender.to_v4(), its_service, its_instance, subscriberCertificateData);
                     //const char* subcert = reinterpret_cast<const char*>(subscriberCertificateData.data());
                     //std::cout << std::string(subcert, subscriberCertificateData.size()) << std::endl;
-                    request_cache_->addRequestNonce(_sender.to_v4(), its_service, its_instance, nonce);
-                } else {
-                    timestamp_collector_->record_timestamp(SUBSCRIBE_ACK_ARRIVED);
-                    timestamp_collector_->record_timestamp(CHECK_SIGNATURE_START);
-                    unsigned int its_nonce = request_cache_->getRequest(_sender.to_v4(), its_service, its_instance).random_nonce;
-                    // Check if nonce is equal
-                    if (nonce != its_nonce) {service_authenticated = false;}
+                    request_cache_->add_request_nonce(_sender.to_v4(), its_service, its_instance, nonce);
+                    VSOMEIP_DEBUG << "Received Nonce (SUBSCRIBE_ARRIVED)"
+                    << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
+                    << nonce;
+                } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
+                    std::lock_guard<std::mutex> guard(subscribe_ack_arrived_mutex);
+                    if (!subscribe_ack_arrived_already_timestamped) {
+                        timestamp_collector_->record_timestamp(SUBSCRIBE_ACK_ARRIVED);
+                        timestamp_collector_->record_timestamp(CHECK_SIGNATURE_START);
+                    }
+                    VSOMEIP_DEBUG << "Received Nonce (SUBSCRIBE_ACK_ARRIVED)"
+                    << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
+                    << nonce;
+                    // Check if nonce is known
+                    if (!request_cache_->has_nonce_and_remove(_sender.to_v4(), its_service, its_instance, nonce)) {
+                        service_authenticated = false;
+                    }
                     // Check if a valid public key can be retained from self signed certificate
                     CryptoPP::RSA::PublicKey public_key;
                     if (service_authenticated) {
-                        std::vector<byte_t> certificate_data = request_cache_->getRequest(_sender.to_v4(), its_service, its_instance).certificate_data;
+                        std::vector<byte_t> certificate_data = request_cache_->get_request_certificate(_sender.to_v4(), its_service, its_instance);
                         while (certificate_data.empty()) {
-                            certificate_data = request_cache_->getRequest(unicast_.to_v4(), its_service, its_instance).certificate_data;
+                            certificate_data = request_cache_->get_request_certificate(unicast_.to_v4(), its_service, its_instance);
                             sleep(1);
                             std::cerr << "TLSA record still not arrived" << std::endl;
                         }
@@ -2265,8 +2328,11 @@ service_discovery_impl::process_eventgroupentry(
                             service_authenticated = crypto_operator_->verify(public_key, data_to_be_verified);
                         }
                     }
-                    timestamp_collector_->record_timestamp(CHECK_SIGNATURE_END);
-                    timestamp_collector_->write_timestamps(NODES::SUBSCRIBER);
+                    if (!subscribe_ack_arrived_already_timestamped) {
+                        timestamp_collector_->record_timestamp(CHECK_SIGNATURE_END);
+                        timestamp_collector_->write_timestamps(NODES::SUBSCRIBER);
+                        subscribe_ack_arrived_already_timestamped = true;
+                    }
                 }
 #endif
                 break;
@@ -3796,9 +3862,28 @@ service_discovery_impl::send_subscription_ack(
 
         auto its_messages = _acknowledgement->get_messages();
         serialize_and_send(its_messages, _acknowledgement->get_target_address());
-        if (sent_subscribe_ack_message) {
-            timestamp_collector_->record_timestamp(SUBSCRIBE_ACK_SEND);
-            timestamp_collector_->write_timestamps(NODES::PUBLISHER);
+        // Addition for Time Measurement
+        static bool subscribe_ack_sent_already_timestamped = false;
+        static std::mutex subscribe_ack_sent_already_timestamped_mutex;
+        {
+            std::lock_guard<std::mutex> guard(subscribe_ack_sent_already_timestamped_mutex);
+            if (!subscribe_ack_sent_already_timestamped) {
+                for (auto message : its_messages) {
+                    for (auto entry : message->get_entries()) {
+                        switch (entry->get_type()) {
+                            case entry_type_e::SUBSCRIBE_EVENTGROUP_ACK:
+                                if (entry->get_ttl()) {
+                                    timestamp_collector_->record_timestamp(SUBSCRIBE_ACK_SEND);
+                                    timestamp_collector_->write_timestamps(NODES::PUBLISHER);
+                                    subscribe_ack_sent_already_timestamped = true;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
         }
         update_subscription_expiration_timer(its_messages);
     }
