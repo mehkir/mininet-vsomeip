@@ -570,7 +570,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_8,
                                             std::placeholders::_9);
     service_data->local_ip_address = configuration_->get_unicast_address().to_v4();
-    service_data->request_cache_callback = std::bind(&request_cache::addRequestCertificate, request_cache_,
+    service_data->request_cache_callback = std::bind(&request_cache::add_request_certificate, request_cache_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
