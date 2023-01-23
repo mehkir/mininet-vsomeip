@@ -5,13 +5,14 @@
 #include <map>
 #include <tuple>
 #include <vector>
+#include <unordered_set>
 #include <boost/asio/ip/address_v4.hpp>
 #include "vsomeip/primitive_types.hpp"
 
 namespace vsomeip_v3 {
 
 struct challenge_response_data {
-    unsigned int random_nonce;
+    std::unordered_set<uint> random_nonces;
     std::vector<unsigned char> certificate_data;
 };
 
@@ -31,16 +32,20 @@ public:
     request_cache& operator=(request_cache &) = delete;
     request_cache& operator=(request_cache &&) = delete;
 
-    void addRequestNonce(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+    void add_request_nonce(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId, unsigned nonce);
-    void addRequestCertificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+    bool has_nonce_and_remove(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+                    vsomeip_v3::instance_t instanceId, unsigned nonce);
+    bool get_nonce_and_remove(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+                    vsomeip_v3::instance_t instanceId, uint& nonce);
+    void add_request_certificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId, std::vector<unsigned char> certificate_data);
-    challenge_response_data getRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+    challenge_response_data get_request(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId);
-    void removeRequest(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+    void remove_request(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId);
     std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t,
-                    vsomeip_v3::instance_t> makeKeyTuple(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+                    vsomeip_v3::instance_t> make_key_tupe(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId);
 };
 } /* end namespace vsomeip_v3*/
