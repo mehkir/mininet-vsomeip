@@ -23,7 +23,7 @@ request_cache* request_cache::getInstance() {
 }
 
 void request_cache::add_request_nonce(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
-                               vsomeip_v3::instance_t instanceId, unsigned int nonce) {
+                               vsomeip_v3::instance_t instanceId, std::vector<unsigned char> nonce) {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     auto keyTuple = make_key_tupe(ipAddress, serviceId, instanceId);
     if (!request_map.count(keyTuple)) {
@@ -33,14 +33,14 @@ void request_cache::add_request_nonce(boost::asio::ip::address_v4 ipAddress, vso
 }
 
 bool request_cache::has_nonce_and_remove(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
-                    vsomeip_v3::instance_t instanceId, uint nonce) {
+                    vsomeip_v3::instance_t instanceId, std::vector<unsigned char> nonce) {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     auto keyTuple = make_key_tupe(ipAddress, serviceId, instanceId);
     return request_map.count(keyTuple) && request_map[keyTuple].random_nonces.count(nonce) && request_map[keyTuple].random_nonces.erase(nonce);
 }
 
 bool request_cache::get_nonce_and_remove(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
-                    vsomeip_v3::instance_t instanceId, uint &nonce) {
+                    vsomeip_v3::instance_t instanceId, std::vector<unsigned char> &nonce) {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     bool result = false;
     auto keyTuple = make_key_tupe(ipAddress, serviceId, instanceId);

@@ -903,13 +903,14 @@ service_discovery_impl::create_eventgroup_entry(
             default:
                 break;
         }
-        uint nonce = crypto_operator_->getRandomWord32();
-        request_cache_->add_request_nonce(its_address.to_v4(), _service, _instance, nonce);
+        CryptoPP::SecByteBlock nonce = crypto_operator_->getRandomByteBlock();
+        request_cache_->add_request_nonce(its_address.to_v4(), _service, _instance, std::vector<unsigned char>(nonce.begin(), nonce.end()));
         VSOMEIP_DEBUG << "Generated Nonce"
         << "(" << its_address.to_v4().to_string() << "," << _service << "," << _instance << ")"
-        << nonce;
+        << std::hex << std::string(nonce.begin(), nonce.end());
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-        configuration_option->add_item(NONCEKEY, std::to_string(nonce));
+        std::vector<unsigned char> nonce_vector(nonce.begin(), nonce.end());
+        data_partitioner().partition_data(NONCEKEY, configuration_option, nonce_vector);
         //data_partitioner().partition_data(CERTKEY, configuration_option, certificate_data_);
         its_data.options_.push_back(configuration_option);
     }
@@ -1019,19 +1020,19 @@ service_discovery_impl::insert_subscription_ack(
         }
         // Service Authentication
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-        uint nonce_to_be_signed;
+        std::vector<unsigned char> nonce_to_be_signed;
         bool result = request_cache_->get_nonce_and_remove(_target->get_address().to_v4(), its_service, its_instance, nonce_to_be_signed);
         if (!result) {
             throw std::runtime_error("Was about to sign nonce but there is no nonce anymore!");
         }
         VSOMEIP_DEBUG << "Signing Nonce (SIGNING_START)"
         << "(" << _target->get_address().to_v4().to_string() << "," << its_service << "," << its_instance << ")"
-        << nonce_to_be_signed;
-        std::string nonceString = std::to_string(nonce_to_be_signed);
-        configuration_option->add_item(NONCEKEY, nonceString);
+        << std::hex << std::string(nonce_to_be_signed.begin(), nonce_to_be_signed.end());
+        //configuration_option->add_item(NONCEKEY, std::string(nonce_to_be_signed.begin(), nonce_to_be_signed.end()));
+        data_partitioner().partition_data(NONCEKEY, configuration_option, std::vector<unsigned char>(nonce_to_be_signed.begin(), nonce_to_be_signed.end()));
         // Sign and add nonce
         std::vector<CryptoPP::byte> nonce_data;
-        nonce_data.insert(nonce_data.end(), nonceString.begin(), nonceString.end());
+        nonce_data.insert(nonce_data.end(), nonce_to_be_signed.begin(), nonce_to_be_signed.end());
         std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
         data_partitioner().partition_data(SIGNATUREKEY, configuration_option, signature);
         its_data.options_.push_back(configuration_option);
@@ -2267,11 +2268,7 @@ service_discovery_impl::process_eventgroupentry(
 
 #ifndef ENABLE_FIND_AND_OFFER
                 // Service Authentication
-                std::string nonce_string = its_configuration_option->get_value(NONCEKEY);
-                std::stringstream ss;
-                ss << nonce_string;
-                unsigned int nonce;
-                ss >> nonce;
+                std::vector<unsigned char> nonce = data_partitioner().reassemble_data(NONCEKEY, its_configuration_option);
                 // Addition for Time Measurement
                 static bool subscribe_arrived_already_timestamped = false;
                 static bool subscribe_ack_arrived_already_timestamped = false;
@@ -2291,7 +2288,7 @@ service_discovery_impl::process_eventgroupentry(
                     request_cache_->add_request_nonce(_sender.to_v4(), its_service, its_instance, nonce);
                     VSOMEIP_DEBUG << "Received Nonce (SUBSCRIBE_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
-                    << nonce;
+                    << std::hex << std::string(nonce.begin(), nonce.end());
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
                     std::lock_guard<std::mutex> guard(subscribe_ack_arrived_mutex);
                     if (!subscribe_ack_arrived_already_timestamped) {
@@ -2300,7 +2297,7 @@ service_discovery_impl::process_eventgroupentry(
                     }
                     VSOMEIP_DEBUG << "Received Nonce (SUBSCRIBE_ACK_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
-                    << nonce;
+                    << std::hex << std::string(nonce.begin(), nonce.end());
                     // Check if nonce is known
                     if (!request_cache_->has_nonce_and_remove(_sender.to_v4(), its_service, its_instance, nonce)) {
                         service_authenticated = false;
@@ -2323,7 +2320,7 @@ service_discovery_impl::process_eventgroupentry(
                         service_authenticated = false;
                         if (!signature.empty()) {
                             std::vector<byte_t> data_to_be_verified;
-                            data_to_be_verified.insert(data_to_be_verified.end(), nonce_string.begin(), nonce_string.end());
+                            data_to_be_verified.insert(data_to_be_verified.end(), nonce.begin(), nonce.end());
                             data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
                             service_authenticated = crypto_operator_->verify(public_key, data_to_be_verified);
                         }

@@ -209,6 +209,12 @@ CryptoPP::word32 crypto_operator::getRandomWord32() {
     return rng.GenerateWord32();
 }
 
+CryptoPP::SecByteBlock crypto_operator::getRandomByteBlock(int blocksize) {
+    CryptoPP::SecByteBlock random_byte_block(blocksize);
+    rng.GenerateBlock(random_byte_block, random_byte_block.size());
+    return random_byte_block;
+}
+
 std::vector<CryptoPP::byte> crypto_operator::convertStringToByteVector(const std::string& stringToConvert) {
     std::vector<CryptoPP::byte> byteVector;
     const char* certificateCharArray = stringToConvert.c_str();

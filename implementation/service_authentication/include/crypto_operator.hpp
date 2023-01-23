@@ -1,6 +1,8 @@
 #ifndef VSOMEIP_CRYPTO_OPERATOR_HPP
 #define VSOMEIP_CRYPTO_OPERATOR_HPP
 
+#define DEFAULT_BYTE_BLOCKSIZE 4
+
 #include <mutex>
 #include <cryptopp/osrng.h>
 #include <cryptopp/x509cert.h>
@@ -31,6 +33,7 @@ public:
     std::vector<CryptoPP::byte> convertPEMToDER(const std::vector<CryptoPP::byte> pem_certificate);
     std::vector<CryptoPP::byte> convertDERToPEM(const std::vector<CryptoPP::byte> der_certificate);
     CryptoPP::word32 getRandomWord32();
+    CryptoPP::SecByteBlock getRandomByteBlock(int blocksize=DEFAULT_BYTE_BLOCKSIZE);
     std::vector<CryptoPP::byte> convertStringToByteVector(const std::string& stringToConvert);
     std::string convertByteVectorToString(std::vector<CryptoPP::byte> vectorToConvert);
     std::vector<CryptoPP::byte> hex_encode(std::vector<CryptoPP::byte> data);
