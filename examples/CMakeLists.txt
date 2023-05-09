@@ -12,6 +12,8 @@ set(EXAMPLE_CONFIG_FILES
     "../config/vsomeip-tcp-service.json"
     "../config/vsomeip-udp-client.json"
     "../config/vsomeip-udp-service.json"
+    "../config/vsomeip-udp-notifications.json"
+    "../config/vsomeip-udp-subscriptions.json"
 )
 
 find_package (vsomeip3 REQUIRED)
@@ -43,10 +45,16 @@ target_link_libraries(my-subscribe-sample ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boos
 add_executable(my-notify-sample my-notify-sample.cpp ${EXAMPLE_CONFIG_FILES})
 target_link_libraries(my-notify-sample ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boost_LIBRARIES} ${DL_LIBRARY})
 
-add_dependencies(examples request-sample response-sample subscribe-sample notify-sample my-subscribe-sample my-notify-sample)
+add_executable(multiple-subscriptions multiple-subscriptions.cpp ${EXAMPLE_CONFIG_FILES})
+target_link_libraries(multiple-subscriptions ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boost_LIBRARIES} ${DL_LIBRARY})
+
+add_executable(multiple-notifications multiple-notifications.cpp ${EXAMPLE_CONFIG_FILES})
+target_link_libraries(multiple-notifications ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boost_LIBRARIES} ${DL_LIBRARY})
+
+add_dependencies(examples request-sample response-sample subscribe-sample notify-sample my-subscribe-sample my-notify-sample multiple-subscriptions multiple-notifications)
 
 install (
-    TARGETS request-sample response-sample subscribe-sample notify-sample my-subscribe-sample my-notify-sample
+    TARGETS request-sample response-sample subscribe-sample notify-sample my-subscribe-sample my-notify-sample multiple-subscriptions multiple-notifications
     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
 )
 
