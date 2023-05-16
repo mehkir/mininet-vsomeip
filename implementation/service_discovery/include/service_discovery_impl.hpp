@@ -156,7 +156,6 @@ private:
             const std::vector<std::shared_ptr<option_impl> > &_options,
             bool _unicast_flag, std::vector<std::shared_ptr<message_impl> > &_resubscribes,
             bool _received_via_mcast, const sd_acceptance_state_t& _sd_ac_state);
-
     void process_offerservice_serviceentry(
             service_t _service, instance_t _instance, major_version_t _major,
             minor_version_t _minor, ttl_t _ttl,
@@ -166,7 +165,6 @@ private:
             uint16_t _unreliable_port,
             std::vector<std::shared_ptr<message_impl> > &_resubscribes,
             bool _received_via_mcast, const sd_acceptance_state_t& _sd_ac_state);
-
     void send_offer_service(
             const std::shared_ptr<const serviceinfo> &_info, service_t _service,
             instance_t _instance, major_version_t _major, minor_version_t _minor,
@@ -478,13 +476,8 @@ private:
     std::mutex offer_mutex_;
     std::mutex check_ttl_mutex_;
 
-// Additional classes ans methods for service authentication
+// Addition for service authentication
 public:
-    void mimic_offerservice_serviceentry(service_t _service, instance_t _instance, major_version_t _major,
-                                        minor_version_t _minor, ttl_t _ttl, std::string _reliable_address,
-                                        uint16_t _reliable_port, std::string _unreliable_address,
-                                        uint16_t _unreliable_port);
-
     void set_request_cache(request_cache* _request_cache);
     void set_timestamp_collector(timestamp_collector* _timestamp_collector);
 

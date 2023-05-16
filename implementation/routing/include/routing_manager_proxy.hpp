@@ -126,7 +126,6 @@ private:
             const std::set<eventgroup_t> &_eventgroups,
             const event_type_e _type, reliability_type_e _reliability,
             bool _is_provided);
-
     void send_subscribe(client_t _client, service_t _service,
             instance_t _instance, eventgroup_t _eventgroup,
             major_version_t _major, event_t _event);
@@ -259,8 +258,6 @@ private:
     const std::set<std::tuple<service_t, instance_t> > client_side_logging_filter_;
 
     std::mutex stop_mutex_;
-
-    record_checker record_checker_;
 };
 
 } // namespace vsomeip_v3

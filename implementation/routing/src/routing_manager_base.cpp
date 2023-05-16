@@ -24,8 +24,7 @@ routing_manager_base::routing_manager_base(routing_manager_host *_host) :
         host_(_host),
         io_(host_->get_io()),
         client_(host_->get_client()),
-        configuration_(host_->get_configuration()),
-        record_checker_(record_checker())
+        configuration_(host_->get_configuration())
 #ifdef USE_DLT
         , tc_(trace::connector_impl::get())
 #endif
@@ -1334,21 +1333,8 @@ void routing_manager_base::send_pending_subscriptions(service_t _service,
     for (auto &ps : pending_subscriptions_) {
         if (ps.service_ == _service &&
                 ps.instance_ == _instance && ps.major_ == _major) {
-            if (record_checker_.is_svcb_valid()) {
-                VSOMEIP_DEBUG << ">>>>> (SUBSCRIBE) There is a valid SVCB record for the "
-                              << "service: 0x" << std::hex << std::setw(4) << std::setfill('0') << ps.service_
-                              << " (instance: 0x" << std::hex << std::setw(4) << std::setfill('0') << ps.instance_
-                              << ", major: " << std::dec << static_cast<std::uint32_t>(ps.major_)
-                              << "). (MEHMET MUELLER DEBUG) <<<<<";
-                send_subscribe(client_, ps.service_, ps.instance_,
-                               ps.eventgroup_, ps.major_, ps.event_);
-            } else {
-                VSOMEIP_DEBUG << ">>>>> There is no valid SVCB record for the "
-                <<  "service: 0x" << std::hex << std::setw(4) << std::setfill('0') << ps.service_
-                << " (instance: " << std::hex << std::setw(4) << std::setfill('0') << ps.instance_
-                << ", major: " << std::dec << static_cast<std::uint32_t>(ps.major_)
-                << ")! (MEHMET MUELLER DEBUG) <<<<<";
-            }
+            send_subscribe(client_, ps.service_, ps.instance_,
+                    ps.eventgroup_, ps.major_, ps.event_);
         }
     }
 }

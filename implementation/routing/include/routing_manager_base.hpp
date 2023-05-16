@@ -24,7 +24,6 @@
 #include "../../message/include/deserializer.hpp"
 #include "../../configuration/include/configuration.hpp"
 #include "../../endpoints/include/endpoint_manager_base.hpp"
-#include "../../dnssec/include/record_checker.hpp"
 
 namespace vsomeip_v3 {
 
@@ -260,8 +259,6 @@ protected:
 
     std::mutex event_registration_mutex_;
 
-    // DNSSEC record checker
-    record_checker record_checker_;
 #ifdef USE_DLT
     std::shared_ptr<trace::connector_impl> tc_;
 #endif

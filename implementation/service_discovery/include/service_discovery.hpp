@@ -76,12 +76,6 @@ public:
     virtual void register_reboot_notification_handler(
             reboot_notification_handler_t _handler) = 0;
 
-    virtual void mimic_offerservice_serviceentry(
-                                        service_t _service, instance_t _instance, major_version_t _major,
-                                        minor_version_t _minor, ttl_t _ttl, std::string _reliable_address,
-                                        uint16_t _reliable_port, std::string _unreliable_address,
-                                        uint16_t _unreliable_port) = 0;
-
     // Addition for service authentication
     virtual void set_request_cache(request_cache* _request_cache) = 0;
     // Addition for time measurement

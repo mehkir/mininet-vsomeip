@@ -400,14 +400,14 @@ bool routing_manager_impl::offer_service(client_t _client,
             pending_sd_offers_.push_back(std::make_pair(_service, _instance));
         }
     }
-#ifdef ENABLE_FIND_AND_OFFER
+
     if (discovery_) {
         std::shared_ptr<serviceinfo> its_info = find_service(_service, _instance);
         if (its_info) {
             discovery_->offer_service(its_info);
         }
     }
-#endif
+
     {
         std::lock_guard<std::mutex> ist_lock(pending_subscription_mutex_);
         std::set<event_t> its_already_subscribed_events;
@@ -552,7 +552,6 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
         stub_->handle_requests(_client, requests);
     }
 
-#ifndef ENABLE_FIND_AND_OFFER
     //Addition for Service Authentication
     remote_service_data* service_data = new remote_service_data();
     service_data->service = _service;
@@ -583,7 +582,6 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     service_data->convert_DER_to_PEM_callback_ = std::bind(&crypto_operator::convertDERToPEM, crypto_operator::getInstance(),
                                             std::placeholders::_1);
     record_checker_.request_svcb_record(service_data);
-#endif
 }
 
 void routing_manager_impl::release_service(client_t _client, service_t _service,
@@ -652,26 +650,7 @@ void routing_manager_impl::subscribe(client_t _client, uid_t _uid, gid_t _gid,
                              << " rejected from application handler.";
                 return;
             } else {
-                if (record_checker_.is_svcb_valid() && record_checker_.is_tlsa_valid()) {
-                    VSOMEIP_DEBUG
-                        << ">>>>> (SUBSCRIBEACK) There is a valid SVCB and TLSA record for the client: "
-                        << std::hex << std::setw(4) << std::setfill('0') << _client <<"): ["
-                        << std::hex << std::setw(4) << std::setfill('0') << _service << "."
-                        << std::hex << std::setw(4) << std::setfill('0') << _instance << "."
-                        << std::hex << std::setw(4) << std::setfill('0') << _eventgroup << ":"
-                        << std::hex << std::setw(4) << std::setfill('0') << _event << ":"
-                        << std::dec << (uint16_t)_major << "] (MEHMET MUELLER DEBUG) <<<<<";
-                    stub_->send_subscribe_ack(_client, _service, _instance, _eventgroup, _event);
-                } else {
-                    VSOMEIP_DEBUG
-                        << ">>>>> There is no valid SVCB and TLSA record for the client: "
-                        << std::hex << std::setw(4) << std::setfill('0') << _client <<"): ["
-                        << std::hex << std::setw(4) << std::setfill('0') << _service << "."
-                        << std::hex << std::setw(4) << std::setfill('0') << _instance << "."
-                        << std::hex << std::setw(4) << std::setfill('0') << _eventgroup << ":"
-                        << std::hex << std::setw(4) << std::setfill('0') << _event << ":"
-                        << std::dec << (uint16_t)_major << "] <<<<<";
-                }
+                stub_->send_subscribe_ack(_client, _service, _instance, _eventgroup, _event);
             }
             routing_manager_base::subscribe(_client, _uid, _gid, _service, _instance, _eventgroup, _major, _event);
 #ifdef VSOMEIP_ENABLE_COMPAT
