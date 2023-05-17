@@ -5,6 +5,7 @@
 #include <arpa/nameser.h>
 #include <netinet/in.h>
 #include <string>
+#include <iomanip>
 
 namespace vsomeip_v3 {
     svcb_resolver::svcb_resolver() : dns_resolver_(dns_resolver::getInstance()) {
@@ -45,22 +46,16 @@ namespace vsomeip_v3 {
             case IPPROTO_UDP:
                 unreliable_address = svcbReplyPtr->ipv4AddressString;
                 unreliable_port = svcbReplyPtr->port;
-                service_data_and_cbs_->remote_ip_address = boost::asio::ip::address_v4::from_string(unreliable_address);
+                service_data_and_cbs_->ip_address = boost::asio::ip::address_v4::from_string(unreliable_address);
                 break;
             case IPPROTO_TCP:
                 reliable_address = svcbReplyPtr->ipv4AddressString;
                 reliable_port = svcbReplyPtr->port;
-                service_data_and_cbs_->remote_ip_address = boost::asio::ip::address_v4::from_string(unreliable_address);
+                service_data_and_cbs_->ip_address = boost::asio::ip::address_v4::from_string(unreliable_address);
                 break;
             default:
                 break;
             }
-            service_data_and_cbs_->offer_callback(service_data_and_cbs_->service,
-                            std::stoi(svcbReplyPtr->getSVCBKey(INSTANCE),0,16),
-                            std::stoi(svcbReplyPtr->getSVCBKey(MAJOR_VERSION),0,16),
-                            std::stoi(svcbReplyPtr->getSVCBKey(MINOR_VERSION),0,16),
-                            DEFAULT_TTL, reliable_address, reliable_port,
-                            unreliable_address, unreliable_port);
             //Fill with concrete values in case instance, major and minor were not specified
             service_data_and_cbs_->instance = std::stoi(svcbReplyPtr->getSVCBKey(INSTANCE),0,16);
             service_data_and_cbs_->major = std::stoi(svcbReplyPtr->getSVCBKey(MAJOR_VERSION),0,16);
@@ -77,7 +72,7 @@ namespace vsomeip_v3 {
             tlsa_request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << service_data_and_cbs_->service;
             tlsa_request << ".";
             tlsa_request << PARENTDOMAIN;
-            service_data_and_cbs_->request_tlsa_record_callback(service_data_and_cbs_, tlsa_request.str());
+            service_data_and_cbs_->request_tlsa_record_callback_(service_data_and_cbs_, tlsa_request.str());
 
             svcbReplyPtr = svcbReplyPtr->svcbReplyNext;
         }

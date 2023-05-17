@@ -1,7 +1,7 @@
 //
 // Created by mehkir on 03.08.22.
 //
-
+/*
 #include "../include/record_checker.hpp"
 #include "../include/logger.hpp"
 #include "../include/parse_svcb_reply.hpp"
@@ -200,3 +200,4 @@ namespace vsomeip_v3 {
     }
 
 } // namespace vsomeip_v3
+*/
