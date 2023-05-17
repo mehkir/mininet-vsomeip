@@ -553,21 +553,12 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     }
 
     //Addition for Service Authentication
+    /*
     remote_service_data* service_data = new remote_service_data();
     service_data->service = _service;
     service_data->instance = _instance;
     service_data->major = _major;
     service_data->minor = _minor;
-    service_data->offer_callback = std::bind(&vsomeip_v3::sd::service_discovery::mimic_offerservice_serviceentry, discovery_,
-                                            std::placeholders::_1,
-                                            std::placeholders::_2,
-                                            std::placeholders::_3,
-                                            std::placeholders::_4,
-                                            std::placeholders::_5,
-                                            std::placeholders::_6,
-                                            std::placeholders::_7,
-                                            std::placeholders::_8,
-                                            std::placeholders::_9);
     service_data->local_ip_address = configuration_->get_unicast_address().to_v4();
     service_data->request_cache_callback = std::bind(&request_cache::add_request_certificate, request_cache_,
                                             std::placeholders::_1,
@@ -582,6 +573,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     service_data->convert_DER_to_PEM_callback_ = std::bind(&crypto_operator::convertDERToPEM, crypto_operator::getInstance(),
                                             std::placeholders::_1);
     record_checker_.request_svcb_record(service_data);
+    */
 }
 
 void routing_manager_impl::release_service(client_t _client, service_t _service,
