@@ -68,5 +68,8 @@
         "ttl" : "3",
         "cyclic_offer_delay" : "2000",
         "request_response_delay" : "1500"
-    }
+    },
+
+    "certificate-path" : "certificate-and-privatekey/client0x1343.cert.pem",
+    "private-key-path" : "certificate-and-privatekey/client0x1343.key.pem"
 }
