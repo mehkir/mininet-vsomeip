@@ -2,7 +2,7 @@
 #define VSOMEIP_V3_SVCB_RESOLVER_H
 
 #include "dns_resolver.hpp"
-#include "../include/someip_dns_parameters.hpp"
+#include "someip_dns_parameters.hpp"
 
 namespace vsomeip_v3 {
     class svcb_resolver {
