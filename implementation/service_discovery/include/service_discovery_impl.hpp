@@ -480,6 +480,15 @@ private:
 public:
     void set_request_cache(request_cache* _request_cache);
     void set_timestamp_collector(timestamp_collector* _timestamp_collector);
+    void resume_process_offerservice_serviceentry(
+        service_t _service, instance_t _instance, major_version_t _major,
+        minor_version_t _minor, ttl_t _ttl,
+        const boost::asio::ip::address &_reliable_address,
+        uint16_t _reliable_port,
+        const boost::asio::ip::address &_unreliable_address,
+        uint16_t _unreliable_port,
+        std::vector<std::shared_ptr<message_impl> > &_resubscribes,
+        bool _received_via_mcast);
 
 private:
     request_cache* request_cache_;
