@@ -1,10 +1,21 @@
 #include "../include/resume_process_offerservice_cache.hpp"
 
 namespace vsomeip_v3 {
-    resume_process_offerservice_cache::resume_process_offerservice_cache(/* args */) {
+    std::mutex resume_process_offerservice_cache::mutex_;
+    resume_process_offerservice_cache* resume_process_offerservice_cache::instance;
+
+    resume_process_offerservice_cache::resume_process_offerservice_cache() {
     }
     
     resume_process_offerservice_cache::~resume_process_offerservice_cache() {
+    }
+
+    resume_process_offerservice_cache* resume_process_offerservice_cache::getInstance() {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if(instance == nullptr) {
+            instance = new resume_process_offerservice_cache();
+        }
+        return instance;
     }
 
     void resume_process_offerservice_cache::add_offerservice_entry(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor, ttl_t _ttl, const boost::asio::ip::address _reliable_address, uint16_t _reliable_port, const boost::asio::ip::address _unreliable_address, uint16_t _unreliable_port, std::vector<std::shared_ptr<sd::message_impl> > _resubscribes, bool _received_via_mcast) {
