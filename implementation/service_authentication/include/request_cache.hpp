@@ -1,5 +1,5 @@
-#ifndef VSOMEIP_REQUEST_CACHE_HPP
-#define VSOMEIP_REQUEST_CACHE_HPP
+#ifndef VSOMEIP_V3_REQUEST_CACHE_HPP
+#define VSOMEIP_V3_REQUEST_CACHE_HPP
 
 #include <mutex>
 #include <map>
@@ -49,4 +49,4 @@ public:
                     vsomeip_v3::instance_t instanceId);
 };
 } /* end namespace vsomeip_v3*/
-#endif /* VSOMEIP_REQUEST_CACHE_HPP */
+#endif /* VSOMEIP_V3_REQUEST_CACHE_HPP */
