@@ -18,7 +18,7 @@ namespace vsomeip_v3 {
         return instance;
     }
 
-    void resume_process_offerservice_cache::add_offerservice_entry(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor, ttl_t _ttl, const boost::asio::ip::address _reliable_address, uint16_t _reliable_port, const boost::asio::ip::address _unreliable_address, uint16_t _unreliable_port, std::vector<std::shared_ptr<sd::message_impl> > _resubscribes, bool _received_via_mcast) {
+    void resume_process_offerservice_cache::add_offerservice_entry(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor, ttl_t _ttl, const boost::asio::ip::address_v4 _reliable_address, uint16_t _reliable_port, const boost::asio::ip::address_v4 _unreliable_address, uint16_t _unreliable_port, std::vector<std::shared_ptr<sd::message_impl>> _resubscribes, bool _received_via_mcast) {
         auto key_tuple = make_key_tuple(_service, _instance, _major, _minor);
         resume_process_offerservice_map[key_tuple]._service = _service;
         resume_process_offerservice_map[key_tuple]._instance = _instance;
