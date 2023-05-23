@@ -34,11 +34,13 @@ namespace vsomeip_v3 {
     }
 
     void resume_process_offerservice_cache::remove_offerservice_entry(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) {
+        std::lock_guard<std::mutex> lock_guard(mutex_);
         auto key_tuple = make_key_tuple(_service, _instance, _major, _minor);
         resume_process_offerservice_map.erase(key_tuple);
     }
 
     resume_process_offerservice_entry resume_process_offerservice_cache::get_offerservice_entry(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) {
+        std::lock_guard<std::mutex> lock_guard(mutex_);
         auto key_tuple = make_key_tuple(_service, _instance, _major, _minor);
         resume_process_offerservice_entry entry;
         if (resume_process_offerservice_map.count(key_tuple)) {

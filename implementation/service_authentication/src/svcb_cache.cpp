@@ -19,6 +19,7 @@ namespace vsomeip_v3 {
     }
     
     void svcb_cache::add_svcb_cache_entry(service_t service_id, instance_t instance_id, major_version_t major_version, minor_version_t minor_version, int l4protocol, const boost::asio::ip::address_v4 ip_address, uint16_t port) {
+        std::lock_guard<std::mutex> lock_guard(mutex_);
         auto key_tuple = make_key_tuple(service_id, instance_id, major_version, minor_version);
         svcb_cache_entry entry;
         entry._service = service_id;
@@ -32,11 +33,13 @@ namespace vsomeip_v3 {
     }
     
     void svcb_cache::remove_svcb_cache_entry(service_t service_id, instance_t instance_id, major_version_t major_version, minor_version_t minor_version) {
+        std::lock_guard<std::mutex> lock_guard(mutex_);
         auto key_tuple = make_key_tuple(service_id, instance_id, major_version, minor_version);
         svcb_cache_map.erase(key_tuple);
     }
 
     svcb_cache_entry svcb_cache::get_svcb_cache_entry(service_t service_id, instance_t instance_id, major_version_t major_version, minor_version_t minor_version) {
+        std::lock_guard<std::mutex> lock_guard(mutex_);
         auto key_tuple = make_key_tuple(service_id, instance_id, major_version, minor_version);
         return svcb_cache_map[key_tuple];
     }
