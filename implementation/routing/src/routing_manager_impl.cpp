@@ -84,8 +84,7 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         pending_remote_offer_id_(0),
         last_resume_(std::chrono::steady_clock::now().min()),
         statistics_log_timer_(_host->get_io()),
-        ignored_statistics_counter_(0),
-        request_cache_(request_cache::getInstance())
+        ignored_statistics_counter_(0)
 {
 }
 
@@ -132,6 +131,7 @@ void routing_manager_impl::init() {
             discovery_ = std::dynamic_pointer_cast<sd::runtime>(its_plugin)->create_service_discovery(this, configuration_);
             discovery_->init();
             discovery_->set_request_cache(request_cache_);
+            discovery_->set_svcb_cache(svcb_cache_);
             discovery_->set_timestamp_collector(timestamp_collector_);
         } else {
             VSOMEIP_ERROR << "Service Discovery module could not be loaded!";
@@ -551,29 +551,6 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
         requests.insert(request);
         stub_->handle_requests(_client, requests);
     }
-
-    //Addition for Service Authentication
-    /*
-    remote_service_data* service_data = new remote_service_data();
-    service_data->service = _service;
-    service_data->instance = _instance;
-    service_data->major = _major;
-    service_data->minor = _minor;
-    service_data->local_ip_address = configuration_->get_unicast_address().to_v4();
-    service_data->request_cache_callback = std::bind(&request_cache::add_request_certificate, request_cache_,
-                                            std::placeholders::_1,
-                                            std::placeholders::_2,
-                                            std::placeholders::_3,
-                                            std::placeholders::_4);
-    service_data->request_tlsa_record_callback = std::bind(&record_checker::request_tlsa_record, record_checker_,
-                                            std::placeholders::_1,
-                                            std::placeholders::_2);
-    service_data->record_timestamp_callback_ = std::bind(&timestamp_collector::record_timestamp, timestamp_collector_,
-                                            std::placeholders::_1);
-    service_data->convert_DER_to_PEM_callback_ = std::bind(&crypto_operator::convertDERToPEM, crypto_operator::getInstance(),
-                                            std::placeholders::_1);
-    record_checker_.request_svcb_record(service_data);
-    */
 }
 
 void routing_manager_impl::release_service(client_t _client, service_t _service,
@@ -4468,6 +4445,16 @@ void routing_manager_impl::statistics_log_timer_cbk(boost::system::error_code co
                               this, std::placeholders::_1));
         }
     }
+}
+
+
+// Additional method for service authentication
+void routing_manager_impl::set_svcb_cache(svcb_cache* _svcb_cache) {
+    svcb_cache_ = _svcb_cache;
+}
+
+void routing_manager_impl::set_request_cache(request_cache* _request_cache) {
+    request_cache_ = _request_cache;
 }
 
 // Additional method for time measurement
