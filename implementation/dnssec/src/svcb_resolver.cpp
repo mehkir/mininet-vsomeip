@@ -37,7 +37,7 @@ namespace vsomeip_v3 {
         
         SVCB_Reply* svcbReplyPtr = svcbReply;
         while (svcbReplyPtr != nullptr) {
-            //std::cout << "record checker\n" << *svcbReplyPtr << std::endl;
+            //std::cout << "svcb_resolver\n" << *svcbReplyPtr << std::endl;
             std::string reliable_address = "", unreliable_address = "";
             uint16_t reliable_port = 0, unreliable_port = 0;
             int l4protocol = std::stoi(svcbReplyPtr->getSVCBKey(L4PROTOCOL));
@@ -60,6 +60,7 @@ namespace vsomeip_v3 {
             service_data_and_cbs_->instance = std::stoi(svcbReplyPtr->getSVCBKey(INSTANCE),0,16);
             service_data_and_cbs_->major = std::stoi(svcbReplyPtr->getSVCBKey(MAJOR_VERSION),0,16);
             service_data_and_cbs_->minor = std::stoi(svcbReplyPtr->getSVCBKey(MINOR_VERSION),0,16);
+            service_data_and_cbs_->add_svcb_entry_cache_callback_(service_data_and_cbs_->service, service_data_and_cbs_->instance, service_data_and_cbs_->major, service_data_and_cbs_->minor, l4protocol, service_data_and_cbs_->ip_address, svcbReplyPtr->port);
             //Assemble TLSA QNAME
             std::stringstream tlsa_request;
             tlsa_request << ATTRLEAFBRANCH;
