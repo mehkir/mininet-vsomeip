@@ -71,6 +71,7 @@ application_impl::application_impl(const std::string &_name)
           dns_resolver_(dns_resolver::getInstance()),
           svcb_cache_(svcb_cache::getInstance()),
           request_cache_(request_cache::getInstance()),
+          resume_process_offerservice_cache_(resume_process_offerservice_cache::getInstance()),
           timestamp_collector_(timestamp_collector::getInstance())
 #ifdef VSOMEIP_HAS_SESSION_HANDLING_CONFIG
           , has_session_handling_(true)
@@ -276,6 +277,7 @@ bool application_impl::init() {
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_timestamp_collector(timestamp_collector_);
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_svcb_cache(svcb_cache_);
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_request_cache(request_cache_);
+            dynamic_cast<routing_manager_impl*>(routing_.get())->set_resume_process_offerservice_cache(resume_process_offerservice_cache_);
         } else {
             VSOMEIP_INFO << "Instantiating routing manager [Proxy].";
             routing_ = std::make_shared<routing_manager_proxy>(this, client_side_logging_, client_side_logging_filter_);
@@ -588,25 +590,33 @@ void application_impl::request_service(service_t _service, instance_t _instance,
     VSOMEIP_DEBUG << ">>>>> application_impl::request_service (MEHMET MUELLER DEBUG) <<<<<";
 
     //Addition for Service Authentication
-    service_data_and_cbs* service_data = new service_data_and_cbs();
-    service_data->service = _service;
-    service_data->instance = _instance;
-    service_data->major = _major;
-    service_data->minor = _minor;
-    service_data->ip_address = configuration_->get_unicast_address().to_v4();
-    service_data->request_cache_callback_ = std::bind(&request_cache::add_request_certificate, request_cache_,
+    service_data_and_cbs* service_data_and_cbs_ = new service_data_and_cbs();
+    service_data_and_cbs_->service = _service;
+    service_data_and_cbs_->instance = _instance;
+    service_data_and_cbs_->major = _major;
+    service_data_and_cbs_->minor = _minor;
+    service_data_and_cbs_->ip_address = configuration_->get_unicast_address().to_v4();
+    service_data_and_cbs_->add_svcb_entry_cache_callback_ = std::bind(&svcb_cache::add_svcb_cache_entry, svcb_cache_,
+                                            std::placeholders::_1,
+                                            std::placeholders::_2,
+                                            std::placeholders::_3,
+                                            std::placeholders::_4,
+                                            std::placeholders::_5,
+                                            std::placeholders::_6,
+                                            std::placeholders::_7);
+    service_data_and_cbs_->request_cache_callback_ = std::bind(&request_cache::add_request_certificate, request_cache_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
                                             std::placeholders::_4);
-    service_data->request_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_tlsa_record, tlsa_resolver_,
+    service_data_and_cbs_->request_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_tlsa_record, tlsa_resolver_,
                                             std::placeholders::_1,
                                             std::placeholders::_2);
-    service_data->record_timestamp_callback_ = std::bind(&timestamp_collector::record_timestamp, timestamp_collector_,
+    service_data_and_cbs_->record_timestamp_callback_ = std::bind(&timestamp_collector::record_timestamp, timestamp_collector_,
                                             std::placeholders::_1);
-    service_data->convert_DER_to_PEM_callback_ = std::bind(&crypto_operator::convertDERToPEM, crypto_operator::getInstance(),
+    service_data_and_cbs_->convert_DER_to_PEM_callback_ = std::bind(&crypto_operator::convertDERToPEM, crypto_operator::getInstance(),
                                             std::placeholders::_1);
-    svcb_resolver_.request_svcb_record(service_data);
+    svcb_resolver_.request_svcb_record(service_data_and_cbs_);
 
     if (routing_)
         routing_->request_service(client_, _service, _instance, _major, _minor);
