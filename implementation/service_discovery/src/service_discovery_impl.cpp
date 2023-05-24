@@ -43,6 +43,7 @@
 // Additional includes
 #include "../include/configuration_option_impl.hpp"
 #include "../../service_authentication/include/data_partitioner.hpp"
+#include <netinet/in.h>
 
 #define CERTKEY "cert"
 #define NONCEKEY "nonce"
@@ -1533,7 +1534,27 @@ service_discovery_impl::process_offerservice_serviceentry(
             }
         }
     }
+    resume_process_offerservice_cache_->add_offerservice_entry(_service, _instance, _major, _minor, _ttl, boost::asio::ip::address_v4::from_string(_reliable_address.to_string()), _reliable_port, boost::asio::ip::address_v4::from_string(_unreliable_address.to_string()), _unreliable_port, _resubscribes, _received_via_mcast);
+    resume_when_verfied(_service, _instance, _major, _minor);
+}
 
+void
+service_discovery_impl::resume_when_verfied(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) {
+    resume_process_offerservice_entry _resume_process_offerservice_entry = resume_process_offerservice_cache_->get_offerservice_entry(_service, _instance, _major, _minor);
+    svcb_cache_entry _svcb_cache_entry = svcb_cache_->get_svcb_cache_entry(_service, _instance, _major, _minor);
+    if (_resume_process_offerservice_entry._service == _svcb_cache_entry._service
+        && _resume_process_offerservice_entry._instance == _svcb_cache_entry._instance
+        && _resume_process_offerservice_entry._major == _svcb_cache_entry._major
+        && _resume_process_offerservice_entry._minor == _svcb_cache_entry._minor
+        && (   (_svcb_cache_entry.l4protocol == IPPROTO_UDP && _resume_process_offerservice_entry._unreliable_address == _svcb_cache_entry.ip_address
+                && _resume_process_offerservice_entry._unreliable_port == _svcb_cache_entry.port) 
+            || (_svcb_cache_entry.l4protocol == IPPROTO_TCP && _resume_process_offerservice_entry._reliable_address == _svcb_cache_entry.ip_address
+                && _resume_process_offerservice_entry._reliable_port == _svcb_cache_entry.port)
+           )
+        ) {
+        resume_process_offerservice_serviceentry(_resume_process_offerservice_entry._service, _resume_process_offerservice_entry._instance, _resume_process_offerservice_entry._major, _resume_process_offerservice_entry._minor, _resume_process_offerservice_entry._ttl, _resume_process_offerservice_entry._reliable_address, _resume_process_offerservice_entry._reliable_port, _resume_process_offerservice_entry._unreliable_address, _resume_process_offerservice_entry._unreliable_port, _resume_process_offerservice_entry._resubscribes, _resume_process_offerservice_entry._received_via_mcast);
+        resume_process_offerservice_cache_->remove_offerservice_entry(_service, _instance, _major, _minor);
+    }
 }
 
 void
