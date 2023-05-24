@@ -1369,6 +1369,11 @@ service_discovery_impl::set_svcb_cache(svcb_cache* _svcb_cache) {
 }
 
 void
+service_discovery_impl::set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache) {
+    this->resume_process_offerservice_cache_ = _resume_process_offerservice_cache;
+}
+
+void
 service_discovery_impl::set_timestamp_collector(timestamp_collector* _timestamp_collector) {
     this->timestamp_collector_ = _timestamp_collector;
 }
@@ -1528,6 +1533,7 @@ service_discovery_impl::process_offerservice_serviceentry(
             }
         }
     }
+
 }
 
 void
