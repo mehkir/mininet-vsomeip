@@ -132,6 +132,7 @@ void routing_manager_impl::init() {
             discovery_->init();
             discovery_->set_request_cache(request_cache_);
             discovery_->set_svcb_cache(svcb_cache_);
+            discovery_->set_resume_process_offerservice_cache(resume_process_offerservice_cache_);
             discovery_->set_timestamp_collector(timestamp_collector_);
         } else {
             VSOMEIP_ERROR << "Service Discovery module could not be loaded!";
@@ -4455,6 +4456,10 @@ void routing_manager_impl::set_svcb_cache(svcb_cache* _svcb_cache) {
 
 void routing_manager_impl::set_request_cache(request_cache* _request_cache) {
     request_cache_ = _request_cache;
+}
+
+void routing_manager_impl::set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache) {
+    resume_process_offerservice_cache_ = _resume_process_offerservice_cache;
 }
 
 // Additional method for time measurement

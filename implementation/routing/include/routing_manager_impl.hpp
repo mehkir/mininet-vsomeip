@@ -31,6 +31,7 @@
 //Additional includes for service authentication
 #include "../../service_authentication/include/request_cache.hpp"
 #include "../../service_authentication/include/svcb_cache.hpp"
+#include "../../service_discovery/include/resume_process_offerservice_cache.hpp"
 //Additional include for time measurement
 #include "../../timestamps/include/timestamp_collector.hpp"
 
@@ -305,6 +306,7 @@ public:
     // Additional method for service authentication
     void set_svcb_cache(svcb_cache* _svcb_cache);
     void set_request_cache(request_cache* _request_cache);
+    void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache);
 private:
     bool offer_service(client_t _client,
             service_t _service, instance_t _instance,
@@ -507,6 +509,7 @@ private:
     //Addition for service authentication
     request_cache* request_cache_;
     svcb_cache* svcb_cache_;
+    resume_process_offerservice_cache* resume_process_offerservice_cache_;
     //Addition for time measurement
     timestamp_collector* timestamp_collector_;
 };
