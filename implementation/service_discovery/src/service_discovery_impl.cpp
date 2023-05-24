@@ -1364,6 +1364,11 @@ service_discovery_impl::set_request_cache(request_cache* _request_cache) {
 }
 
 void
+service_discovery_impl::set_svcb_cache(svcb_cache* _svcb_cache) {
+    this->svcb_cache_ = _svcb_cache;
+}
+
+void
 service_discovery_impl::set_timestamp_collector(timestamp_collector* _timestamp_collector) {
     this->timestamp_collector_ = _timestamp_collector;
 }

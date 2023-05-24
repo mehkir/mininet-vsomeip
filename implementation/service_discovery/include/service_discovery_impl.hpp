@@ -479,6 +479,7 @@ private:
 // Addition for service authentication
 public:
     void set_request_cache(request_cache* _request_cache);
+    void set_svcb_cache(svcb_cache* _svcb_cache);
     void set_timestamp_collector(timestamp_collector* _timestamp_collector);
     void resume_process_offerservice_serviceentry(
         service_t _service, instance_t _instance, major_version_t _major,
@@ -492,6 +493,7 @@ public:
 
 private:
     request_cache* request_cache_;
+    svcb_cache* svcb_cache_;
     timestamp_collector* timestamp_collector_;
     crypto_operator* crypto_operator_;
     std::vector<CryptoPP::byte> certificate_data_;

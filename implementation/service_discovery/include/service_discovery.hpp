@@ -17,6 +17,7 @@
 #include "../include/service_discovery_host.hpp"
 
 //Additional includes for service authentication
+#include "../../service_authentication/include/svcb_cache.hpp"
 #include "../../service_authentication/include/request_cache.hpp"
 //Additional include for time measurement
 #include "../../timestamps/include/timestamp_collector.hpp"
@@ -78,6 +79,7 @@ public:
 
     // Addition for service authentication
     virtual void set_request_cache(request_cache* _request_cache) = 0;
+    virtual void set_svcb_cache(svcb_cache* _svcb_cache) = 0;
     // Addition for time measurement
     virtual void set_timestamp_collector(timestamp_collector* _timestamp_collector) = 0;
 };
