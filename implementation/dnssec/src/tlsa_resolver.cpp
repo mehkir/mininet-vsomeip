@@ -16,7 +16,6 @@ namespace vsomeip_v3 {
     void tlsa_resolve_callback(void *data, int status, int timeouts,
                 unsigned char *abuf, int alen) {
         service_data_and_cbs* service_data_and_cbs_ = reinterpret_cast<service_data_and_cbs*>(data);
-        service_data_and_cbs_->record_timestamp_callback_(TLSA_RESPONSE);
         
         if (status) {
             std::cout << "Bad DNS response" << std::endl;
@@ -45,7 +44,6 @@ namespace vsomeip_v3 {
     }
 
     void tlsa_resolver::request_tlsa_record(void* service_data, std::string tlsa_request) {
-        reinterpret_cast<service_data_and_cbs*>(service_data)->record_timestamp_callback_(TLSA_REQUEST);
         dns_resolver_->resolve(tlsa_request.c_str(), C_IN, T_TLSA, tlsa_resolve_callback, service_data);
     }
 } /* end namespace vsomeip_v3 */

@@ -19,7 +19,6 @@ namespace vsomeip_v3 {
                 unsigned char *abuf, int alen) {
         LOG_DEBUG("svcb_resolve_callback is called")
         service_data_and_cbs* service_data_and_cbs_ = reinterpret_cast<service_data_and_cbs*>(data);
-        service_data_and_cbs_->record_timestamp_callback_(SVCB_RESPONSE);
         
         if (status) {
             std::cout << "Bad DNS response" << std::endl;
@@ -84,7 +83,6 @@ namespace vsomeip_v3 {
     }
 
     void svcb_resolver::request_svcb_record(service_data_and_cbs* service_data_and_cbs_) {
-        service_data_and_cbs_->record_timestamp_callback_(SVCB_REQUEST);
         std::stringstream request;
         request << ATTRLEAFBRANCH;
         if (service_data_and_cbs_->minor != ANY_MINOR) {
