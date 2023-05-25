@@ -1535,6 +1535,8 @@ service_discovery_impl::process_offerservice_serviceentry(
         }
     }
     resume_process_offerservice_cache_->add_offerservice_entry(_service, _instance, _major, _minor, _ttl, boost::asio::ip::address_v4::from_string(_reliable_address.to_string()), _reliable_port, boost::asio::ip::address_v4::from_string(_unreliable_address.to_string()), _unreliable_port, _resubscribes, _received_via_mcast);
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_offerservice_serviceentry: Add oferservice entry service=" << _service
+    << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
     resume_when_verfied(_service, _instance, _major, _minor);
 }
 
@@ -1552,8 +1554,13 @@ service_discovery_impl::resume_when_verfied(service_t _service, instance_t _inst
                 && _resume_process_offerservice_entry._reliable_port == _svcb_cache_entry.port)
            )
         ) {
+        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::resume_when_verfied: Found SVCB record for service=" << _service
+        << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
         resume_process_offerservice_serviceentry(_resume_process_offerservice_entry._service, _resume_process_offerservice_entry._instance, _resume_process_offerservice_entry._major, _resume_process_offerservice_entry._minor, _resume_process_offerservice_entry._ttl, _resume_process_offerservice_entry._reliable_address, _resume_process_offerservice_entry._reliable_port, _resume_process_offerservice_entry._unreliable_address, _resume_process_offerservice_entry._unreliable_port, _resume_process_offerservice_entry._resubscribes, _resume_process_offerservice_entry._received_via_mcast);
         resume_process_offerservice_cache_->remove_offerservice_entry(_service, _instance, _major, _minor);
+    } else {
+        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::resume_when_verfied: Found no SVCB record for service=" << _service
+        << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
     }
 }
 
