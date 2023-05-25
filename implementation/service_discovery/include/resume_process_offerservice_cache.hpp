@@ -16,9 +16,9 @@ namespace vsomeip_v3 {
         major_version_t _major = -1;
         minor_version_t _minor = -1;
         ttl_t _ttl = -1;
-        const boost::asio::ip::address_v4 _reliable_address = boost::asio::ip::address_v4::from_string("0.0.0.0");;
+        boost::asio::ip::address_v4 _reliable_address = boost::asio::ip::address_v4::from_string("0.0.0.0");;
         uint16_t _reliable_port = -1;
-        const boost::asio::ip::address_v4 _unreliable_address = boost::asio::ip::address_v4::from_string("0.0.0.0");
+        boost::asio::ip::address_v4 _unreliable_address = boost::asio::ip::address_v4::from_string("0.0.0.0");
         uint16_t _unreliable_port = -1;
         std::vector<std::shared_ptr<sd::message_impl> > _resubscribes;
         bool _received_via_mcast = false;

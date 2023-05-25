@@ -1535,8 +1535,8 @@ service_discovery_impl::process_offerservice_serviceentry(
         }
     }
     resume_process_offerservice_cache_->add_offerservice_entry(_service, _instance, _major, _minor, _ttl, boost::asio::ip::address_v4::from_string(_reliable_address.to_string()), _reliable_port, boost::asio::ip::address_v4::from_string(_unreliable_address.to_string()), _unreliable_port, _resubscribes, _received_via_mcast);
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_offerservice_serviceentry: Add oferservice entry service=" << _service
-    << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_offerservice_serviceentry: Add offerservice entry service=" << _service
+    << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << ", tcp=(" << _reliable_address.to_string() << "," << _reliable_port << ")" << ", udp=(" << _unreliable_address.to_string() << "," << _unreliable_port << ")" << " (MEHMET MUELLER DEBUG) <<<<<";
     resume_when_verfied(_service, _instance, _major, _minor);
 }
 
@@ -1574,6 +1574,9 @@ service_discovery_impl::resume_process_offerservice_serviceentry(
     uint16_t _unreliable_port,
     std::vector<std::shared_ptr<message_impl> > &_resubscribes,
     bool _received_via_mcast) {
+    
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::resume_process_offerservice_serviceentry: service=" << _service
+    << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << ", tcp=(" << _reliable_address.to_string() << "," << _reliable_port << ")" << ", udp=(" << _unreliable_address.to_string() << "," << _unreliable_port << ")" << " (MEHMET MUELLER DEBUG) <<<<<";
 
     host_->add_routing_info(_service, _instance,
                             _major, _minor,

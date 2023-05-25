@@ -25,9 +25,9 @@ namespace vsomeip_v3 {
         resume_process_offerservice_map[key_tuple]._major = _major;
         resume_process_offerservice_map[key_tuple]._minor = _minor;
         resume_process_offerservice_map[key_tuple]._ttl = _ttl;
-        resume_process_offerservice_map[key_tuple]._reliable_address.from_string(_reliable_address.to_string());
+        resume_process_offerservice_map[key_tuple]._reliable_address = boost::asio::ip::address_v4::from_string(_reliable_address.to_string());
         resume_process_offerservice_map[key_tuple]._reliable_port = _reliable_port;
-        resume_process_offerservice_map[key_tuple]._unreliable_address.from_string(_unreliable_address.to_string());
+        resume_process_offerservice_map[key_tuple]._unreliable_address = boost::asio::ip::address_v4::from_string(_unreliable_address.to_string());
         resume_process_offerservice_map[key_tuple]._unreliable_port = _unreliable_port;
         resume_process_offerservice_map[key_tuple]._resubscribes = _resubscribes;
         resume_process_offerservice_map[key_tuple]._received_via_mcast = _received_via_mcast;
