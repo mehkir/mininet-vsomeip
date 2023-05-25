@@ -42,21 +42,7 @@ namespace vsomeip_v3 {
     resume_process_offerservice_entry resume_process_offerservice_cache::get_offerservice_entry(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) {
         std::lock_guard<std::mutex> lock_guard(mutex_);
         auto key_tuple = make_key_tuple(_service, _instance, _major, _minor);
-        resume_process_offerservice_entry entry;
-        if (resume_process_offerservice_map.count(key_tuple)) {
-            entry._service = resume_process_offerservice_map[key_tuple]._service;
-            entry._instance = resume_process_offerservice_map[key_tuple]._instance;
-            entry._major = resume_process_offerservice_map[key_tuple]._major;
-            entry._minor = resume_process_offerservice_map[key_tuple]._minor;
-            entry._ttl = resume_process_offerservice_map[key_tuple]._ttl;
-            entry._reliable_address.from_string(resume_process_offerservice_map[key_tuple]._reliable_address.to_string());
-            entry._reliable_port = resume_process_offerservice_map[key_tuple]._reliable_port;
-            entry._unreliable_address.from_string(resume_process_offerservice_map[key_tuple]._unreliable_address.to_string());
-            entry._unreliable_port = resume_process_offerservice_map[key_tuple]._unreliable_port;
-            entry._resubscribes = resume_process_offerservice_map[key_tuple]._resubscribes;
-            entry._received_via_mcast = resume_process_offerservice_map[key_tuple]._received_via_mcast;
-        }
-        return entry;
+        return resume_process_offerservice_map[key_tuple];
     }
 
     std::tuple<service_t, instance_t, major_version_t, minor_version_t> resume_process_offerservice_cache::make_key_tuple(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) {
