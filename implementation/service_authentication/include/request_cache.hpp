@@ -48,5 +48,5 @@ public:
                     vsomeip_v3::instance_t> make_key_tupe(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId);
 };
-} /* end namespace vsomeip_v3*/
+} /* end namespace vsomeip_v3 */
 #endif /* VSOMEIP_V3_REQUEST_CACHE_HPP */
