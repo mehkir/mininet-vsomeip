@@ -35,6 +35,7 @@
 #include "../../service_authentication/include/request_cache.hpp"
 #include "../../service_authentication/include/svcb_cache.hpp"
 #include "../../service_discovery/include/resume_process_offerservice_cache.hpp"
+#include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
 
 //Additional include for time measurement
 #include "../../timestamps/include/timestamp_collector.hpp"
@@ -513,6 +514,7 @@ private:
     svcb_cache* svcb_cache_;
     request_cache* request_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
+    eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
     //Addition for time measurement
     timestamp_collector* timestamp_collector_;
 };

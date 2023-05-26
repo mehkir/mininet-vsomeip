@@ -88,7 +88,8 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         dns_resolver_(dns_resolver::getInstance()),
         svcb_cache_(svcb_cache::getInstance()),
         request_cache_(request_cache::getInstance()),
-        resume_process_offerservice_cache_(resume_process_offerservice_cache::getInstance())
+        resume_process_offerservice_cache_(resume_process_offerservice_cache::getInstance()),
+        eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance())
 {
 }
 
@@ -139,6 +140,7 @@ void routing_manager_impl::init() {
             discovery_->set_request_cache(request_cache_);
             discovery_->set_svcb_cache(svcb_cache_);
             discovery_->set_resume_process_offerservice_cache(resume_process_offerservice_cache_);
+            discovery_->set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache_);
             discovery_->set_timestamp_collector(timestamp_collector_);
         } else {
             VSOMEIP_ERROR << "Service Discovery module could not be loaded!";
