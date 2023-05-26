@@ -2342,6 +2342,11 @@ service_discovery_impl::process_eventgroupentry(
 }
 
 void
+service_discovery_impl::verify_publisher_signature() {
+
+}
+
+void
 service_discovery_impl::handle_eventgroup_subscription(
         service_t _service, instance_t _instance,
         eventgroup_t _eventgroup, major_version_t _major,
