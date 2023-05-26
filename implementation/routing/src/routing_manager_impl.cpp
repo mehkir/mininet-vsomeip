@@ -519,7 +519,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_5,
                                             std::placeholders::_6,
                                             std::placeholders::_7);
-    service_data_and_cbs_->resume_when_verified_callback_ = std::bind(&sd::service_discovery::resume_when_verified, discovery_,
+    service_data_and_cbs_->resume_process_offerservice_serviceentry_when_verified_callback_ = std::bind(&sd::service_discovery::resume_process_offerservice_serviceentry_when_verified, discovery_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
