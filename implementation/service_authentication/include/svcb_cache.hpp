@@ -43,5 +43,5 @@ namespace vsomeip_v3 {
 
     };
 
-} /* end namespace vsomeip_v3*/
+} /* end namespace vsomeip_v3 */
 #endif /* VSOMEIP_V3_SVCB_CACHE_HPP */

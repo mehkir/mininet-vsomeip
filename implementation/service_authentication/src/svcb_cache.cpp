@@ -27,7 +27,7 @@ namespace vsomeip_v3 {
         entry._major = major_version;
         entry._minor = minor_version;
         entry.l4protocol = l4protocol;
-        entry.ip_address = boost::asio::ip::address_v4::from_string(ip_address.to_string());
+        entry.ip_address = ip_address;
         entry.port = port;
         svcb_cache_map[key_tuple] = entry;
     }
