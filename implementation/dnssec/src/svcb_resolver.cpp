@@ -60,6 +60,7 @@ namespace vsomeip_v3 {
             service_data_and_cbs_->major = std::stoi(svcbReplyPtr->getSVCBKey(MAJOR_VERSION),0,16);
             service_data_and_cbs_->minor = std::stoi(svcbReplyPtr->getSVCBKey(MINOR_VERSION),0,16);
             service_data_and_cbs_->add_svcb_entry_cache_callback_(service_data_and_cbs_->service, service_data_and_cbs_->instance, service_data_and_cbs_->major, service_data_and_cbs_->minor, l4protocol, service_data_and_cbs_->ip_address, svcbReplyPtr->port);
+            service_data_and_cbs_->resume_when_verified_callback_(service_data_and_cbs_->service, service_data_and_cbs_->instance, service_data_and_cbs_->major, service_data_and_cbs_->minor);
             //Assemble TLSA QNAME
             std::stringstream tlsa_request;
             tlsa_request << ATTRLEAFBRANCH;
