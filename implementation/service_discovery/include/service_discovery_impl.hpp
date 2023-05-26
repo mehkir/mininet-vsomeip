@@ -492,6 +492,7 @@ public:
         uint16_t _unreliable_port,
         std::vector<std::shared_ptr<message_impl> > &_resubscribes,
         bool _received_via_mcast);
+    void verify_publisher_signature();
 
 private:
     request_cache* request_cache_;
