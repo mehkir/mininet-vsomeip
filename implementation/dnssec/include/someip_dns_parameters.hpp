@@ -19,6 +19,7 @@
 namespace vsomeip_v3 {
     //struct service_data_and_callbacks;
     typedef std::function<void(boost::asio::ip::address_v4, service_t, instance_t, std::vector<unsigned char>)> request_cache_callback;
+    typedef std::function<void(service_t, instance_t, major_version_t, minor_version_t)> resume_when_verified_callback;
     typedef std::function<void(service_t, instance_t, major_version_t, minor_version_t, int, const boost::asio::ip::address_v4, uint16_t)> add_svcb_entry_cache_callback;
     typedef std::function<void(void*, std::string)> request_tlsa_record_callback;
     typedef std::function<void(std::string)> record_timestamp_callback;
@@ -30,6 +31,7 @@ namespace vsomeip_v3 {
         minor_version_t minor;
         boost::asio::ip::address_v4 ip_address;
         add_svcb_entry_cache_callback add_svcb_entry_cache_callback_;
+        resume_when_verified_callback resume_when_verified_callback_;
         request_cache_callback request_cache_callback_;
         request_tlsa_record_callback request_tlsa_record_callback_;
         record_timestamp_callback record_timestamp_callback_;

@@ -82,6 +82,7 @@ public:
     virtual void set_request_cache(request_cache* _request_cache) = 0;
     virtual void set_svcb_cache(svcb_cache* _svcb_cache) = 0;
     virtual void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache) = 0;
+    virtual void resume_when_verified(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) = 0;
     // Addition for time measurement
     virtual void set_timestamp_collector(timestamp_collector* _timestamp_collector) = 0;
 };

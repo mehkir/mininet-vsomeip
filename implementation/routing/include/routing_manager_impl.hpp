@@ -28,10 +28,14 @@
 #include "../../service_discovery/include/service_discovery_host.hpp"
 #include "../../endpoints/include/endpoint_manager_impl.hpp"
 
-//Additional includes for service authentication
+// Additional include for service authentication
+#include "../../dnssec/include/dns_resolver.hpp"
+#include "../../dnssec/include/svcb_resolver.hpp"
+#include "../../dnssec/include/tlsa_resolver.hpp"
 #include "../../service_authentication/include/request_cache.hpp"
 #include "../../service_authentication/include/svcb_cache.hpp"
 #include "../../service_discovery/include/resume_process_offerservice_cache.hpp"
+
 //Additional include for time measurement
 #include "../../timestamps/include/timestamp_collector.hpp"
 
@@ -303,10 +307,6 @@ public:
 
     // Additional method for time measurement
     void set_timestamp_collector(timestamp_collector* _timestamp_collector);
-    // Additional method for service authentication
-    void set_svcb_cache(svcb_cache* _svcb_cache);
-    void set_request_cache(request_cache* _request_cache);
-    void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache);
 private:
     bool offer_service(client_t _client,
             service_t _service, instance_t _instance,
@@ -506,9 +506,12 @@ private:
     std::tuple<service_t, instance_t, method_t> message_to_discard_;
     uint32_t ignored_statistics_counter_;
 
-    //Addition for service authentication
-    request_cache* request_cache_;
+    // Addtional Member for Service Authenticity
+    dns_resolver* dns_resolver_;
+    svcb_resolver svcb_resolver_;
+    tlsa_resolver tlsa_resolver_;
     svcb_cache* svcb_cache_;
+    request_cache* request_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
     //Addition for time measurement
     timestamp_collector* timestamp_collector_;

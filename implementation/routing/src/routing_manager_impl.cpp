@@ -84,13 +84,19 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         pending_remote_offer_id_(0),
         last_resume_(std::chrono::steady_clock::now().min()),
         statistics_log_timer_(_host->get_io()),
-        ignored_statistics_counter_(0)
+        ignored_statistics_counter_(0),
+        dns_resolver_(dns_resolver::getInstance()),
+        svcb_cache_(svcb_cache::getInstance()),
+        request_cache_(request_cache::getInstance()),
+        resume_process_offerservice_cache_(resume_process_offerservice_cache::getInstance())
 {
 }
 
 routing_manager_impl::~routing_manager_impl() {
     utility::remove_lockfile(configuration_);
     utility::reset_client_ids();
+    VSOMEIP_INFO << "Cleanup DNS resolver";
+    dns_resolver_->cleanup();
 }
 
 boost::asio::io_service & routing_manager_impl::get_io() {
@@ -497,6 +503,40 @@ void routing_manager_impl::stop_offer_service(client_t _client,
 
 void routing_manager_impl::request_service(client_t _client, service_t _service,
         instance_t _instance, major_version_t _major, minor_version_t _minor) {
+
+    //Addition for Service Authentication
+    service_data_and_cbs* service_data_and_cbs_ = new service_data_and_cbs();
+    service_data_and_cbs_->service = _service;
+    service_data_and_cbs_->instance = _instance;
+    service_data_and_cbs_->major = _major;
+    service_data_and_cbs_->minor = _minor;
+    service_data_and_cbs_->ip_address = configuration_->get_unicast_address().to_v4();
+    service_data_and_cbs_->add_svcb_entry_cache_callback_ = std::bind(&svcb_cache::add_svcb_cache_entry, svcb_cache_,
+                                            std::placeholders::_1,
+                                            std::placeholders::_2,
+                                            std::placeholders::_3,
+                                            std::placeholders::_4,
+                                            std::placeholders::_5,
+                                            std::placeholders::_6,
+                                            std::placeholders::_7);
+    service_data_and_cbs_->resume_when_verified_callback_ = std::bind(&sd::service_discovery::resume_when_verified, discovery_,
+                                            std::placeholders::_1,
+                                            std::placeholders::_2,
+                                            std::placeholders::_3,
+                                            std::placeholders::_4);
+    service_data_and_cbs_->request_cache_callback_ = std::bind(&request_cache::add_request_certificate, request_cache_,
+                                            std::placeholders::_1,
+                                            std::placeholders::_2,
+                                            std::placeholders::_3,
+                                            std::placeholders::_4);
+    service_data_and_cbs_->request_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_tlsa_record, tlsa_resolver_,
+                                            std::placeholders::_1,
+                                            std::placeholders::_2);
+    service_data_and_cbs_->record_timestamp_callback_ = std::bind(&timestamp_collector::record_timestamp, timestamp_collector_,
+                                            std::placeholders::_1);
+    service_data_and_cbs_->convert_DER_to_PEM_callback_ = std::bind(&crypto_operator::convertDERToPEM, crypto_operator::getInstance(),
+                                            std::placeholders::_1);
+    svcb_resolver_.request_svcb_record(service_data_and_cbs_);
 
     VSOMEIP_INFO << "REQUEST("
         << std::hex << std::setw(4) << std::setfill('0') << _client << "): ["
@@ -4446,20 +4486,6 @@ void routing_manager_impl::statistics_log_timer_cbk(boost::system::error_code co
                               this, std::placeholders::_1));
         }
     }
-}
-
-
-// Additional method for service authentication
-void routing_manager_impl::set_svcb_cache(svcb_cache* _svcb_cache) {
-    svcb_cache_ = _svcb_cache;
-}
-
-void routing_manager_impl::set_request_cache(request_cache* _request_cache) {
-    request_cache_ = _request_cache;
-}
-
-void routing_manager_impl::set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache) {
-    resume_process_offerservice_cache_ = _resume_process_offerservice_cache;
 }
 
 // Additional method for time measurement

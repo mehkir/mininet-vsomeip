@@ -29,14 +29,6 @@
 #endif // ANDROID
 #include "../../routing/include/routing_manager_host.hpp"
 
-
-// Additional include for service authentication
-#include "../../dnssec/include/dns_resolver.hpp"
-#include "../../dnssec/include/svcb_resolver.hpp"
-#include "../../dnssec/include/tlsa_resolver.hpp"
-#include "../../service_authentication/include/request_cache.hpp"
-#include "../../service_authentication/include/svcb_cache.hpp"
-#include "../../service_discovery/include/resume_process_offerservice_cache.hpp"
 // Additional include for time measurement
 #include "../../timestamps/include/timestamp_collector.hpp"
 
@@ -449,13 +441,6 @@ private:
 #ifdef VSOMEIP_HAS_SESSION_HANDLING_CONFIG
     bool has_session_handling_;
 #endif // VSOMEIP_HAS_SESSION_HANDLING_CONFIG
-    // Addtional Member for Service Authenticity
-    dns_resolver* dns_resolver_;
-    svcb_resolver svcb_resolver_;
-    tlsa_resolver tlsa_resolver_;
-    svcb_cache* svcb_cache_;
-    request_cache* request_cache_;
-    resume_process_offerservice_cache* resume_process_offerservice_cache_;
     // Additional Member for Time measurement
     timestamp_collector* timestamp_collector_;
 };
