@@ -111,7 +111,7 @@ void crypto_operator::loadCertificateFromString(const std::string& certificateSt
     CryptoPP::PEM_Load(ss, certificate);
 }
 
-bool crypto_operator::extractPublicKeyFromCertificate(std::vector<CryptoPP::byte> certificate_data, CryptoPP::RSA::PublicKey& public_key)
+bool crypto_operator::extract_public_key_from_certificate(std::vector<CryptoPP::byte> certificate_data, CryptoPP::RSA::PublicKey& public_key)
 {
     // Load certificate from string
     CryptoPP::X509Certificate certificate;

@@ -29,7 +29,7 @@ public:
     void loadCertificateFromString(const std::string& certificateString, CryptoPP::X509Certificate& certificate);
     void LoadPrivateKey(const std::string& filename, CryptoPP::PrivateKey& key);
     void LoadPEMPrivateKey(const std::string& filename, CryptoPP::RSA::PrivateKey& key);
-    bool extractPublicKeyFromCertificate(std::vector<CryptoPP::byte> certificate_data, CryptoPP::RSA::PublicKey& public_key);
+    bool extract_public_key_from_certificate(std::vector<CryptoPP::byte> certificate_data, CryptoPP::RSA::PublicKey& public_key);
     std::vector<CryptoPP::byte> convertPEMToDER(const std::vector<CryptoPP::byte> pem_certificate);
     std::vector<CryptoPP::byte> convertDERToPEM(const std::vector<CryptoPP::byte> der_certificate);
     CryptoPP::word32 getRandomWord32();
