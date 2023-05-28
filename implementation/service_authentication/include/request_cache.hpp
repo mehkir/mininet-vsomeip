@@ -5,14 +5,13 @@
 #include <map>
 #include <tuple>
 #include <vector>
-#include <set>
 #include <boost/asio/ip/address_v4.hpp>
 #include "vsomeip/primitive_types.hpp"
 
 namespace vsomeip_v3 {
 
 struct challenge_response_data {
-    std::set<std::vector<unsigned char>> random_nonces;
+    std::vector<unsigned char> _nonce;
     std::vector<unsigned char> certificate_data;
 };
 
@@ -36,10 +35,10 @@ public:
                     vsomeip_v3::instance_t instanceId, std::vector<unsigned char> nonce);
     bool has_nonce_and_remove(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId, std::vector<unsigned char> nonce);
-    bool get_nonce_and_remove(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
-                    vsomeip_v3::instance_t instanceId, std::vector<unsigned char>& nonce);
     void add_request_certificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId, std::vector<unsigned char> certificate_data);
+    std::vector<unsigned char> get_request_nonce(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
+                    vsomeip_v3::instance_t instanceId);
     std::vector<unsigned char> get_request_certificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
                     vsomeip_v3::instance_t instanceId);
     void remove_request(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
