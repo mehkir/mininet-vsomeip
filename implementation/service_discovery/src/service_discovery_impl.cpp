@@ -1005,10 +1005,9 @@ service_discovery_impl::insert_subscription_ack(
 
     // Service Authentication
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-    std::vector<unsigned char> nonce_to_be_signed;
-    bool result = request_cache_->get_nonce_and_remove(_target->get_address().to_v4(), its_service, its_instance, nonce_to_be_signed);
-    if (!result) {
-        throw std::runtime_error("Was about to sign nonce but there is no nonce anymore!");
+    std::vector<unsigned char> nonce_to_be_signed = request_cache_->get_request_nonce(_target->get_address().to_v4(), its_service, its_instance);
+    if (nonce_to_be_signed.empty()) {
+        throw std::runtime_error("Nonce is empty!");
     }
     VSOMEIP_DEBUG << "Signing Nonce (SIGNING_START)"
     << "(" << _target->get_address().to_v4().to_string() << "," << its_service << "," << its_instance << ")"
@@ -1375,6 +1374,11 @@ service_discovery_impl::set_resume_process_offerservice_cache(resume_process_off
 }
 
 void
+service_discovery_impl::set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache* _eventgroup_subscription_ack_cache) {
+    this->eventgroup_subscription_ack_cache_ = _eventgroup_subscription_ack_cache;
+}
+
+void
 service_discovery_impl::set_timestamp_collector(timestamp_collector* _timestamp_collector) {
     this->timestamp_collector_ = _timestamp_collector;
 }
@@ -1559,7 +1563,7 @@ service_discovery_impl::resume_process_offerservice_serviceentry_when_verified(s
         resume_process_offerservice_serviceentry(_resume_process_offerservice_entry._service, _resume_process_offerservice_entry._instance, _resume_process_offerservice_entry._major, _resume_process_offerservice_entry._minor, _resume_process_offerservice_entry._ttl, _resume_process_offerservice_entry._reliable_address, _resume_process_offerservice_entry._reliable_port, _resume_process_offerservice_entry._unreliable_address, _resume_process_offerservice_entry._unreliable_port, _resume_process_offerservice_entry._resubscribes, _resume_process_offerservice_entry._received_via_mcast);
         resume_process_offerservice_cache_->remove_offerservice_entry(_service, _instance, _major, _minor);
     } else {
-        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::resume_process_offerservice_serviceentry_when_verified: Found no SVCB record for service=" << _service
+        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::resume_process_offerservice_serviceentry_when_verified: No offer or SVCB record for service=" << _service
         << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
     }
 }
@@ -1866,9 +1870,6 @@ service_discovery_impl::process_eventgroupentry(
     entry_type_e its_type = _entry->get_type();
     major_version_t its_major = _entry->get_major_version();
     ttl_t its_ttl = _entry->get_ttl();
-
-    // Additional local variable for service authentication
-    bool service_authenticated = true;
 
     auto its_info = host_->find_eventgroup(
             its_service, its_instance, its_eventgroup);
@@ -2265,32 +2266,8 @@ service_discovery_impl::process_eventgroupentry(
                     VSOMEIP_DEBUG << "Received Nonce (SUBSCRIBE_ACK_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
                     << std::hex << std::string(nonce.begin(), nonce.end());
-                    // Check if nonce is known
-                    if (!request_cache_->has_nonce_and_remove(_sender.to_v4(), its_service, its_instance, nonce)) {
-                        service_authenticated = false;
-                    }
-                    // Check if a valid public key can be retained from self signed certificate
-                    CryptoPP::RSA::PublicKey public_key;
-                    if (service_authenticated) {
-                        std::vector<byte_t> certificate_data = request_cache_->get_request_certificate(_sender.to_v4(), its_service, its_instance);
-                        while (certificate_data.empty()) {
-                            certificate_data = request_cache_->get_request_certificate(unicast_.to_v4(), its_service, its_instance);
-                            sleep(1);
-                            std::cerr << "TLSA record still not arrived" << std::endl;
-                        }
-                        service_authenticated = crypto_operator_->extractPublicKeyFromCertificate(certificate_data, public_key);
-                    }
-                    // Check if signature can be verified
-                    if (service_authenticated) {
-                        std::vector<byte_t> signature = data_partitioner().reassemble_data(SIGNATUREKEY, its_configuration_option);
-                        service_authenticated = false;
-                        if (!signature.empty()) {
-                            std::vector<byte_t> data_to_be_verified;
-                            data_to_be_verified.insert(data_to_be_verified.end(), nonce.begin(), nonce.end());
-                            data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
-                            service_authenticated = crypto_operator_->verify(public_key, data_to_be_verified);
-                        }
-                    }
+                    std::vector<byte_t> signature = data_partitioner().reassemble_data(SIGNATUREKEY, its_configuration_option);
+                    eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance, its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port, nonce, signature);
                 }
                 break;
             }
@@ -2329,10 +2306,7 @@ service_discovery_impl::process_eventgroupentry(
     } else {
         if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type) { //this type is used for ACK and NACK messages
             if (its_ttl > 0) {
-                handle_eventgroup_subscription_ack(its_service, its_instance,
-                        its_eventgroup, its_major, its_ttl, 0,
-                        its_clients, _sender,
-                        its_first_address, its_first_port, service_authenticated);
+                verify_publisher_signature(_sender.to_v4(), its_service, its_instance);
             } else {
                 handle_eventgroup_subscription_nack(its_service, its_instance, its_eventgroup,
                         0, its_clients);
@@ -2342,8 +2316,45 @@ service_discovery_impl::process_eventgroupentry(
 }
 
 void
-service_discovery_impl::verify_publisher_signature() {
-
+service_discovery_impl::verify_publisher_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance) {
+    bool requirements_are_fulfilled = false;
+    bool service_authenticated = false;
+    // Check if the certificate has already been received
+    std::vector<byte_t> certificate_data = request_cache_->get_request_certificate(_sender_ip_address, _service, _instance);
+    requirements_are_fulfilled = !certificate_data.empty();
+    // Check if there is already a subscription ack entry
+    eventgroup_subscription_ack_cache_entry _eventgroup_subscription_ack_cache_entry = eventgroup_subscription_ack_cache_->get_eventgroup_subscription_ack_cache_entry(_sender_ip_address, _service, _instance);
+    requirements_are_fulfilled = requirements_are_fulfilled
+                                 && _eventgroup_subscription_ack_cache_entry._service == _service // sanity check
+                                 && _eventgroup_subscription_ack_cache_entry._instance == _instance // sanity check
+                                 && _eventgroup_subscription_ack_cache_entry._sender_ip_address == _sender_ip_address; // sanity check
+    // Check if nonce is valid
+    std::vector<unsigned char> nonce = _eventgroup_subscription_ack_cache_entry._nonce;
+    std::vector<byte_t> signature = _eventgroup_subscription_ack_cache_entry._signature;
+    if (requirements_are_fulfilled && request_cache_->has_nonce_and_remove(_sender_ip_address, _service, _instance, nonce)) {
+        CryptoPP::RSA::PublicKey public_key;
+        // Verify service authenticity
+        if (crypto_operator_->extract_public_key_from_certificate(certificate_data, public_key)
+            && !_eventgroup_subscription_ack_cache_entry._signature.empty()) {
+            std::vector<byte_t> data_to_be_verified;
+            data_to_be_verified.insert(data_to_be_verified.end(), nonce.begin(), nonce.end());
+            data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
+            service_authenticated = crypto_operator_->verify(public_key, data_to_be_verified);
+        }
+    }
+    if (service_authenticated) {
+        handle_eventgroup_subscription_ack(_service, 
+                                           _instance,
+                                           _eventgroup_subscription_ack_cache_entry._eventgroup,
+                                           _eventgroup_subscription_ack_cache_entry._major_version,
+                                           _eventgroup_subscription_ack_cache_entry._ttl,
+                                           0,
+                                           _eventgroup_subscription_ack_cache_entry._clients,
+                                           _eventgroup_subscription_ack_cache_entry._sender_ip_address,
+                                           _eventgroup_subscription_ack_cache_entry._first_ip_address,
+                                           _eventgroup_subscription_ack_cache_entry._port,
+                                           service_authenticated);
+    }
 }
 
 void

@@ -482,6 +482,7 @@ public:
     void set_svcb_cache(svcb_cache* _svcb_cache);
     void set_timestamp_collector(timestamp_collector* _timestamp_collector);
     void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache);
+    void set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache* _eventgroup_subscription_ack_cache);
     void resume_process_offerservice_serviceentry_when_verified(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor);
     void resume_process_offerservice_serviceentry(
         service_t _service, instance_t _instance, major_version_t _major,
@@ -492,12 +493,13 @@ public:
         uint16_t _unreliable_port,
         std::vector<std::shared_ptr<message_impl> > &_resubscribes,
         bool _received_via_mcast);
-    void verify_publisher_signature();
+    void verify_publisher_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance);
 
 private:
     request_cache* request_cache_;
     svcb_cache* svcb_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
+    eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
     timestamp_collector* timestamp_collector_;
     crypto_operator* crypto_operator_;
     std::vector<CryptoPP::byte> certificate_data_;
