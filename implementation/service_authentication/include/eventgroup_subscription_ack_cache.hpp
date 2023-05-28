@@ -4,6 +4,7 @@
 #include <mutex>
 #include <map>
 #include <tuple>
+#include <vector>
 #include <set>
 #include <boost/asio/ip/address_v4.hpp>
 #include "vsomeip/primitive_types.hpp"
@@ -16,10 +17,12 @@ namespace vsomeip_v3 {
         major_version_t _major_version = -1;
         ttl_t _ttl = -1;
         uint8_t _counter = -1;
-        std::set<uint16_t> _clients = std::set<uint16_t>();
+        std::set<uint16_t> _clients;
         boost::asio::ip::address_v4 _sender_ip_address = boost::asio::ip::address_v4::from_string("0.0.0.0");
         boost::asio::ip::address_v4 _first_ip_address = boost::asio::ip::address_v4::from_string("0.0.0.0");
         uint16_t _port = -1;
+        std::vector<unsigned char> _nonce;
+        std::vector<byte_t> _signature;
     };
 
     class eventgroup_subscription_ack_cache {
@@ -37,7 +40,7 @@ namespace vsomeip_v3 {
         eventgroup_subscription_ack_cache& operator=(eventgroup_subscription_ack_cache &) = delete;
         eventgroup_subscription_ack_cache& operator=(eventgroup_subscription_ack_cache &&) = delete;
 
-        void add_eventgroup_subscription_ack_cache_entry(service_t _service, instance_t _instance, eventgroup_t _eventgroup, major_version_t _major_version, ttl_t _ttl, uint8_t _counter, std::set<uint16_t> _clients, boost::asio::ip::address_v4 _sender_ip_address, boost::asio::ip::address_v4 _first_ip_address, uint16_t _port);
+        void add_eventgroup_subscription_ack_cache_entry(service_t _service, instance_t _instance, eventgroup_t _eventgroup, major_version_t _major_version, ttl_t _ttl, uint8_t _counter, std::set<uint16_t> _clients, boost::asio::ip::address_v4 _sender_ip_address, boost::asio::ip::address_v4 _first_ip_address, uint16_t _port, std::vector<unsigned char> _nonce, std::vector<byte_t> _signature);
         void remove_eventgroup_subscription_ack_cache_entry(boost::asio::ip::address_v4 _sender_ip_address, vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance);
         eventgroup_subscription_ack_cache_entry get_eventgroup_subscription_ack_cache_entry(boost::asio::ip::address_v4 _sender_ip_address, vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance);
         std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t, vsomeip_v3::instance_t> make_key_tuple(boost::asio::ip::address_v4 _sender_ip_address, vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance);
