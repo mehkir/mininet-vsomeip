@@ -33,7 +33,7 @@ void dns_resolver::resolve(const char *name, int dnsclass, int type, ares_callba
     dnsRequest.arg = arg;
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
-        dnsRequests.push_back(dnsRequest);
+        dns_requests_.push_back(dnsRequest);
     }
     conditionVariable.notify_one();
 }
@@ -93,7 +93,7 @@ void dns_resolver::process() {
     while (state != STOPPED) {
         LOG_DEBUG("Process thread performed unique lock")
         /*
-        if (dnsRequests.empty()) {
+        if (dns_requests_.empty()) {
             std::cout << "Process thread waits for data" << std::endl;
             waitBool = true;
         } else {
@@ -102,7 +102,7 @@ void dns_resolver::process() {
          */
         {
             std::unique_lock<std::mutex> uniqueLock(mutex_);
-            conditionVariable.wait(uniqueLock, [this] { return !dnsRequests.empty() || state == STOPPED; });
+            conditionVariable.wait(uniqueLock, [this] { return !dns_requests_.empty() || state == STOPPED; });
         }
         /*
         if (waitBool)
@@ -112,8 +112,8 @@ void dns_resolver::process() {
             DNSRequest dnsRequest;
             {
                 std::lock_guard<std::mutex> lockGuard(mutex_);
-                dnsRequest = dnsRequests.front();
-                dnsRequests.pop_front();
+                dnsRequest = dns_requests_.front();
+                dns_requests_.pop_front();
             }
             ares_search(channel, dnsRequest.name, dnsRequest.dnsclass, dnsRequest.type, dnsRequest.callback,
                         dnsRequest.arg);

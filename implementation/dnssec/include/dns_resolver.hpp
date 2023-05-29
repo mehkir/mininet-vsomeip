@@ -45,7 +45,7 @@ private:
     static dns_resolver* instance;
     void process();
     int change_dns_server(ares_channel& channel, in_addr_t address);
-    std::deque<DNSRequest> dnsRequests;
+    std::deque<DNSRequest> dns_requests_;
 };
 
 #endif //VSOMEIP_DNS_RESOLVER_HPP
