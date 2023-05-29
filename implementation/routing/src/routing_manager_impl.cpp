@@ -534,6 +534,10 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     service_data_and_cbs_->request_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_tlsa_record, tlsa_resolver_,
                                             std::placeholders::_1,
                                             std::placeholders::_2);
+    service_data_and_cbs_->verify_publisher_signature_callback_ = std::bind(&sd::service_discovery::verify_publisher_signature, discovery_,
+                                            std::placeholders::_1,
+                                            std::placeholders::_2,
+                                            std::placeholders::_3);
     service_data_and_cbs_->record_timestamp_callback_ = std::bind(&timestamp_collector::record_timestamp, timestamp_collector_,
                                             std::placeholders::_1);
     service_data_and_cbs_->convert_DER_to_PEM_callback_ = std::bind(&crypto_operator::convertDERToPEM, crypto_operator::getInstance(),
