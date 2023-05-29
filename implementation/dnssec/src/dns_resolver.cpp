@@ -38,7 +38,7 @@ void dns_resolver::resolve(const char *name, int dnsclass, int type, ares_callba
     conditionVariable.notify_one();
 }
 
-int dns_resolver::changeIPv4DNSServer(ares_channel& channel, in_addr_t address) {
+int dns_resolver::change_dns_server(ares_channel& channel, in_addr_t address) {
     ares_addr_node servers;
     servers.next = nullptr;
     servers.family = AF_INET;
@@ -71,7 +71,7 @@ int dns_resolver::initialize(in_addr_t address) {
             return 1;
         }
         ares_destroy_options(&options);
-        if (changeIPv4DNSServer(channel, address) != ARES_SUCCESS) {
+        if (change_dns_server(channel, address) != ARES_SUCCESS) {
             std::cout << "Setting servers failed" << std::endl;
             return 1;
         }

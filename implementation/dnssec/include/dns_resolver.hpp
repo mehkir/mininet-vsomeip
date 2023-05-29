@@ -44,7 +44,7 @@ private:
     static std::mutex mutex_;
     static dns_resolver* instance;
     void process();
-    int changeIPv4DNSServer(ares_channel& channel, in_addr_t address);
+    int change_dns_server(ares_channel& channel, in_addr_t address);
     std::deque<DNSRequest> dnsRequests;
 };
 
