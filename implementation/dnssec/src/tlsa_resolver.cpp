@@ -34,7 +34,7 @@ namespace vsomeip_v3 {
         TLSA_Reply* tlsa_reply_ptr = tlsa_reply;
         while (tlsa_reply_ptr != nullptr) {
             service_data_and_cbs_->request_cache_callback_(service_data_and_cbs_->ip_address, service_data_and_cbs_->service, service_data_and_cbs_->instance, service_data_and_cbs_->convert_DER_to_PEM_callback_(tlsa_reply_ptr->certificate_association_data));
-            service_data_and_cbs_->verify_publisher_signature_callback(service_data_and_cbs_->ip_address, service_data_and_cbs_->service, service_data_and_cbs_->instance);
+            service_data_and_cbs_->verify_publisher_signature_callback_(service_data_and_cbs_->ip_address, service_data_and_cbs_->service, service_data_and_cbs_->instance);
             tlsa_reply_ptr = tlsa_reply_ptr->tlsaReplyNext;
         }
         delete_tlsa_reply(tlsa_reply);
