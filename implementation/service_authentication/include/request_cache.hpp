@@ -24,7 +24,7 @@ private:
     static request_cache* instance;
     std::map<std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t, vsomeip_v3::instance_t>, challenge_response_data> request_map;
 public:
-    static request_cache* getInstance();
+    static request_cache* get_instance();
 
     request_cache(request_cache const&) = delete;
     request_cache(request_cache&&) = delete;

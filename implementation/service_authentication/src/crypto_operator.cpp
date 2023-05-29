@@ -21,7 +21,7 @@ crypto_operator::crypto_operator() {
 crypto_operator::~crypto_operator() {
 }
 
-crypto_operator* crypto_operator::getInstance() {
+crypto_operator* crypto_operator::get_instance() {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if(instance == nullptr) {
         instance = new crypto_operator();

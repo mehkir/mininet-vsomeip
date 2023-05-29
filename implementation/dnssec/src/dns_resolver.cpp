@@ -12,7 +12,7 @@
 std::mutex dns_resolver::mutex_;
 dns_resolver* dns_resolver::instance;
 
-dns_resolver* dns_resolver::getInstance() {
+dns_resolver* dns_resolver::get_instance() {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if(instance == nullptr) {
         instance = new dns_resolver();

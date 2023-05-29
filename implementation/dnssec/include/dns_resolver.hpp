@@ -26,7 +26,7 @@ struct DNSRequest {
 class dns_resolver {
 
 public:
-    static dns_resolver* getInstance();
+    static dns_resolver* get_instance();
     int initialize(in_addr_t address=DEFAULT_SERVER);
     void cleanup();
     void resolve(const char *name, int dnsclass, int type, ares_callback callback, void *arg);

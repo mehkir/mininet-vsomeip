@@ -10,7 +10,7 @@ namespace vsomeip_v3 {
     svcb_cache::~svcb_cache() {
     }
 
-    svcb_cache* svcb_cache::getInstance() {
+    svcb_cache* svcb_cache::get_instance() {
         std::lock_guard<std::mutex> lock_guard(mutex_);
         if(instance == nullptr) {
             instance = new svcb_cache();

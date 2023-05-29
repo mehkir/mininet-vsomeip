@@ -28,7 +28,7 @@ namespace vsomeip_v3 {
             static svcb_cache* instance;
             std::map<std::tuple<service_t, instance_t, major_version_t, minor_version_t>, svcb_cache_entry> svcb_cache_map;
         public:
-            static svcb_cache* getInstance();
+            static svcb_cache* get_instance();
 
             svcb_cache(svcb_cache const&) = delete;
             svcb_cache(svcb_cache&&) = delete;

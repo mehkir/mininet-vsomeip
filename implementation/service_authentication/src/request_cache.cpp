@@ -14,7 +14,7 @@ request_cache::~request_cache()
 {
 }
 
-request_cache* request_cache::getInstance() {
+request_cache* request_cache::get_instance() {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if(instance == nullptr) {
         instance = new request_cache();

@@ -33,7 +33,7 @@ namespace vsomeip_v3 {
         std::map<std::tuple<service_t, instance_t, major_version_t, minor_version_t>, resume_process_offerservice_entry> resume_process_offerservice_map;
         std::tuple<service_t, instance_t, major_version_t, minor_version_t> make_key_tuple(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor);
     public:
-        static resume_process_offerservice_cache* getInstance();
+        static resume_process_offerservice_cache* get_instance();
 
         resume_process_offerservice_cache(resume_process_offerservice_cache const&) = delete;
         resume_process_offerservice_cache(resume_process_offerservice_cache&&) = delete;

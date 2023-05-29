@@ -18,7 +18,7 @@ private:
     CryptoPP::AutoSeededRandomPool rng;
     void Load(const std::string& filename, CryptoPP::BufferedTransformation& bt);
 public:
-    static crypto_operator* getInstance();
+    static crypto_operator* get_instance();
     std::vector<CryptoPP::byte> encrypt(CryptoPP::PublicKey &publicKey, std::vector<CryptoPP::byte> data);
     std::vector<CryptoPP::byte> decrypt(CryptoPP::PrivateKey &privateKey, std::vector<CryptoPP::byte> data);
     std::vector<CryptoPP::byte> sign(CryptoPP::PrivateKey &privateKey, std::vector<CryptoPP::byte> data);

@@ -8,7 +8,7 @@
 #include <iomanip>
 
 namespace vsomeip_v3 {
-    svcb_resolver::svcb_resolver() : dns_resolver_(dns_resolver::getInstance()) {
+    svcb_resolver::svcb_resolver() : dns_resolver_(dns_resolver::get_instance()) {
         dns_resolver_->initialize(DNS_SERVER_IP);
     }
 

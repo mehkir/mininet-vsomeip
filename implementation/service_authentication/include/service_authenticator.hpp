@@ -11,7 +11,7 @@ private:
     static std::mutex mutex_;
     static service_authenticator* instance;
 public:
-    static service_authenticator* getInstance();
+    static service_authenticator* get_instance();
 };
 
 #endif /* VSOMEIP_SERVICE_AUTHENTICATOR_HPP */

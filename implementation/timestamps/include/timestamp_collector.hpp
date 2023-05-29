@@ -38,7 +38,7 @@ namespace vsomeip_v3 {
         timestamp_collector();
         ~timestamp_collector();
     public:
-        static timestamp_collector* getInstance();
+        static timestamp_collector* get_instance();
 
         void record_timestamp(std::string timepoint);
         void write_timestamps(NODES node);

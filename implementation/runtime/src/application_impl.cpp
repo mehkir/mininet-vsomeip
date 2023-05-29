@@ -68,7 +68,7 @@ application_impl::application_impl(const std::string &_name)
           stopped_called_(false),
           watchdog_timer_(io_),
           client_side_logging_(false),
-          timestamp_collector_(timestamp_collector::getInstance())
+          timestamp_collector_(timestamp_collector::get_instance())
 #ifdef VSOMEIP_HAS_SESSION_HANDLING_CONFIG
           , has_session_handling_(true)
 #endif // VSOMEIP_HAS_SESSION_HANDLING_CONFIG

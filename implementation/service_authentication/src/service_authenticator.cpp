@@ -9,7 +9,7 @@ service_authenticator::service_authenticator() {
 service_authenticator::~service_authenticator() {
 }
 
-service_authenticator* service_authenticator::getInstance() {
+service_authenticator* service_authenticator::get_instance() {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if(instance == nullptr) {
         instance = new service_authenticator();

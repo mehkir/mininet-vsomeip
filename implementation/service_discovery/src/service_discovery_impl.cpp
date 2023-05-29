@@ -84,7 +84,7 @@ service_discovery_impl::service_discovery_impl(
       last_msg_received_timer_timeout_(VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY +
                                            (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10)),
     // Additional member initializations for service authentication
-      crypto_operator_(crypto_operator::getInstance()) {
+      crypto_operator_(crypto_operator::get_instance()) {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
     certificate_data_ = crypto_operator_->loadCertificateFromFile(configuration_->get_certificate_path());

@@ -85,10 +85,10 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         last_resume_(std::chrono::steady_clock::now().min()),
         statistics_log_timer_(_host->get_io()),
         ignored_statistics_counter_(0),
-        dns_resolver_(dns_resolver::getInstance()),
-        svcb_cache_(svcb_cache::getInstance()),
-        request_cache_(request_cache::getInstance()),
-        resume_process_offerservice_cache_(resume_process_offerservice_cache::getInstance()),
+        dns_resolver_(dns_resolver::get_instance()),
+        svcb_cache_(svcb_cache::get_instance()),
+        request_cache_(request_cache::get_instance()),
+        resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance()),
         eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance())
 {
 }
@@ -540,7 +540,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_3);
     service_data_and_cbs_->record_timestamp_callback_ = std::bind(&timestamp_collector::record_timestamp, timestamp_collector_,
                                             std::placeholders::_1);
-    service_data_and_cbs_->convert_DER_to_PEM_callback_ = std::bind(&crypto_operator::convertDERToPEM, crypto_operator::getInstance(),
+    service_data_and_cbs_->convert_DER_to_PEM_callback_ = std::bind(&crypto_operator::convertDERToPEM, crypto_operator::get_instance(),
                                             std::placeholders::_1);
     svcb_resolver_.request_svcb_record(service_data_and_cbs_);
 

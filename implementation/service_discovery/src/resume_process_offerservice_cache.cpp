@@ -10,7 +10,7 @@ namespace vsomeip_v3 {
     resume_process_offerservice_cache::~resume_process_offerservice_cache() {
     }
 
-    resume_process_offerservice_cache* resume_process_offerservice_cache::getInstance() {
+    resume_process_offerservice_cache* resume_process_offerservice_cache::get_instance() {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if(instance == nullptr) {
             instance = new resume_process_offerservice_cache();
