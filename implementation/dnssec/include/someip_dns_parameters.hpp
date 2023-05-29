@@ -22,6 +22,7 @@ namespace vsomeip_v3 {
     typedef std::function<void(service_t, instance_t, major_version_t, minor_version_t)> verify_service_info_callback;
     typedef std::function<void(service_t, instance_t, major_version_t, minor_version_t, int, const boost::asio::ip::address_v4, uint16_t)> add_svcb_entry_cache_callback;
     typedef std::function<void(void*, std::string)> request_tlsa_record_callback;
+    typedef std::function<void(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance)> verify_publisher_signature_callback;
     typedef std::function<void(std::string)> record_timestamp_callback;
     typedef std::function<std::vector<CryptoPP::byte>(const std::vector<CryptoPP::byte>)> convert_DER_to_PEM_callback;
     struct service_data_and_cbs {
@@ -34,6 +35,7 @@ namespace vsomeip_v3 {
         verify_service_info_callback verify_service_info_callback_;
         request_cache_callback request_cache_callback_;
         request_tlsa_record_callback request_tlsa_record_callback_;
+        verify_publisher_signature_callback verify_publisher_signature_callback_;
         record_timestamp_callback record_timestamp_callback_;
         convert_DER_to_PEM_callback convert_DER_to_PEM_callback_;
     };

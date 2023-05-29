@@ -2354,6 +2354,9 @@ service_discovery_impl::verify_publisher_signature(boost::asio::ip::address_v4 _
                                            _eventgroup_subscription_ack_cache_entry._first_ip_address,
                                            _eventgroup_subscription_ack_cache_entry._port,
                                            service_authenticated);
+    } else {
+        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::verify_publisher_signature: Signature could not be verified for service=" << _service
+        << ", instance=" << _instance << ", sender_ip_address=" << _sender_ip_address.to_string() << " (MEHMET MUELLER DEBUG) <<<<<";
     }
 }
 
