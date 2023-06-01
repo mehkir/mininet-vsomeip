@@ -23,17 +23,17 @@ dns_resolver* dns_resolver::get_instance() {
 void dns_resolver::resolve(const char *name, int dnsclass, int type, ares_callback callback, void *arg) {
     if (!initialized)
         throw std::runtime_error("dns_resolver is not initialized, call initialize() first!");
-    DNSRequest dnsRequest;
+    dns_request _dns_request;
     char* url = (char*)malloc(strlen(name)+1);
     strcpy(url, name);
-    dnsRequest.name = url;
-    dnsRequest.dnsclass = dnsclass;
-    dnsRequest.type = type;
-    dnsRequest.callback = callback;
-    dnsRequest.arg = arg;
+    _dns_request.name = url;
+    _dns_request.dnsclass = dnsclass;
+    _dns_request.type = type;
+    _dns_request.callback = callback;
+    _dns_request.arg = arg;
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
-        dns_requests_.push_back(dnsRequest);
+        dns_requests_.push_back(_dns_request);
     }
     conditionVariable.notify_one();
 }
@@ -109,14 +109,14 @@ void dns_resolver::process() {
             std::cout << "Process thread received signal. Processing ..." << std::endl;
         */
         if (state != STOPPED) {
-            DNSRequest dnsRequest;
+            dns_request _dns_request;
             {
                 std::lock_guard<std::mutex> lockGuard(mutex_);
-                dnsRequest = dns_requests_.front();
+                _dns_request = dns_requests_.front();
                 dns_requests_.pop_front();
             }
-            ares_search(channel, dnsRequest.name, dnsRequest.dnsclass, dnsRequest.type, dnsRequest.callback,
-                        dnsRequest.arg);
+            ares_search(channel, _dns_request.name, _dns_request.dnsclass, _dns_request.type, _dns_request.callback,
+                        _dns_request.arg);
             while (true) {
                 FD_ZERO(&readers);
                 FD_ZERO(&writers);
@@ -127,7 +127,7 @@ void dns_resolver::process() {
                 count = select(nfds, &readers, &writers, NULL, tvp);
                 ares_process(channel, &readers, &writers);
             }
-            free(const_cast<char *>(dnsRequest.name));
+            free(const_cast<char *>(_dns_request.name));
 
         } else {
             LOG_DEBUG("Process thread is about to exit")

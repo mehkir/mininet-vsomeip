@@ -15,7 +15,7 @@
 #include <condition_variable>
 #include <deque>
 
-struct DNSRequest {
+struct dns_request {
     const char *name = "";
     int dnsclass = 0;
     int type = 0;
@@ -45,7 +45,7 @@ private:
     static dns_resolver* instance;
     void process();
     int change_dns_server(ares_channel& channel, in_addr_t address);
-    std::deque<DNSRequest> dns_requests_;
+    std::deque<dns_request> dns_requests_;
 };
 
 #endif //VSOMEIP_DNS_RESOLVER_HPP
