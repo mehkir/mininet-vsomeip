@@ -10,53 +10,53 @@
 #include "../include/parse_svcb_reply.hpp"
 #include "../include/logger.hpp"
 
-void delete_svcb_reply(SVCB_Reply* svcbReply) {
-    SVCB_Reply* svcbReplyCurrent = svcbReply;
-    SVCB_Reply* svcbReplySuccessor = nullptr;
-    while (svcbReplyCurrent != nullptr) {
-        LOG_DEBUG("Delete SVCB reply: " << svcbReplyCurrent->hostname)
-        SVCB_Key *svcbKeyCurrent = svcbReplyCurrent->svcbKey;
-        SVCB_Key *svcbKeySuccessor = nullptr;
-        while (svcbKeyCurrent != nullptr) {
-            svcbKeySuccessor = svcbKeyCurrent->svcbKeyNext;
-            LOG_DEBUG("\tDelete key\t" << svcbKeyCurrent->keyNum)
-            delete(svcbKeyCurrent);
-            svcbKeyCurrent = svcbKeySuccessor;
+void delete_svcb_reply(svcb_reply* _svcb_reply) {
+    svcb_reply* svcb_reply_current = _svcb_reply;
+    svcb_reply* svcb_reply_successor = nullptr;
+    while (svcb_reply_current != nullptr) {
+        LOG_DEBUG("Delete SVCB reply: " << svcb_reply_current->hostname_)
+        svcb_key *svcb_key_current = svcb_reply_current->svcb_key_;
+        svcb_key *svcb_key_successor = nullptr;
+        while (svcb_key_current != nullptr) {
+            svcb_key_successor = svcb_key_current->svcb_key_next_;
+            LOG_DEBUG("\tDelete key\t" << svcb_key_current->key_num_)
+            delete(svcb_key_current);
+            svcb_key_current = svcb_key_successor;
         }
-        svcbReplySuccessor = svcbReplyCurrent->svcbReplyNext;
-        delete (svcbReplyCurrent);
-        svcbReplyCurrent = svcbReplySuccessor;
+        svcb_reply_successor = svcb_reply_current->svcb_reply_next_;
+        delete (svcb_reply_current);
+        svcb_reply_current = svcb_reply_successor;
     }
 }
 
-int parse_svcb_reply (const unsigned char *abuf, int alen, SVCB_Reply** pSvcbReply) {
+int parse_svcb_reply (const unsigned char* _abuf, int _alen, svcb_reply** _p_svcb_reply) {
     unsigned int qdcount, ancount, i;
     const unsigned char *aptr, *vptr;
     int status, rr_type, rr_class, rr_len;
     long len;
     char *hostname = NULL, *rr_name = NULL, *target_name = NULL;
-    SVCB_Reply *svcbReply = nullptr;
-    SVCB_Reply *currSvcbReply = nullptr;
+    svcb_reply *svcbreply = nullptr;
+    svcb_reply *curr_svcb_reply = nullptr;
 
     /* Give up if abuf doesn't have room for a header. */
-    if (alen < HFIXEDSZ)
+    if (_alen < HFIXEDSZ)
         return ARES_EBADRESP;
 
     /* Fetch the question and answer count from the header. */
-    qdcount = DNS_HEADER_QDCOUNT(abuf);
-    ancount = DNS_HEADER_ANCOUNT(abuf);
+    qdcount = DNS_HEADER_QDCOUNT(_abuf);
+    ancount = DNS_HEADER_ANCOUNT(_abuf);
     if (qdcount != 1)
         return ARES_EBADRESP;
     if (ancount == 0)
         return ARES_ENODATA;
 
     /* Expand the name from the question, and skip past the question. */
-    aptr = abuf + HFIXEDSZ;
-    status = ares_expand_name(aptr, abuf, alen, &hostname, &len);
+    aptr = _abuf + HFIXEDSZ;
+    status = ares_expand_name(aptr, _abuf, _alen, &hostname, &len);
     if (status != ARES_SUCCESS)
         return status;
 
-    if (aptr + len + QFIXEDSZ > abuf + alen) {
+    if (aptr + len + QFIXEDSZ > _abuf + _alen) {
         ares_free_string(hostname);
         return ARES_EBADRESP;
     }
@@ -65,12 +65,12 @@ int parse_svcb_reply (const unsigned char *abuf, int alen, SVCB_Reply** pSvcbRep
     /* Examine each answer resource record (RR) in turn. */
     for (i = 0; i < ancount; i++) {
         /* Decode the RR up to the data field. */
-        status = ares_expand_name(aptr, abuf, alen, &rr_name, &len);
+        status = ares_expand_name(aptr, _abuf, _alen, &rr_name, &len);
         if (status != ARES_SUCCESS) {
             break;
         }
         aptr += len;
-        if (aptr + RRFIXEDSZ > abuf + alen) {
+        if (aptr + RRFIXEDSZ > _abuf + _alen) {
             status = ARES_EBADRESP;
             break;
         }
@@ -78,31 +78,31 @@ int parse_svcb_reply (const unsigned char *abuf, int alen, SVCB_Reply** pSvcbRep
         rr_class = DNS_RR_CLASS (aptr);
         rr_len = DNS_RR_LEN (aptr);
         aptr += RRFIXEDSZ;
-        if (aptr + rr_len > abuf + alen) {
+        if (aptr + rr_len > _abuf + _alen) {
             status = ARES_EBADRESP;
             break;
         }
         if (rr_class == C_IN && rr_type == T_SVCB) {
             vptr = aptr;
-            SVCB_Key* svcbKey = nullptr;
-            if (svcbReply == nullptr) {
-                svcbReply = new SVCB_Reply;
-                currSvcbReply = svcbReply;
+            svcb_key* svcbkey = nullptr;
+            if (svcbreply == nullptr) {
+                svcbreply = new svcb_reply;
+                curr_svcb_reply = svcbreply;
             } else {
-                currSvcbReply->svcbReplyNext = new SVCB_Reply;
-                currSvcbReply = currSvcbReply->svcbReplyNext;
+                curr_svcb_reply->svcb_reply_next_ = new svcb_reply;
+                curr_svcb_reply = curr_svcb_reply->svcb_reply_next_;
             }
-            currSvcbReply->hostname = hostname;
+            curr_svcb_reply->hostname_ = hostname;
             LOG_DEBUG("Hostname " << hostname);
-            currSvcbReply->svcPriority = DNS__16BIT(vptr);
-            LOG_DEBUG("SvcPriority " << currSvcbReply->svcPriority)
+            curr_svcb_reply->svc_priority_ = DNS__16BIT(vptr);
+            LOG_DEBUG("SvcPriority " << curr_svcb_reply->svc_priority_)
             vptr += sizeof(unsigned short);
-            status = ares_expand_name(vptr, abuf, alen, &target_name, &len);
+            status = ares_expand_name(vptr, _abuf, _alen, &target_name, &len);
             if (status != ARES_SUCCESS) {
                 break;
             }
-            LOG_DEBUG("Target " << currSvcbReply->target)
-            currSvcbReply->target = std::string(target_name) == "" ? "." : std::string(target_name);
+            LOG_DEBUG("Target " << curr_svcb_reply->target_)
+            curr_svcb_reply->target_ = std::string(target_name) == "" ? "." : std::string(target_name);
             vptr += len;
             ares_free_string(target_name);
             target_name = NULL;
@@ -124,7 +124,7 @@ int parse_svcb_reply (const unsigned char *abuf, int alen, SVCB_Reply** pSvcbRep
                         LOG_DEBUG("Length " << length)
                         vptr += sizeof(unsigned short);
                         LOG_DEBUG("Port number " << DNS__16BIT(vptr))
-                        currSvcbReply->port = DNS__16BIT(vptr);
+                        curr_svcb_reply->port_ = DNS__16BIT(vptr);
                         vptr += length * sizeof(unsigned char);
                     }
                         break;
@@ -134,15 +134,15 @@ int parse_svcb_reply (const unsigned char *abuf, int alen, SVCB_Reply** pSvcbRep
                         int length = DNS__16BIT(vptr);
                         LOG_DEBUG("Length " << length)
                         vptr += sizeof(unsigned short);                        
-                        currSvcbReply->ipv4AddressNumerical = DNS__32BIT(vptr);
-                        LOG_DEBUG("IP address (numerical) " << currSvcbReply->ipv4AddressNumerical)
+                        curr_svcb_reply->ipv4_address_numerical_ = DNS__32BIT(vptr);
+                        LOG_DEBUG("IP address (numerical) " << curr_svcb_reply->ipv4_address_numerical_)
                         std::stringstream sstream;
-                        sstream << ((currSvcbReply->ipv4AddressNumerical & 0xff000000) >> 24) << "."
-                                << ((currSvcbReply->ipv4AddressNumerical & 0x00ff0000) >> 16) << "."
-                                << ((currSvcbReply->ipv4AddressNumerical & 0x0000ff00) >> 8) << "."
-                                << (currSvcbReply->ipv4AddressNumerical & 0x000000ff);
-                        currSvcbReply->ipv4AddressString = sstream.str();
-                        LOG_DEBUG("IP address (string) " << currSvcbReply->ipv4AddressString)
+                        sstream << ((curr_svcb_reply->ipv4_address_numerical_ & 0xff000000) >> 24) << "."
+                                << ((curr_svcb_reply->ipv4_address_numerical_ & 0x00ff0000) >> 16) << "."
+                                << ((curr_svcb_reply->ipv4_address_numerical_ & 0x0000ff00) >> 8) << "."
+                                << (curr_svcb_reply->ipv4_address_numerical_ & 0x000000ff);
+                        curr_svcb_reply->ipv4_address_string_ = sstream.str();
+                        LOG_DEBUG("IP address (string) " << curr_svcb_reply->ipv4_address_string_)
                         vptr += length * sizeof(unsigned char);
                     }
                         break;
@@ -156,24 +156,24 @@ int parse_svcb_reply (const unsigned char *abuf, int alen, SVCB_Reply** pSvcbRep
                         if (DNS__16BIT(vptr) >= SVCB_PARAM_TYPE::LOWERKEY
                             || DNS__16BIT(vptr) <= SVCB_PARAM_TYPE::UPPERKEY) {
                             LOG_DEBUG("key")
-                            uint16_t keyNumber = DNS__16BIT(vptr);
-                            LOG_DEBUG("Key number " << keyNumber)
+                            uint16_t key_number = DNS__16BIT(vptr);
+                            LOG_DEBUG("Key number " << key_number)
                             vptr += sizeof(unsigned short);
                             int length = DNS__16BIT(vptr);
                             LOG_DEBUG("Length " << length)
                             vptr += sizeof(unsigned short);
-                            std::string keyValue = std::string((char*) vptr,length);
-                            LOG_DEBUG("Key value " << keyValue)
+                            std::string key_value = std::string((char*) vptr,length);
+                            LOG_DEBUG("Key value " << key_value)
                             vptr += length * sizeof(unsigned char);
-                            if (currSvcbReply->svcbKey == nullptr) {
-                                currSvcbReply->svcbKey = new SVCB_Key;
-                                svcbKey = currSvcbReply->svcbKey;
+                            if (curr_svcb_reply->svcb_key_ == nullptr) {
+                                curr_svcb_reply->svcb_key_ = new svcb_key;
+                                svcbkey = curr_svcb_reply->svcb_key_;
                             } else {
-                                svcbKey->svcbKeyNext = new SVCB_Key;
-                                svcbKey = svcbKey->svcbKeyNext;
+                                svcbkey->svcb_key_next_ = new svcb_key;
+                                svcbkey = svcbkey->svcb_key_next_;
                             }
-                            svcbKey->keyNum = keyNumber;
-                            svcbKey->keyVal = keyValue;
+                            svcbkey->key_num_ = key_number;
+                            svcbkey->key_val_ = key_value;
                         }
                 }
             }
@@ -187,6 +187,6 @@ int parse_svcb_reply (const unsigned char *abuf, int alen, SVCB_Reply** pSvcbRep
     }
     ares_free_string(hostname);
     hostname = NULL;
-    *pSvcbReply = svcbReply;
+    *_p_svcb_reply = svcbreply;
     return ARES_SUCCESS;
 }

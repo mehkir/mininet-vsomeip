@@ -9,10 +9,10 @@
 
 #define T_SVCB 64
 
-struct SVCB_Key {
-    SVCB_Key* svcbKeyNext = nullptr;
-    uint16_t keyNum = 0;
-    std::string keyVal = "";
+struct svcb_key {
+    svcb_key* svcb_key_next_ = nullptr;
+    uint16_t key_num_ = 0;
+    std::string key_val_ = "";
 };
 
 enum SVCB_PARAM_TYPE {
@@ -27,40 +27,40 @@ enum SVCB_PARAM_TYPE {
     UPPERKEY = 65534
 };
 
-struct SVCB_Reply {
-    SVCB_Reply* svcbReplyNext = nullptr;
-    std::string hostname = "";
-    u_int16_t svcPriority = 0;
-    std::string target = "";
-    uint16_t port = 0;
-    uint32_t ipv4AddressNumerical = 0;
-    std::string ipv4AddressString = "";
-    SVCB_Key* svcbKey = nullptr;
-    std::string getSVCBKey(uint16_t keyNum) {
-        SVCB_Key* svcbKey = this->svcbKey;
-        while (svcbKey != nullptr && svcbKey->keyNum != keyNum) {
-            svcbKey = svcbKey->svcbKeyNext;
+struct svcb_reply {
+    svcb_reply* svcb_reply_next_ = nullptr;
+    std::string hostname_ = "";
+    u_int16_t svc_priority_ = 0;
+    std::string target_ = "";
+    uint16_t port_ = 0;
+    uint32_t ipv4_address_numerical_ = 0;
+    std::string ipv4_address_string_ = "";
+    svcb_key* svcb_key_ = nullptr;
+    std::string get_svcb_key(uint16_t _key_num) {
+        svcb_key* svcb_key = this->svcb_key_;
+        while (svcb_key != nullptr && svcb_key->key_num_ != _key_num) {
+            svcb_key = svcb_key->svcb_key_next_;
         }
-        return svcbKey != nullptr ? svcbKey->keyVal : "nullptr";
+        return svcb_key != nullptr ? svcb_key->key_val_ : "nullptr";
     }
-    friend std::ostream& operator<<(std::ostream& os, const SVCB_Reply& svcbReply)
+    friend std::ostream& operator<<(std::ostream& _os, const svcb_reply& _svcb_reply)
     {
-        os << "SVCB Reply: " << svcbReply.hostname << "\n"
-           << "\tSvcPriority\t" << svcbReply.svcPriority << "\n"
-           << "\tTargetName\t" << svcbReply.target << "\n"
-           << "\tPort\t\t" << svcbReply.port << "\n"
-           << "\tipv4hint\t" << svcbReply.ipv4AddressString << "\n";
-        const SVCB_Key* svcbKey = svcbReply.svcbKey;
-        while (svcbKey != nullptr) {
-            os << "\tkey" << svcbKey->keyNum << "\t" << svcbKey->keyVal;
-            if ((svcbKey = svcbKey->svcbKeyNext) != nullptr)
-                os << "\n";
+        _os << "SVCB Reply: " << _svcb_reply.hostname_ << "\n"
+           << "\tSvcPriority\t" << _svcb_reply.svc_priority_ << "\n"
+           << "\tTargetName\t" << _svcb_reply.target_ << "\n"
+           << "\tPort\t\t" << _svcb_reply.port_ << "\n"
+           << "\tipv4hint\t" << _svcb_reply.ipv4_address_string_ << "\n";
+        const svcb_key* svcb_key = _svcb_reply.svcb_key_;
+        while (svcb_key != nullptr) {
+            _os << "\tkey" << svcb_key->key_num_ << "\t" << svcb_key->key_val_;
+            if ((svcb_key = svcb_key->svcb_key_next_) != nullptr)
+                _os << "\n";
         }
-        return os;
+        return _os;
     }
 };
 
-void delete_svcb_reply(SVCB_Reply* svcbReply);
-int parse_svcb_reply (const unsigned char *abuf, int alen, SVCB_Reply** pSvcbReply);
+void delete_svcb_reply(svcb_reply* _svcb_reply);
+int parse_svcb_reply (const unsigned char* _abuf, int _alen, svcb_reply** _p_svcb_reply);
 
 #endif //VSOMEIP_PARSE_SVCB_REPLY_HPP

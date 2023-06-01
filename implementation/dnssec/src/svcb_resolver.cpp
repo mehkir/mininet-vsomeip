@@ -18,7 +18,7 @@ namespace vsomeip_v3 {
     void svcb_resolve_callback(void *data, int status, int timeouts,
                 unsigned char *abuf, int alen) {
         LOG_DEBUG("svcb_resolve_callback is called")
-        service_data_and_cbs* service_data_and_cbs_ = reinterpret_cast<service_data_and_cbs*>(data);
+        service_data_and_cbs* servicedata_and_cbs = reinterpret_cast<service_data_and_cbs*>(data);
         
         if (status) {
             std::cout << "Bad DNS response" << std::endl;
@@ -27,80 +27,80 @@ namespace vsomeip_v3 {
 
         unsigned char* copy = new unsigned char[alen];
         memcpy(copy, abuf, alen);
-        SVCB_Reply* svcbReply;
-        if ((parse_svcb_reply(copy, alen, &svcbReply)) != ARES_SUCCESS) {
+        svcb_reply* svcbreply;
+        if ((parse_svcb_reply(copy, alen, &svcbreply)) != ARES_SUCCESS) {
             std::cout << "Parsing SVCB reply failed" << std::endl;
-            delete_svcb_reply(svcbReply);
+            delete_svcb_reply(svcbreply);
             return;
         }
         
-        SVCB_Reply* svcbReplyPtr = svcbReply;
-        while (svcbReplyPtr != nullptr) {
-            //std::cout << "svcb_resolver\n" << *svcbReplyPtr << std::endl;
+        svcb_reply* svcb_reply_ptr = svcbreply;
+        while (svcb_reply_ptr != nullptr) {
+            //std::cout << "svcb_resolver\n" << *svcb_reply_ptr << std::endl;
             std::string reliable_address = "", unreliable_address = "";
             uint16_t reliable_port = 0, unreliable_port = 0;
-            int l4protocol = std::stoi(svcbReplyPtr->getSVCBKey(L4PROTOCOL));
+            int l4protocol = std::stoi(svcb_reply_ptr->get_svcb_key(L4PROTOCOL));
             switch (l4protocol)
             {
             case IPPROTO_UDP:
-                unreliable_address = svcbReplyPtr->ipv4AddressString;
-                unreliable_port = svcbReplyPtr->port;
-                service_data_and_cbs_->ip_address = boost::asio::ip::address_v4::from_string(unreliable_address);
+                unreliable_address = svcb_reply_ptr->ipv4_address_string_;
+                unreliable_port = svcb_reply_ptr->port_;
+                servicedata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(unreliable_address);
                 break;
             case IPPROTO_TCP:
-                reliable_address = svcbReplyPtr->ipv4AddressString;
-                reliable_port = svcbReplyPtr->port;
-                service_data_and_cbs_->ip_address = boost::asio::ip::address_v4::from_string(unreliable_address);
+                reliable_address = svcb_reply_ptr->ipv4_address_string_;
+                reliable_port = svcb_reply_ptr->port_;
+                servicedata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(unreliable_address);
                 break;
             default:
                 break;
             }
             //Fill with concrete values in case instance, major and minor were not specified
-            service_data_and_cbs_->instance = std::stoi(svcbReplyPtr->getSVCBKey(INSTANCE),0,16);
-            service_data_and_cbs_->major = std::stoi(svcbReplyPtr->getSVCBKey(MAJOR_VERSION),0,16);
-            service_data_and_cbs_->minor = std::stoi(svcbReplyPtr->getSVCBKey(MINOR_VERSION),0,16);
-            service_data_and_cbs_->add_svcb_entry_cache_callback_(service_data_and_cbs_->service, service_data_and_cbs_->instance, service_data_and_cbs_->major, service_data_and_cbs_->minor, l4protocol, service_data_and_cbs_->ip_address, svcbReplyPtr->port);
-            service_data_and_cbs_->verify_service_info_callback_(service_data_and_cbs_->service, service_data_and_cbs_->instance, service_data_and_cbs_->major, service_data_and_cbs_->minor);
+            servicedata_and_cbs->instance_ = std::stoi(svcb_reply_ptr->get_svcb_key(INSTANCE),0,16);
+            servicedata_and_cbs->major_ = std::stoi(svcb_reply_ptr->get_svcb_key(MAJOR_VERSION),0,16);
+            servicedata_and_cbs->minor_ = std::stoi(svcb_reply_ptr->get_svcb_key(MINOR_VERSION),0,16);
+            servicedata_and_cbs->add_svcb_entry_cache_callback_(servicedata_and_cbs->service, servicedata_and_cbs->instance, servicedata_and_cbs->major_, servicedata_and_cbs->minor, l4protocol, servicedata_and_cbs->ip_address, svcb_reply_ptr->port_);
+            servicedata_and_cbs->verify_service_info_callback_(servicedata_and_cbs->service, servicedata_and_cbs->instance, servicedata_and_cbs->major_, servicedata_and_cbs->minor);
             //Assemble TLSA QNAME
             std::stringstream tlsa_request;
             tlsa_request << ATTRLEAFBRANCH;
-            tlsa_request << "minor" << svcbReplyPtr->getSVCBKey(MINOR_VERSION);
+            tlsa_request << "minor" << svcb_reply_ptr->get_svcb_key(MINOR_VERSION);
             tlsa_request << ".";
-            tlsa_request << "major" << svcbReplyPtr->getSVCBKey(MAJOR_VERSION);
+            tlsa_request << "major" << svcb_reply_ptr->get_svcb_key(MAJOR_VERSION);
             tlsa_request << ".";
-            tlsa_request << "instance" << svcbReplyPtr->getSVCBKey(INSTANCE);
+            tlsa_request << "instance" << svcb_reply_ptr->get_svcb_key(INSTANCE);
             tlsa_request << ".";
-            tlsa_request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << service_data_and_cbs_->service;
+            tlsa_request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << servicedata_and_cbs->service;
             tlsa_request << ".";
             tlsa_request << PARENTDOMAIN;
-            service_data_and_cbs_->request_tlsa_record_callback_(service_data_and_cbs_, tlsa_request.str());
+            servicedata_and_cbs->request_tlsa_record_callback_(servicedata_and_cbs, tlsa_request.str());
 
-            svcbReplyPtr = svcbReplyPtr->svcbReplyNext;
+            svcb_reply_ptr = svcb_reply_ptr->svcb_reply_next_;
         }
-        delete_svcb_reply(svcbReply);
+        delete_svcb_reply(svcbreply);
         
-        //delete service_data_and_cbs_;
+        //delete servicedata_and_cbs;
         delete[] copy;
     }
 
-    void svcb_resolver::request_svcb_record(service_data_and_cbs* service_data_and_cbs_) {
+    void svcb_resolver::request_svcb_record(service_data_and_cbs* _service_data_and_cbs) {
         std::stringstream request;
         request << ATTRLEAFBRANCH;
-        if (service_data_and_cbs_->minor != ANY_MINOR) {
-            request << "minor0x" << std::hex << std::setw(8) << std::setfill('0') << service_data_and_cbs_->minor;
+        if (_service_data_and_cbs->minor != ANY_MINOR) {
+            request << "minor0x" << std::hex << std::setw(8) << std::setfill('0') << _service_data_and_cbs->minor;
             request << ".";
         }
-        if (service_data_and_cbs_->major != ANY_MAJOR) {
-            request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << service_data_and_cbs_->major;
+        if (_service_data_and_cbs->major != ANY_MAJOR) {
+            request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << _service_data_and_cbs->major;
             request << ".";
         }
-        if (service_data_and_cbs_->instance != ANY_INSTANCE) {
-            request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << service_data_and_cbs_->instance;
+        if (_service_data_and_cbs->instance != ANY_INSTANCE) {
+            request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << _service_data_and_cbs->instance;
             request << ".";
         }
-        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << service_data_and_cbs_->service;
+        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << _service_data_and_cbs->service;
         request << ".";
         request << PARENTDOMAIN;
-        dns_resolver_->resolve(request.str().c_str(), C_IN, T_SVCB, svcb_resolve_callback, service_data_and_cbs_);
+        dns_resolver_->resolve(request.str().c_str(), C_IN, T_SVCB, svcb_resolve_callback, _service_data_and_cbs);
     }
 } /* end namespace vsomeip_v3 */
