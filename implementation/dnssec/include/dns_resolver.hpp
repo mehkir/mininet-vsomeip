@@ -16,35 +16,35 @@
 #include <deque>
 
 struct dns_request {
-    const char *name = "";
-    int dnsclass = 0;
-    int type = 0;
-    ares_callback callback = nullptr;
-    void *arg = nullptr;
+    const char* name_ = "";
+    int dnsclass_ = 0;
+    int type_ = 0;
+    ares_callback callback_ = nullptr;
+    void* arg_ = nullptr;
 };
 
 class dns_resolver {
 
 public:
     static dns_resolver* get_instance();
-    int initialize(in_addr_t address=DEFAULT_SERVER);
+    int initialize(in_addr_t _address=DEFAULT_SERVER);
     void cleanup();
-    void resolve(const char *name, int dnsclass, int type, ares_callback callback, void *arg);
+    void resolve(const char* _name, int _dnsclass, int _type, ares_callback _callback, void* _arg);
 protected:
 private:
     dns_resolver();
     ~dns_resolver();
     const int STARTED = 0;
     const int STOPPED = 1;
-    int state = STOPPED;
-    bool initialized = false;
-    ares_channel channel;
-    std::thread processThread;
-    std::condition_variable conditionVariable;
+    int state_ = STOPPED;
+    bool initialized_ = false;
+    ares_channel channel_;
+    std::thread process_thread_;
+    std::condition_variable condition_variable_;
     static std::mutex mutex_;
-    static dns_resolver* instance;
+    static dns_resolver* instance_;
     void process();
-    int change_dns_server(ares_channel& channel, in_addr_t address);
+    int change_dns_server(ares_channel& _channel, in_addr_t _address);
     std::deque<dns_request> dns_requests_;
 };
 
