@@ -10,13 +10,13 @@ namespace vsomeip_v3::sd {
 class data_partitioner
 {
 private:
-    /* data */
+
 public:
     data_partitioner();
     ~data_partitioner();
-    void partition_data(const std::string& key_name, std::shared_ptr<vsomeip_v3::sd::configuration_option_impl> configuration_option, 
-                                       std::vector<unsigned char> data);
-    std::vector<unsigned char> reassemble_data(const std::string& key_name, std::shared_ptr<vsomeip_v3::sd::configuration_option_impl> configuration_option);
+    void partition_data(const std::string& _key_name, std::shared_ptr<vsomeip_v3::sd::configuration_option_impl> _configuration_option, 
+                                       std::vector<unsigned char> _data);
+    std::vector<unsigned char> reassemble_data(const std::string& _key_name, std::shared_ptr<vsomeip_v3::sd::configuration_option_impl> _configuration_option);
 };
 }
 #endif /* VSOMEIP_DATA_PARTITIONER_HPP */

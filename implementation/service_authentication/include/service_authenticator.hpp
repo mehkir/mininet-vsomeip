@@ -9,7 +9,7 @@ private:
     service_authenticator();
     ~service_authenticator();
     static std::mutex mutex_;
-    static service_authenticator* instance;
+    static service_authenticator* instance_;
 public:
     static service_authenticator* get_instance();
 };

@@ -2,70 +2,67 @@
 #include <iostream>
 
 namespace vsomeip_v3 {
+    std::mutex request_cache::mutex_;
+    request_cache* request_cache::instance_;
 
-std::mutex request_cache::mutex_;
-request_cache* request_cache::instance;
-
-request_cache::request_cache()
-{
-}
-
-request_cache::~request_cache()
-{
-}
-
-request_cache* request_cache::get_instance() {
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    if(instance == nullptr) {
-        instance = new request_cache();
+    request_cache::request_cache() {
     }
-    return instance;
-}
 
-void request_cache::add_request_nonce(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
-                               vsomeip_v3::instance_t instanceId, std::vector<unsigned char> nonce) {
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    auto keyTuple = make_key_tupe(ipAddress, serviceId, instanceId);
-    request_map[keyTuple]._nonce = nonce;
-}
+    request_cache::~request_cache() {
+    }
 
-bool request_cache::has_nonce_and_remove(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
-                    vsomeip_v3::instance_t instanceId, std::vector<unsigned char> nonce) {
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    auto keyTuple = make_key_tupe(ipAddress, serviceId, instanceId);
-    bool has_nonce = request_map.count(keyTuple) && !request_map[keyTuple]._nonce.empty() && request_map[keyTuple]._nonce == nonce;
-    if (has_nonce) { request_map[keyTuple]._nonce.clear(); }
-    return has_nonce;
-}
+    request_cache* request_cache::get_instance() {
+        std::lock_guard<std::mutex> lockguard(mutex_);
+        if(instance_ == nullptr) {
+            instance_ = new request_cache();
+        }
+        return instance_;
+    }
 
-void request_cache::add_request_certificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
-                    vsomeip_v3::instance_t instanceId, std::vector<unsigned char> certificate_data) {
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    auto keyTuple = make_key_tupe(ipAddress, serviceId, instanceId);
-    request_map[keyTuple].certificate_data = certificate_data;
-}
+    void request_cache::add_request_nonce(boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service,
+                                vsomeip_v3::instance_t _instance, std::vector<unsigned char> _nonce) {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        auto key_tuple = make_key_tupe(_ipv4_address, _service, _instance);
+        request_map_[key_tuple].nonce_ = _nonce;
+    }
 
-std::vector<unsigned char> request_cache::get_request_nonce(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
-                    vsomeip_v3::instance_t instanceId) {
-    auto keyTuple = make_key_tupe(ipAddress, serviceId, instanceId);
-    return request_map[keyTuple]._nonce;
-}
+    bool request_cache::has_nonce_and_remove(boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service,
+                        vsomeip_v3::instance_t _instance, std::vector<unsigned char> _nonce) {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        auto key_tuple = make_key_tupe(_ipv4_address, _service, _instance);
+        bool has_nonce = request_map_.count(key_tuple) && !request_map_[key_tuple].nonce_.empty() && request_map_[key_tuple].nonce_ == _nonce;
+        if (has_nonce) { request_map_[key_tuple].nonce_.clear(); }
+        return has_nonce;
+    }
 
-std::vector<unsigned char> request_cache::get_request_certificate(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
-                    vsomeip_v3::instance_t instanceId) {
-    auto keyTuple = make_key_tupe(ipAddress, serviceId, instanceId);
-    return request_map[keyTuple].certificate_data;
-}
+    void request_cache::add_request_certificate(boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service,
+                        vsomeip_v3::instance_t _instance, std::vector<unsigned char> _certificate_data) {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        auto key_tuple = make_key_tupe(_ipv4_address, _service, _instance);
+        request_map_[key_tuple].certificate_data_ = _certificate_data;
+    }
 
-void request_cache::remove_request(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
-                vsomeip_v3::instance_t instanceId) {
-    auto keyTuple = make_key_tupe(ipAddress, serviceId, instanceId);
-    request_map.erase(keyTuple);
-}
+    std::vector<unsigned char> request_cache::get_request_nonce(boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service,
+                        vsomeip_v3::instance_t _instance) {
+        auto key_tuple = make_key_tupe(_ipv4_address, _service, _instance);
+        return request_map_[key_tuple].nonce_;
+    }
 
-std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t,
-                    vsomeip_v3::instance_t> request_cache::make_key_tupe(boost::asio::ip::address_v4 ipAddress, vsomeip_v3::service_t serviceId,
-                    vsomeip_v3::instance_t instanceId) {
-    return std::make_tuple(ipAddress, serviceId, instanceId);
-}
+    std::vector<unsigned char> request_cache::get_request_certificate(boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service,
+                        vsomeip_v3::instance_t _instance) {
+        auto key_tuple = make_key_tupe(_ipv4_address, _service, _instance);
+        return request_map_[key_tuple].certificate_data_;
+    }
+
+    void request_cache::remove_request(boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service,
+                    vsomeip_v3::instance_t _instance) {
+        auto key_tuple = make_key_tupe(_ipv4_address, _service, _instance);
+        request_map_.erase(key_tuple);
+    }
+
+    std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t,
+                        vsomeip_v3::instance_t> request_cache::make_key_tupe(boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service,
+                        vsomeip_v3::instance_t _instance) {
+        return std::make_tuple(_ipv4_address, _service, _instance);
+    }
 } /* end namespace vsomeip_v3 */

@@ -11,13 +11,13 @@
 
 namespace vsomeip_v3 {
     struct svcb_cache_entry {
-        service_t _service = -1;
-        instance_t _instance = -1;
-        major_version_t _major = -1;
-        minor_version_t _minor = -1;
-        int l4protocol = -1;
-        boost::asio::ip::address_v4 ip_address = boost::asio::ip::address_v4::from_string("0.0.0.0");
-        uint16_t port = -1;
+        service_t service_ = -1;
+        instance_t instance_ = -1;
+        major_version_t major_ = -1;
+        minor_version_t minor_ = -1;
+        int l4protocol_ = -1;
+        boost::asio::ip::address_v4 ipv4_address_ = boost::asio::ip::address_v4::from_string("0.0.0.0");
+        uint16_t port_ = -1;
     };
 
     class svcb_cache {
@@ -25,8 +25,8 @@ namespace vsomeip_v3 {
             svcb_cache();
             ~svcb_cache();
             static std::mutex mutex_;
-            static svcb_cache* instance;
-            std::map<std::tuple<service_t, instance_t, major_version_t, minor_version_t>, svcb_cache_entry> svcb_cache_map;
+            static svcb_cache* instance_;
+            std::map<std::tuple<service_t, instance_t, major_version_t, minor_version_t>, svcb_cache_entry> svcb_cache_map_;
         public:
             static svcb_cache* get_instance();
 
@@ -35,10 +35,10 @@ namespace vsomeip_v3 {
             svcb_cache& operator=(svcb_cache &) = delete;
             svcb_cache& operator=(svcb_cache &&) = delete;
 
-            void add_svcb_cache_entry(service_t service_id, instance_t instance_id, major_version_t major_version, minor_version_t minor_version, int l4protocol, const boost::asio::ip::address_v4 ip_address, uint16_t port);
-            void remove_svcb_cache_entry(service_t service_id, instance_t instance_id, major_version_t major_version, minor_version_t minor_version);
-            svcb_cache_entry get_svcb_cache_entry(service_t service_id, instance_t instance_id, major_version_t major_version, minor_version_t minor_version);
-            std::tuple<service_t, instance_t, major_version_t, minor_version_t> make_key_tuple(service_t service_id, instance_t instance_id, major_version_t major_version, minor_version_t minor_version);
+            void add_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version, int _l4protocol, const boost::asio::ip::address_v4 _ipv4_address, uint16_t _port);
+            void remove_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
+            svcb_cache_entry get_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
+            std::tuple<service_t, instance_t, major_version_t, minor_version_t> make_key_tuple(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
 
 
     };
