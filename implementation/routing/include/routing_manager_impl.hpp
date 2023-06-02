@@ -147,7 +147,7 @@ public:
 
     void on_subscribe_ack(client_t _client, service_t _service,
                     instance_t _instance, eventgroup_t _eventgroup, event_t _event,
-                    remote_subscription_id_t _id, bool service_authenticated);
+                    remote_subscription_id_t _id);
 
     void on_subscribe_nack(client_t _client, service_t _service,
                     instance_t _instance, eventgroup_t _eventgroup, event_t _event,

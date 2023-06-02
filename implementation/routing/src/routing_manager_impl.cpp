@@ -2898,17 +2898,8 @@ void routing_manager_impl::on_subscribe_ack_with_multicast(
 
 void routing_manager_impl::on_subscribe_ack(client_t _client,
         service_t _service, instance_t _instance, eventgroup_t _eventgroup,
-        event_t _event, remote_subscription_id_t _id, bool service_authenticated) {
-    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::on_subscribe_ack (MEHMET MUELLER DEBUG) <<<<<";
-    // Close endpoint when service authentication was not successful
-    if (!service_authenticated) {
-        find_or_create_remote_client(_service,_instance, false).get()->stop();
-        find_or_create_remote_client(_service,_instance, true).get()->stop();
-        std::cerr << "Endpoint closed! Publisher authenticity was not successful." << std::endl;
-    } else {
-        VSOMEIP_DEBUG << ">>>>> routing_manager_impl::on_subscribe_ack: Endpoint authenticated " << "service=" << _service << ", instance=" << _instance << "(MEHMET MUELLER DEBUG) <<<<<";
-    }
-        
+        event_t _event, remote_subscription_id_t _id) {
+    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::on_subscribe_ack (MEHMET MUELLER DEBUG) <<<<<";        
     std::lock_guard<std::mutex> its_lock(remote_subscription_state_mutex_);
     auto its_eventgroup = find_eventgroup(_service, _instance, _eventgroup);
     if (its_eventgroup) {

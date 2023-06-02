@@ -200,7 +200,7 @@ private:
             major_version_t _major, ttl_t _ttl, uint8_t _counter,
             const std::set<client_t> &_clients,
             const boost::asio::ip::address &_sender,
-            const boost::asio::ip::address &_address, uint16_t _port, bool service_authenticated=true);
+            const boost::asio::ip::address &_address, uint16_t _port);
     void handle_eventgroup_subscription_nack(service_t _service,
             instance_t _instance, eventgroup_t _eventgroup, uint8_t _counter,
             const std::set<client_t> &_clients);
