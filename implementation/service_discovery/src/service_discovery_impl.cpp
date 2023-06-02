@@ -1546,21 +1546,21 @@ service_discovery_impl::process_offerservice_serviceentry(
 
 void
 service_discovery_impl::verify_service_info(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) {
-    resume_process_offerservice_entry _resume_process_offerservice_entry = resume_process_offerservice_cache_->get_offerservice_entry(_service, _instance, _major, _minor);
-    svcb_cache_entry _svcb_cache_entry = svcb_cache_->get_svcb_cache_entry(_service, _instance, _major, _minor);
-    if (_resume_process_offerservice_entry._service == _svcb_cache_entry._service
-        && _resume_process_offerservice_entry._instance == _svcb_cache_entry._instance
-        && _resume_process_offerservice_entry._major == _svcb_cache_entry._major
-        && _resume_process_offerservice_entry._minor == _svcb_cache_entry._minor
-        && (   (_svcb_cache_entry.l4protocol == IPPROTO_UDP && _resume_process_offerservice_entry._unreliable_address == _svcb_cache_entry.ip_address
-                && _resume_process_offerservice_entry._unreliable_port == _svcb_cache_entry.port) 
-            || (_svcb_cache_entry.l4protocol == IPPROTO_TCP && _resume_process_offerservice_entry._reliable_address == _svcb_cache_entry.ip_address
-                && _resume_process_offerservice_entry._reliable_port == _svcb_cache_entry.port)
+    resume_process_offerservice_entry resume_processofferservice_entry = resume_process_offerservice_cache_->get_offerservice_entry(_service, _instance, _major, _minor);
+    svcb_cache_entry svcbcache_entry = svcb_cache_->get_svcb_cache_entry(_service, _instance, _major, _minor);
+    if (resume_processofferservice_entry.service_ == svcbcache_entry.service_
+        && resume_processofferservice_entry.instance_ == svcbcache_entry.instance_
+        && resume_processofferservice_entry.major_ == svcbcache_entry.major_
+        && resume_processofferservice_entry.minor_ == svcbcache_entry.minor_
+        && (   (svcbcache_entry.l4protocol_ == IPPROTO_UDP && resume_processofferservice_entry.unreliable_address_ == svcbcache_entry.ipv4_address_
+                && resume_processofferservice_entry.unreliable_port_ == svcbcache_entry.port_) 
+            || (svcbcache_entry.l4protocol_ == IPPROTO_TCP && resume_processofferservice_entry.reliable_address_ == svcbcache_entry.ipv4_address_
+                && resume_processofferservice_entry.reliable_port_ == svcbcache_entry.port_)
            )
         ) {
         VSOMEIP_DEBUG << ">>>>> service_discovery_impl::verify_service_info: Found SVCB record for service=" << _service
         << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
-        resume_process_offerservice_serviceentry(_resume_process_offerservice_entry._service, _resume_process_offerservice_entry._instance, _resume_process_offerservice_entry._major, _resume_process_offerservice_entry._minor, _resume_process_offerservice_entry._ttl, _resume_process_offerservice_entry._reliable_address, _resume_process_offerservice_entry._reliable_port, _resume_process_offerservice_entry._unreliable_address, _resume_process_offerservice_entry._unreliable_port, _resume_process_offerservice_entry._resubscribes, _resume_process_offerservice_entry._received_via_mcast);
+        resume_process_offerservice_serviceentry(resume_processofferservice_entry.service_, resume_processofferservice_entry.instance_, resume_processofferservice_entry.major_, resume_processofferservice_entry.minor_, resume_processofferservice_entry.ttl_, resume_processofferservice_entry.reliable_address_, resume_processofferservice_entry.reliable_port_, resume_processofferservice_entry.unreliable_address_, resume_processofferservice_entry.unreliable_port_, resume_processofferservice_entry.resubscribes_, resume_processofferservice_entry.received_via_mcast_);
         resume_process_offerservice_cache_->remove_offerservice_entry(_service, _instance, _major, _minor);
     } else {
         VSOMEIP_DEBUG << ">>>>> service_discovery_impl::verify_service_info: No offer or SVCB record for service=" << _service
@@ -2325,17 +2325,17 @@ service_discovery_impl::verify_publisher_signature(boost::asio::ip::address_v4 _
     // Check if there is already a subscription ack entry
     eventgroup_subscription_ack_cache_entry _eventgroup_subscription_ack_cache_entry = eventgroup_subscription_ack_cache_->get_eventgroup_subscription_ack_cache_entry(_sender_ip_address, _service, _instance);
     requirements_are_fulfilled = requirements_are_fulfilled
-                                 && _eventgroup_subscription_ack_cache_entry._service == _service // sanity check
-                                 && _eventgroup_subscription_ack_cache_entry._instance == _instance // sanity check
-                                 && _eventgroup_subscription_ack_cache_entry._sender_ip_address == _sender_ip_address; // sanity check
+                                 && _eventgroup_subscription_ack_cache_entry.service_ == _service // sanity check
+                                 && _eventgroup_subscription_ack_cache_entry.instance_ == _instance // sanity check
+                                 && _eventgroup_subscription_ack_cache_entry.sender_ip_address_ == _sender_ip_address; // sanity check
     // Check if nonce is valid
-    std::vector<unsigned char> nonce = _eventgroup_subscription_ack_cache_entry._nonce;
-    std::vector<byte_t> signature = _eventgroup_subscription_ack_cache_entry._signature;
+    std::vector<unsigned char> nonce = _eventgroup_subscription_ack_cache_entry.nonce_;
+    std::vector<byte_t> signature = _eventgroup_subscription_ack_cache_entry.signature_;
     if (requirements_are_fulfilled && request_cache_->has_nonce_and_remove(_sender_ip_address, _service, _instance, nonce)) {
         CryptoPP::RSA::PublicKey public_key;
         // Verify service authenticity
         if (crypto_operator_->extract_public_key_from_certificate(certificate_data, public_key)
-            && !_eventgroup_subscription_ack_cache_entry._signature.empty()) {
+            && !_eventgroup_subscription_ack_cache_entry.signature_.empty()) {
             std::vector<byte_t> data_to_be_verified;
             data_to_be_verified.insert(data_to_be_verified.end(), nonce.begin(), nonce.end());
             data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
@@ -2345,15 +2345,14 @@ service_discovery_impl::verify_publisher_signature(boost::asio::ip::address_v4 _
     if (service_authenticated) {
         handle_eventgroup_subscription_ack(_service, 
                                            _instance,
-                                           _eventgroup_subscription_ack_cache_entry._eventgroup,
-                                           _eventgroup_subscription_ack_cache_entry._major_version,
-                                           _eventgroup_subscription_ack_cache_entry._ttl,
+                                           _eventgroup_subscription_ack_cache_entry.eventgroup_,
+                                           _eventgroup_subscription_ack_cache_entry.major_version_,
+                                           _eventgroup_subscription_ack_cache_entry.ttl_,
                                            0,
-                                           _eventgroup_subscription_ack_cache_entry._clients,
-                                           _eventgroup_subscription_ack_cache_entry._sender_ip_address,
-                                           _eventgroup_subscription_ack_cache_entry._first_ip_address,
-                                           _eventgroup_subscription_ack_cache_entry._port,
-                                           service_authenticated);
+                                           _eventgroup_subscription_ack_cache_entry.clients_,
+                                           _eventgroup_subscription_ack_cache_entry.sender_ip_address_,
+                                           _eventgroup_subscription_ack_cache_entry.first_ip_address_,
+                                           _eventgroup_subscription_ack_cache_entry.port_);
     } else {
         VSOMEIP_DEBUG << ">>>>> service_discovery_impl::verify_publisher_signature: Signature could not be verified for service=" << _service
         << ", instance=" << _instance << ", sender_ip_address=" << _sender_ip_address.to_string() << " (MEHMET MUELLER DEBUG) <<<<<";
@@ -2613,7 +2612,7 @@ service_discovery_impl::handle_eventgroup_subscription_ack(
         major_version_t _major, ttl_t _ttl, uint8_t _counter,
         const std::set<client_t> &_clients,
         const boost::asio::ip::address &_sender,
-        const boost::asio::ip::address &_address, uint16_t _port, bool service_authenticated) {
+        const boost::asio::ip::address &_address, uint16_t _port) {
     (void)_major;
     (void)_ttl;
     (void)_counter;
@@ -2632,7 +2631,7 @@ service_discovery_impl::handle_eventgroup_subscription_ack(
                             subscription_state_e::ST_ACKNOWLEDGED);
                         host_->on_subscribe_ack(its_client,
                                 _service, _instance, _eventgroup,
-                                ANY_EVENT, PENDING_SUBSCRIPTION_ID, service_authenticated);
+                                ANY_EVENT, PENDING_SUBSCRIPTION_ID);
                     }
                 }
                 if (_address.is_multicast()) {
