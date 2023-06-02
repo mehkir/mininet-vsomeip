@@ -11,17 +11,17 @@
 
 namespace vsomeip_v3 {
     struct resume_process_offerservice_entry {
-        service_t _service = -1;
-        instance_t _instance = -1;
-        major_version_t _major = -1;
-        minor_version_t _minor = -1;
-        ttl_t _ttl = -1;
-        boost::asio::ip::address_v4 _reliable_address = boost::asio::ip::address_v4::from_string("0.0.0.0");;
-        uint16_t _reliable_port = -1;
-        boost::asio::ip::address_v4 _unreliable_address = boost::asio::ip::address_v4::from_string("0.0.0.0");
-        uint16_t _unreliable_port = -1;
-        std::vector<std::shared_ptr<sd::message_impl> > _resubscribes;
-        bool _received_via_mcast = false;
+        service_t service_ = -1;
+        instance_t instance_ = -1;
+        major_version_t major_ = -1;
+        minor_version_t minor_ = -1;
+        ttl_t ttl_ = -1;
+        boost::asio::ip::address_v4 reliable_address_ = boost::asio::ip::address_v4::from_string("0.0.0.0");;
+        uint16_t reliable_port_ = -1;
+        boost::asio::ip::address_v4 unreliable_address_ = boost::asio::ip::address_v4::from_string("0.0.0.0");
+        uint16_t unreliable_port_ = -1;
+        std::vector<std::shared_ptr<sd::message_impl> > resubscribes_;
+        bool received_via_mcast_ = false;
     };
 
     class resume_process_offerservice_cache {
@@ -29,8 +29,8 @@ namespace vsomeip_v3 {
         resume_process_offerservice_cache();
         ~resume_process_offerservice_cache();
         static std::mutex mutex_;
-        static resume_process_offerservice_cache* instance;
-        std::map<std::tuple<service_t, instance_t, major_version_t, minor_version_t>, resume_process_offerservice_entry> resume_process_offerservice_map;
+        static resume_process_offerservice_cache* instance_;
+        std::map<std::tuple<service_t, instance_t, major_version_t, minor_version_t>, resume_process_offerservice_entry> resume_process_offerservice_map_;
         std::tuple<service_t, instance_t, major_version_t, minor_version_t> make_key_tuple(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor);
     public:
         static resume_process_offerservice_cache* get_instance();
@@ -46,6 +46,4 @@ namespace vsomeip_v3 {
     };
     
 } /* end namespace vsomeip_v3 */
-
-
 #endif /* VSOMEIP_V3_RESUME_PROCESS_OFFERSERVICE_CACHE_H */
