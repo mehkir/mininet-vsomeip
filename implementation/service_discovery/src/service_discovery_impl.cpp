@@ -87,8 +87,8 @@ service_discovery_impl::service_discovery_impl(
       crypto_operator_(crypto_operator::get_instance()) {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
-    certificate_data_ = crypto_operator_->loadCertificateFromFile(configuration_->get_certificate_path());
-    crypto_operator_->LoadPEMPrivateKey(configuration_->get_private_key_path(), private_key_);
+    certificate_data_ = crypto_operator_->load_certificate_from_file(configuration_->get_certificate_path());
+    crypto_operator_->load_pem_private_key(configuration_->get_private_key_path(), private_key_);
 }
 
 service_discovery_impl::~service_discovery_impl() {
@@ -898,7 +898,7 @@ service_discovery_impl::create_eventgroup_entry(
             default:
                 break;
         }
-        CryptoPP::SecByteBlock nonce = crypto_operator_->getRandomByteBlock();
+        CryptoPP::SecByteBlock nonce = crypto_operator_->get_random_byte_block();
         request_cache_->add_request_nonce(its_address.to_v4(), _service, _instance, std::vector<unsigned char>(nonce.begin(), nonce.end()));
         VSOMEIP_DEBUG << "Generated Nonce"
         << "(" << its_address.to_v4().to_string() << "," << _service << "," << _instance << ")"
