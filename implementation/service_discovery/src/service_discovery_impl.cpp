@@ -1012,7 +1012,6 @@ service_discovery_impl::insert_subscription_ack(
     VSOMEIP_DEBUG << "Signing Nonce (SIGNING_START)"
     << "(" << _target->get_address().to_v4().to_string() << "," << its_service << "," << its_instance << ")"
     << std::hex << std::string(nonce_to_be_signed.begin(), nonce_to_be_signed.end());
-    //configuration_option->add_item(NONCEKEY, std::string(nonce_to_be_signed.begin(), nonce_to_be_signed.end()));
     data_partitioner().partition_data(NONCEKEY, configuration_option, std::vector<unsigned char>(nonce_to_be_signed.begin(), nonce_to_be_signed.end()));
     // Sign and add nonce
     std::vector<CryptoPP::byte> nonce_data;
@@ -1572,11 +1571,11 @@ void
 service_discovery_impl::resume_process_offerservice_serviceentry(
     service_t _service, instance_t _instance, major_version_t _major,
     minor_version_t _minor, ttl_t _ttl,
-    const boost::asio::ip::address &_reliable_address,
+    const boost::asio::ip::address& _reliable_address,
     uint16_t _reliable_port,
-    const boost::asio::ip::address &_unreliable_address,
+    const boost::asio::ip::address& _unreliable_address,
     uint16_t _unreliable_port,
-    std::vector<std::shared_ptr<message_impl> > &_resubscribes,
+    std::vector<std::shared_ptr<message_impl> >& _resubscribes,
     bool _received_via_mcast) {
     
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::resume_process_offerservice_serviceentry: service=" << _service
