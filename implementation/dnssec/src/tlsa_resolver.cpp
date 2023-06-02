@@ -13,19 +13,19 @@ namespace vsomeip_v3 {
     tlsa_resolver::~tlsa_resolver() {
     }
 
-    void tlsa_resolve_callback(void* data, int status, int timeouts,
-                unsigned char *abuf, int alen) {
-        service_data_and_cbs* servicedata_and_cbs = reinterpret_cast<service_data_and_cbs*>(data);
+    void tlsa_resolve_callback(void* _data, int _status, int _timeouts,
+                unsigned char* _abuf, int _alen) {
+        service_data_and_cbs* servicedata_and_cbs = reinterpret_cast<service_data_and_cbs*>(_data);
         
-        if (status) {
+        if (_status) {
             std::cout << "Bad DNS response" << std::endl;
             return;
         }
 
-        unsigned char* copy = new unsigned char[alen];
-        memcpy(copy, abuf, alen);
+        unsigned char* copy = new unsigned char[_alen];
+        memcpy(copy, _abuf, _alen);
         tlsa_reply* tlsareply;
-        if ((parse_tlsa_reply(copy, alen, &tlsareply)) != ARES_SUCCESS) {
+        if ((parse_tlsa_reply(copy, _alen, &tlsareply)) != ARES_SUCCESS) {
             std::cout << "Parsing TLSA reply failed" << std::endl;
             delete_tlsa_reply(tlsareply);
             return;
