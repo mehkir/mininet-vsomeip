@@ -4186,7 +4186,7 @@ void routing_manager_impl::send_subscription(
                                 &routing_manager_stub_host::on_subscribe_ack,
                                 std::dynamic_pointer_cast<routing_manager_stub_host>(shared_from_this()),
                                 its_client, _service, _instance,
-                                _eventgroup, ANY_EVENT, _id, true);
+                                _eventgroup, ANY_EVENT, _id);
                         io_.post(its_callback);
                     }
                 } catch (const std::exception &e) {
