@@ -15,20 +15,20 @@ namespace vsomeip_v3 {
     svcb_resolver::~svcb_resolver() {
     }
 
-    void svcb_resolve_callback(void *data, int status, int timeouts,
-                unsigned char *abuf, int alen) {
+    void svcb_resolve_callback(void* _data, int _status, int _timeouts,
+                unsigned char* _abuf, int _alen) {
         LOG_DEBUG("svcb_resolve_callback is called")
-        service_data_and_cbs* servicedata_and_cbs = reinterpret_cast<service_data_and_cbs*>(data);
+        service_data_and_cbs* servicedata_and_cbs = reinterpret_cast<service_data_and_cbs*>(_data);
         
-        if (status) {
+        if (_status) {
             std::cout << "Bad DNS response" << std::endl;
             return;
         }
 
-        unsigned char* copy = new unsigned char[alen];
-        memcpy(copy, abuf, alen);
+        unsigned char* copy = new unsigned char[_alen];
+        memcpy(copy, _abuf, _alen);
         svcb_reply* svcbreply;
-        if ((parse_svcb_reply(copy, alen, &svcbreply)) != ARES_SUCCESS) {
+        if ((parse_svcb_reply(copy, _alen, &svcbreply)) != ARES_SUCCESS) {
             std::cout << "Parsing SVCB reply failed" << std::endl;
             delete_svcb_reply(svcbreply);
             return;

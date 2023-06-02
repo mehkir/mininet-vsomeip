@@ -13,7 +13,7 @@ std::mutex dns_resolver::mutex_;
 dns_resolver* dns_resolver::instance_;
 
 dns_resolver* dns_resolver::get_instance() {
-    std::lock_guard<std::mutex> lock_guard(mutex_);
+    std::lock_guard<std::mutex> lockguard(mutex_);
     if(instance_ == nullptr) {
         instance_ = new dns_resolver();
     }
@@ -111,7 +111,7 @@ void dns_resolver::process() {
         if (state_ != STOPPED) {
             dns_request dns_request;
             {
-                std::lock_guard<std::mutex> lockGuard(mutex_);
+                std::lock_guard<std::mutex> lockguard(mutex_);
                 dns_request = dns_requests_.front();
                 dns_requests_.pop_front();
             }
