@@ -30,18 +30,18 @@ enum MATCHING_TYPE {
     SHA_512
 };
 
-struct TLSA_Reply {
-    TLSA_Reply* tlsaReplyNext = nullptr;
-    std::string hostname = "";
-    uint8_t certificate_usage = 0;
-    uint8_t selector = 0;
-    uint8_t matching_type = 0;
-    std::vector<unsigned char> certificate_association_data;
-    friend std::ostream& operator<<(std::ostream& os, const TLSA_Reply& tlsaReply)
+struct tlsa_reply {
+    tlsa_reply* tlsa_reply_next_ = nullptr;
+    std::string hostname_ = "";
+    uint8_t certificate_usage_ = 0;
+    uint8_t selector_ = 0;
+    uint8_t matching_type_ = 0;
+    std::vector<unsigned char> certificate_association_data_;
+    friend std::ostream& operator<<(std::ostream& _os, const tlsa_reply& _tlsa_reply)
     {
         std::stringstream ss;
         int linebreakcount = 0;
-        for (auto it = tlsaReply.certificate_association_data.begin(); it != tlsaReply.certificate_association_data.end(); it++) {
+        for (auto it = _tlsa_reply.certificate_association_data_.begin(); it != _tlsa_reply.certificate_association_data_.end(); it++) {
             if (linebreakcount == 0) {
                 ss << "\t\t\t\t\t\t\t\t\t";
             }
@@ -52,17 +52,17 @@ struct TLSA_Reply {
                 linebreakcount = 0;
             }
         }
-        os << "TLSA Reply: " << tlsaReply.hostname << "\n"
-           << "\tCertificate Usage\t" << (unsigned int) tlsaReply.certificate_usage << "\n"
-           << "\tSelector\t\t\t" << (unsigned int) tlsaReply.selector << "\n"
-           << "\tMatching Type\t\t" << (unsigned int) tlsaReply.matching_type << "\n"
+        _os << "TLSA Reply: " << _tlsa_reply.hostname_ << "\n"
+           << "\tCertificate Usage\t" << (unsigned int) _tlsa_reply.certificate_usage_ << "\n"
+           << "\tSelector\t\t\t" << (unsigned int) _tlsa_reply.selector_ << "\n"
+           << "\tMatching Type\t\t" << (unsigned int) _tlsa_reply.matching_type_ << "\n"
            << "\tCertificate Association Data" << "\n"
            << ss.str() << "\n";
-        return os;
+        return _os;
     }
 };
 
-void delete_tlsa_reply(TLSA_Reply* tlsaReply);
-int parse_tlsa_reply (const unsigned char *abuf, int alen, TLSA_Reply** pTlsaReply);
+void delete_tlsa_reply(tlsa_reply* _tlsa_reply);
+int parse_tlsa_reply(const unsigned char* _abuf, int _alen, tlsa_reply** _p_tlsa_reply);
 
 #endif //VSOMEIP_PARSE_TLSA_REPLY_HPP

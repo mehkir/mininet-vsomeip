@@ -13,9 +13,9 @@ namespace vsomeip_v3 {
     tlsa_resolver::~tlsa_resolver() {
     }
 
-    void tlsa_resolve_callback(void *data, int status, int timeouts,
+    void tlsa_resolve_callback(void* data, int status, int timeouts,
                 unsigned char *abuf, int alen) {
-        service_data_and_cbs* service_data_and_cbs_ = reinterpret_cast<service_data_and_cbs*>(data);
+        service_data_and_cbs* servicedata_and_cbs = reinterpret_cast<service_data_and_cbs*>(data);
         
         if (status) {
             std::cout << "Bad DNS response" << std::endl;
@@ -24,26 +24,26 @@ namespace vsomeip_v3 {
 
         unsigned char* copy = new unsigned char[alen];
         memcpy(copy, abuf, alen);
-        TLSA_Reply* tlsa_reply;
-        if ((parse_tlsa_reply(copy, alen, &tlsa_reply)) != ARES_SUCCESS) {
+        tlsa_reply* tlsareply;
+        if ((parse_tlsa_reply(copy, alen, &tlsareply)) != ARES_SUCCESS) {
             std::cout << "Parsing TLSA reply failed" << std::endl;
-            delete_tlsa_reply(tlsa_reply);
+            delete_tlsa_reply(tlsareply);
             return;
         }
 
-        TLSA_Reply* tlsa_reply_ptr = tlsa_reply;
+        tlsa_reply* tlsa_reply_ptr = tlsareply;
         while (tlsa_reply_ptr != nullptr) {
-            service_data_and_cbs_->request_cache_callback_(service_data_and_cbs_->ip_address, service_data_and_cbs_->service, service_data_and_cbs_->instance, service_data_and_cbs_->convert_DER_to_PEM_callback_(tlsa_reply_ptr->certificate_association_data));
-            service_data_and_cbs_->verify_publisher_signature_callback_(service_data_and_cbs_->ip_address, service_data_and_cbs_->service, service_data_and_cbs_->instance);
-            tlsa_reply_ptr = tlsa_reply_ptr->tlsaReplyNext;
+            servicedata_and_cbs->request_cache_callback_(servicedata_and_cbs->ipv4_address_, servicedata_and_cbs->service_, servicedata_and_cbs->instance_, servicedata_and_cbs->convert_der_to_pem_callback_(tlsa_reply_ptr->certificate_association_data_));
+            servicedata_and_cbs->verify_publisher_signature_callback_(servicedata_and_cbs->ipv4_address_, servicedata_and_cbs->service_, servicedata_and_cbs->instance_);
+            tlsa_reply_ptr = tlsa_reply_ptr->tlsa_reply_next_;
         }
-        delete_tlsa_reply(tlsa_reply);
+        delete_tlsa_reply(tlsareply);
         
-        delete service_data_and_cbs_;
+        delete servicedata_and_cbs;
         delete[] copy;
     }
 
-    void tlsa_resolver::request_tlsa_record(void* service_data, std::string tlsa_request) {
-        dns_resolver_->resolve(tlsa_request.c_str(), C_IN, T_TLSA, tlsa_resolve_callback, service_data);
+    void tlsa_resolver::request_tlsa_record(void* _service_data, std::string _tlsa_request) {
+        dns_resolver_->resolve(_tlsa_request.c_str(), C_IN, T_TLSA, tlsa_resolve_callback, _service_data);
     }
 } /* end namespace vsomeip_v3 */

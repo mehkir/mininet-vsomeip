@@ -508,11 +508,11 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
 
     //Addition for Service Authentication
     service_data_and_cbs* service_data_and_cbs_ = new service_data_and_cbs();
-    service_data_and_cbs_->service = _service;
-    service_data_and_cbs_->instance = _instance;
-    service_data_and_cbs_->major = _major;
-    service_data_and_cbs_->minor = _minor;
-    service_data_and_cbs_->ip_address = configuration_->get_unicast_address().to_v4();
+    service_data_and_cbs_->service_ = _service;
+    service_data_and_cbs_->instance_ = _instance;
+    service_data_and_cbs_->major_ = _major;
+    service_data_and_cbs_->minor_ = _minor;
+    service_data_and_cbs_->ipv4_address_ = configuration_->get_unicast_address().to_v4();
     service_data_and_cbs_->add_svcb_entry_cache_callback_ = std::bind(&svcb_cache::add_svcb_cache_entry, svcb_cache_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
@@ -540,7 +540,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_3);
     service_data_and_cbs_->record_timestamp_callback_ = std::bind(&timestamp_collector::record_timestamp, timestamp_collector_,
                                             std::placeholders::_1);
-    service_data_and_cbs_->convert_DER_to_PEM_callback_ = std::bind(&crypto_operator::convertDERToPEM, crypto_operator::get_instance(),
+    service_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convertDERToPEM, crypto_operator::get_instance(),
                                             std::placeholders::_1);
     svcb_resolver_.request_svcb_record(service_data_and_cbs_);
 

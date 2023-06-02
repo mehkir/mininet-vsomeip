@@ -10,45 +10,45 @@
 #include "../include/parse_tlsa_reply.hpp"
 #include "../include/logger.hpp"
 
-void delete_tlsa_reply(TLSA_Reply* tlsaReply) {
-    TLSA_Reply* tlsaReplyCurrent = tlsaReply;
-    TLSA_Reply* tlsaReplySuccessor = nullptr;
-    while (tlsaReplyCurrent != nullptr) {
-        LOG_DEBUG("Delete TLSA reply: " << tlsaReplyCurrent->hostname)
-        tlsaReplySuccessor = tlsaReplyCurrent->tlsaReplyNext;
-        delete (tlsaReplyCurrent);
-        tlsaReplyCurrent = tlsaReplySuccessor;
+void delete_tlsa_reply(tlsa_reply* _tlsa_reply) {
+    tlsa_reply* tlsa_reply_current = _tlsa_reply;
+    tlsa_reply* tlsa_reply_successor = nullptr;
+    while (tlsa_reply_current != nullptr) {
+        LOG_DEBUG("Delete TLSA reply: " << tlsa_reply_current->hostname_)
+        tlsa_reply_successor = tlsa_reply_current->tlsa_reply_next_;
+        delete (tlsa_reply_current);
+        tlsa_reply_current = tlsa_reply_successor;
     }
 }
 
-int parse_tlsa_reply (const unsigned char *abuf, int alen, TLSA_Reply** pTlsaReply) {
+int parse_tlsa_reply (const unsigned char* _abuf, int _alen, tlsa_reply** _p_tlsa_reply) {
     unsigned int qdcount, ancount, i;
     const unsigned char *aptr, *vptr;
     int status, rr_type, rr_class, rr_len;
     long len;
     char *hostname = NULL, *rr_name = NULL;
-    TLSA_Reply *tlsaReply = nullptr;
-    TLSA_Reply *currTlsaReply = nullptr;
+    tlsa_reply *tlsareply = nullptr;
+    tlsa_reply *curr_tlsa_reply = nullptr;
 
     /* Give up if abuf doesn't have room for a header. */
-    if (alen < HFIXEDSZ)
+    if (_alen < HFIXEDSZ)
         return ARES_EBADRESP;
 
     /* Fetch the question and answer count from the header. */
-    qdcount = DNS_HEADER_QDCOUNT(abuf);
-    ancount = DNS_HEADER_ANCOUNT(abuf);
+    qdcount = DNS_HEADER_QDCOUNT(_abuf);
+    ancount = DNS_HEADER_ANCOUNT(_abuf);
     if (qdcount != 1)
         return ARES_EBADRESP;
     if (ancount == 0)
         return ARES_ENODATA;
 
     /* Expand the name from the question, and skip past the question. */
-    aptr = abuf + HFIXEDSZ;
-    status = ares_expand_name(aptr, abuf, alen, &hostname, &len);
+    aptr = _abuf + HFIXEDSZ;
+    status = ares_expand_name(aptr, _abuf, _alen, &hostname, &len);
     if (status != ARES_SUCCESS)
         return status;
 
-    if (aptr + len + QFIXEDSZ > abuf + alen) {
+    if (aptr + len + QFIXEDSZ > _abuf + _alen) {
         ares_free_string(hostname);
         return ARES_EBADRESP;
     }
@@ -57,12 +57,12 @@ int parse_tlsa_reply (const unsigned char *abuf, int alen, TLSA_Reply** pTlsaRep
     /* Examine each answer resource record (RR) in turn. */
     for (i = 0; i < ancount; i++) {
         /* Decode the RR up to the data field. */
-        status = ares_expand_name(aptr, abuf, alen, &rr_name, &len);
+        status = ares_expand_name(aptr, _abuf, _alen, &rr_name, &len);
         if (status != ARES_SUCCESS) {
             break;
         }
         aptr += len;
-        if (aptr + RRFIXEDSZ > abuf + alen) {
+        if (aptr + RRFIXEDSZ > _abuf + _alen) {
             status = ARES_EBADRESP;
             break;
         }
@@ -70,34 +70,34 @@ int parse_tlsa_reply (const unsigned char *abuf, int alen, TLSA_Reply** pTlsaRep
         rr_class = DNS_RR_CLASS (aptr);
         rr_len = DNS_RR_LEN (aptr);
         aptr += RRFIXEDSZ;
-        if (aptr + rr_len > abuf + alen) {
+        if (aptr + rr_len > _abuf + _alen) {
             status = ARES_EBADRESP;
             break;
         }
         if (rr_class == C_IN && rr_type == T_TLSA) {
             vptr = aptr;
-            if (tlsaReply == nullptr) {
-                tlsaReply = new TLSA_Reply;
-                currTlsaReply = tlsaReply;
+            if (tlsareply == nullptr) {
+                tlsareply = new tlsa_reply;
+                curr_tlsa_reply = tlsareply;
             } else {
-                currTlsaReply->tlsaReplyNext = new TLSA_Reply;
-                currTlsaReply = currTlsaReply->tlsaReplyNext;
+                curr_tlsa_reply->tlsa_reply_next_ = new tlsa_reply;
+                curr_tlsa_reply = curr_tlsa_reply->tlsa_reply_next_;
             }
-            currTlsaReply->hostname = rr_name;
+            curr_tlsa_reply->hostname_ = rr_name;
             LOG_DEBUG("Hostname " << rr_name);
-            currTlsaReply->certificate_usage = vptr[0];
-            LOG_DEBUG("Certificate Usage " << currTlsaReply->certificate_usage);
+            curr_tlsa_reply->certificate_usage_ = vptr[0];
+            LOG_DEBUG("Certificate Usage " << curr_tlsa_reply->certificate_usage_);
             vptr += sizeof(unsigned char);
-            currTlsaReply->selector = (uint8_t) vptr[0];
-            LOG_DEBUG("Selector " << currTlsaReply->selector);
+            curr_tlsa_reply->selector_ = (uint8_t) vptr[0];
+            LOG_DEBUG("Selector " << curr_tlsa_reply->selector_);
             vptr += sizeof(unsigned char);
-            currTlsaReply->matching_type = (uint8_t) vptr[0];
-            LOG_DEBUG("Matching Type " << currTlsaReply->matching_type);
+            curr_tlsa_reply->matching_type_ = (uint8_t) vptr[0];
+            LOG_DEBUG("Matching Type " << curr_tlsa_reply->matching_type_);
             vptr += sizeof(unsigned char);
             // Certificate Association Data length = rr_len - Certificate Usage - Selector - Matching Type
             size_t certificate_association_data_size = rr_len - (3*sizeof(unsigned char));
-            currTlsaReply->certificate_association_data.assign(vptr, vptr + certificate_association_data_size);
-            LOG_DEBUG("Certificate Association Data " << currTlsaReply->certificate_association_data.data())
+            curr_tlsa_reply->certificate_association_data_.assign(vptr, vptr + certificate_association_data_size);
+            LOG_DEBUG("Certificate Association Data " << curr_tlsa_reply->certificate_association_data_.data())
             vptr += certificate_association_data_size;
         }
         /* Don't lose memory in the next iteration */
@@ -109,6 +109,6 @@ int parse_tlsa_reply (const unsigned char *abuf, int alen, TLSA_Reply** pTlsaRep
     }
     ares_free_string(hostname);
     hostname = NULL;
-    *pTlsaReply = tlsaReply;
+    *_p_tlsa_reply = tlsareply;
     return ARES_SUCCESS;
 }

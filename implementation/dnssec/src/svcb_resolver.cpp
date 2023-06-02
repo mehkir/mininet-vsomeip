@@ -59,8 +59,8 @@ namespace vsomeip_v3 {
             servicedata_and_cbs->instance_ = std::stoi(svcb_reply_ptr->get_svcb_key(INSTANCE),0,16);
             servicedata_and_cbs->major_ = std::stoi(svcb_reply_ptr->get_svcb_key(MAJOR_VERSION),0,16);
             servicedata_and_cbs->minor_ = std::stoi(svcb_reply_ptr->get_svcb_key(MINOR_VERSION),0,16);
-            servicedata_and_cbs->add_svcb_entry_cache_callback_(servicedata_and_cbs->service, servicedata_and_cbs->instance, servicedata_and_cbs->major_, servicedata_and_cbs->minor, l4protocol, servicedata_and_cbs->ip_address, svcb_reply_ptr->port_);
-            servicedata_and_cbs->verify_service_info_callback_(servicedata_and_cbs->service, servicedata_and_cbs->instance, servicedata_and_cbs->major_, servicedata_and_cbs->minor);
+            servicedata_and_cbs->add_svcb_entry_cache_callback_(servicedata_and_cbs->service_, servicedata_and_cbs->instance_, servicedata_and_cbs->major_, servicedata_and_cbs->minor_, l4protocol, servicedata_and_cbs->ipv4_address_, svcb_reply_ptr->port_);
+            servicedata_and_cbs->verify_service_info_callback_(servicedata_and_cbs->service_, servicedata_and_cbs->instance_, servicedata_and_cbs->major_, servicedata_and_cbs->minor_);
             //Assemble TLSA QNAME
             std::stringstream tlsa_request;
             tlsa_request << ATTRLEAFBRANCH;
@@ -70,7 +70,7 @@ namespace vsomeip_v3 {
             tlsa_request << ".";
             tlsa_request << "instance" << svcb_reply_ptr->get_svcb_key(INSTANCE);
             tlsa_request << ".";
-            tlsa_request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << servicedata_and_cbs->service;
+            tlsa_request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << servicedata_and_cbs->service_;
             tlsa_request << ".";
             tlsa_request << PARENTDOMAIN;
             servicedata_and_cbs->request_tlsa_record_callback_(servicedata_and_cbs, tlsa_request.str());
@@ -86,19 +86,19 @@ namespace vsomeip_v3 {
     void svcb_resolver::request_svcb_record(service_data_and_cbs* _service_data_and_cbs) {
         std::stringstream request;
         request << ATTRLEAFBRANCH;
-        if (_service_data_and_cbs->minor != ANY_MINOR) {
-            request << "minor0x" << std::hex << std::setw(8) << std::setfill('0') << _service_data_and_cbs->minor;
+        if (_service_data_and_cbs->minor_ != ANY_MINOR) {
+            request << "minor0x" << std::hex << std::setw(8) << std::setfill('0') << _service_data_and_cbs->minor_;
             request << ".";
         }
-        if (_service_data_and_cbs->major != ANY_MAJOR) {
-            request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << _service_data_and_cbs->major;
+        if (_service_data_and_cbs->major_ != ANY_MAJOR) {
+            request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << _service_data_and_cbs->major_;
             request << ".";
         }
-        if (_service_data_and_cbs->instance != ANY_INSTANCE) {
-            request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << _service_data_and_cbs->instance;
+        if (_service_data_and_cbs->instance_ != ANY_INSTANCE) {
+            request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << _service_data_and_cbs->instance_;
             request << ".";
         }
-        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << _service_data_and_cbs->service;
+        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << _service_data_and_cbs->service_;
         request << ".";
         request << PARENTDOMAIN;
         dns_resolver_->resolve(request.str().c_str(), C_IN, T_SVCB, svcb_resolve_callback, _service_data_and_cbs);

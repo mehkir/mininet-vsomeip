@@ -11,7 +11,7 @@ namespace vsomeip_v3 {
         public:
             tlsa_resolver();
             ~tlsa_resolver();
-            void request_tlsa_record(void* service_data, std::string request);
+            void request_tlsa_record(void* _service_data, std::string _request);
     };
 } /* end namespace vsomeip_v3 */
 #endif /* VSOMEIP_V3_TLSA_RESOLVER_H */
