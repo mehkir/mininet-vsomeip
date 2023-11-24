@@ -10,7 +10,6 @@ set (VSOMEIP_NAME vsomeip3)
 set (VSOMEIP_COMPAT_NAME vsomeip)
 
 set (ENABLE_SIGNAL_HANDLING 1)
-set (GTEST_ROOT "/home/googletest/googletest-release-1.7.0/")
 
 set (VSOMEIP_MAJOR_VERSION 3)
 set (VSOMEIP_MINOR_VERSION 1)
