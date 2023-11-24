@@ -51,10 +51,16 @@ target_link_libraries(multiple-subscriptions ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${B
 add_executable(multiple-notifications multiple-notifications.cpp ${EXAMPLE_CONFIG_FILES})
 target_link_libraries(multiple-notifications ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boost_LIBRARIES} ${DL_LIBRARY})
 
-add_dependencies(examples request-sample response-sample subscribe-sample notify-sample my-subscribe-sample my-notify-sample multiple-subscriptions multiple-notifications)
+add_executable(mininet-publisher mininet-publisher.cpp ${EXAMPLE_CONFIG_FILES})
+target_link_libraries(mininet-publisher ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boost_LIBRARIES} ${DL_LIBRARY})
+
+add_executable(mininet-subscriber mininet-subscriber.cpp ${EXAMPLE_CONFIG_FILES})
+target_link_libraries(mininet-subscriber ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boost_LIBRARIES} ${DL_LIBRARY})
+
+add_dependencies(examples request-sample response-sample subscribe-sample notify-sample my-subscribe-sample my-notify-sample multiple-subscriptions multiple-notifications mininet-publisher mininet-subscriber)
 
 install (
-    TARGETS request-sample response-sample subscribe-sample notify-sample my-subscribe-sample my-notify-sample multiple-subscriptions multiple-notifications
+    TARGETS request-sample response-sample subscribe-sample notify-sample my-subscribe-sample my-notify-sample multiple-subscriptions multiple-notifications mininet-publisher mininet-subscriber
     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
 )
 
