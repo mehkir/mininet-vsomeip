@@ -63,7 +63,8 @@ public:
 
         std::shared_ptr< vsomeip::payload > its_payload = vsomeip::runtime::get()->create_payload();
         std::vector< vsomeip::byte_t > its_payload_data;
-        for (std::size_t i = 0; i < 10; ++i) its_payload_data.push_back(i % 256);
+        for (std::size_t i = 0; i < 10; ++i)
+            its_payload_data.push_back(vsomeip::byte_t(i % 256));
         its_payload->set_data(its_payload_data);
         request_->set_payload(its_payload);
 
@@ -123,13 +124,14 @@ public:
 
     void on_message(const std::shared_ptr< vsomeip::message > &_response) {
         std::cout << "Received a response from Service ["
-                << std::setw(4) << std::setfill('0') << std::hex << _response->get_service()
+                << std::setfill('0') << std::hex
+                << std::setw(4) << _response->get_service()
                 << "."
-                << std::setw(4) << std::setfill('0') << std::hex << _response->get_instance()
+                << std::setw(4) << _response->get_instance()
                 << "] to Client/Session ["
-                << std::setw(4) << std::setfill('0') << std::hex << _response->get_client()
+                << std::setw(4) << _response->get_client()
                 << "/"
-                << std::setw(4) << std::setfill('0') << std::hex << _response->get_session()
+                << std::setw(4) << _response->get_session()
                 << "]"
                 << std::endl;
         if (is_available_)
@@ -153,13 +155,14 @@ public:
                 if (is_available_) {
                     app_->send(request_);
                     std::cout << "Client/Session ["
-                            << std::setw(4) << std::setfill('0') << std::hex << request_->get_client()
+                            << std::setfill('0') << std::hex
+                            << std::setw(4) << request_->get_client()
                             << "/"
-                            << std::setw(4) << std::setfill('0') << std::hex << request_->get_session()
+                            << std::setw(4) << request_->get_session()
                             << "] sent a request to Service ["
-                            << std::setw(4) << std::setfill('0') << std::hex << request_->get_service()
+                            << std::setw(4) << request_->get_service()
                             << "."
-                            << std::setw(4) << std::setfill('0') << std::hex << request_->get_instance()
+                            << std::setw(4) << request_->get_instance()
                             << "]"
                             << std::endl;
                     blocked_ = false;
@@ -175,7 +178,6 @@ private:
     bool use_tcp_;
     bool be_quiet_;
     uint32_t cycle_;
-    vsomeip::session_t session_;
     std::mutex mutex_;
     std::condition_variable condition_;
     bool running_;

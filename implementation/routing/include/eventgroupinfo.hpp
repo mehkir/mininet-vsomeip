@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -42,7 +42,7 @@ public:
     VSOMEIP_EXPORT eventgroupinfo(
             const service_t _service, const service_t _instance,
             const eventgroup_t _eventgroup, const major_version_t _major,
-            const ttl_t _ttl);
+            const ttl_t _ttl, const uint8_t _max_remote_subscribers);
     VSOMEIP_EXPORT ~eventgroupinfo();
 
     VSOMEIP_EXPORT service_t get_service() const;
@@ -67,7 +67,7 @@ public:
             uint16_t _port);
     VSOMEIP_EXPORT bool is_sending_multicast() const;
 
-    VSOMEIP_EXPORT const std::set<std::shared_ptr<event> > get_events() const;
+    VSOMEIP_EXPORT std::set<std::shared_ptr<event> > get_events() const;
     VSOMEIP_EXPORT void add_event(const std::shared_ptr<event>& _event);
     VSOMEIP_EXPORT void remove_event(const std::shared_ptr<event>& _event);
     VSOMEIP_EXPORT reliability_type_e get_reliability() const;
@@ -85,6 +85,9 @@ public:
             const std::chrono::steady_clock::time_point &_expiration,
             std::set<client_t> &_changed, remote_subscription_id_t &_id,
             const bool _is_subscribe);
+
+    bool is_remote_subscription_limit_reached(
+            const std::shared_ptr<remote_subscription> &_subscription);
 
     remote_subscription_id_t add_remote_subscription(
             const std::shared_ptr<remote_subscription> &_subscription);
@@ -107,6 +110,10 @@ public:
     VSOMEIP_EXPORT void send_initial_events(
             const std::shared_ptr<endpoint_definition> &_reliable,
             const std::shared_ptr<endpoint_definition> &_unreliable) const;
+
+    VSOMEIP_EXPORT uint8_t get_max_remote_subscribers() const;
+    VSOMEIP_EXPORT void set_max_remote_subscribers(uint8_t _max_remote_subscribers);
+
 private:
     void update_id();
     uint32_t get_unreliable_target_count() const;
@@ -131,9 +138,12 @@ private:
         std::shared_ptr<remote_subscription>
     > subscriptions_;
     remote_subscription_id_t id_;
+    std::map<boost::asio::ip::address, uint8_t> remote_subscribers_count_;
 
     std::atomic<reliability_type_e> reliability_;
     std::atomic<bool> reliability_auto_mode_;
+
+    uint8_t max_remote_subscribers_;
 };
 
 } // namespace vsomeip_v3

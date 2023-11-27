@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2018-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -13,7 +13,6 @@ remote_subscription::remote_subscription()
     : id_(PENDING_SUBSCRIPTION_ID),
       is_initial_(true),
       force_initial_events_(false),
-      major_(DEFAULT_MAJOR),
       ttl_(DEFAULT_TTL),
       reserved_(0),
       counter_(0),
@@ -44,6 +43,21 @@ bool
 remote_subscription::equals(
         const std::shared_ptr<remote_subscription> &_other) const {
     return operator ==(*_other);
+}
+
+bool
+remote_subscription::address_equals(
+        const std::shared_ptr<remote_subscription> &_other) const {
+    bool relibale_address_equals(false);
+    bool unrelibale_address_equals(false);
+
+    if (reliable_ && (*_other).reliable_)
+        relibale_address_equals = (reliable_->get_address()
+                == (*_other).reliable_->get_address());
+    if (unreliable_ && (*_other).unreliable_)
+        unrelibale_address_equals = (unreliable_->get_address()
+                == (*_other).unreliable_->get_address());
+    return (relibale_address_equals || unrelibale_address_equals);
 }
 
 void
@@ -135,7 +149,7 @@ std::set<client_t>
 remote_subscription::get_clients() const {
     std::lock_guard<std::mutex> its_lock(mutex_);
     std::set<client_t> its_clients;
-    for (const auto its_item : clients_)
+    for (const auto &its_item : clients_)
         its_clients.insert(its_item.first);
     return its_clients;
 }
@@ -311,6 +325,19 @@ remote_subscription::get_answers() const {
 void
 remote_subscription::set_answers(const std::uint32_t _answers) {
     answers_ = _answers;
+}
+
+bool
+remote_subscription::get_ip_address(boost::asio::ip::address &_address) const {
+    if (reliable_) {
+        _address = reliable_->get_address();
+        return true;
+    }
+    else if (unreliable_) {
+        _address = unreliable_->get_address();
+        return true;
+    }
+    return false;
 }
 
 } // namespace vsomeip_v3

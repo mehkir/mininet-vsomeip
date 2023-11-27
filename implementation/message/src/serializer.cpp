@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -111,10 +111,10 @@ void serializer::reset() {
 #ifdef VSOMEIP_DEBUGGING
 void serializer::show() {
     std::stringstream its_data;
-    its_data << "SERIALIZED: ";
+    its_data << "SERIALIZED: "
+             << std::setfill('0') << std::hex;
     for (const byte_t& e : data_)
-        its_data << std::setw(2) << std::setfill('0')
-                 << std::hex << (int)e;
+        its_data << std::setw(2) << (int)e;
     VSOMEIP_INFO << its_data.str();
 }
 #endif

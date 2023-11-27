@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -111,12 +111,12 @@ bool deserializer::deserialize(uint8_t *_data, std::size_t _length) {
     return true;
 }
 
-bool deserializer::deserialize(std::string& _target, std::size_t _length) {
+bool deserializer::deserialize(std::string &_target, std::size_t _length) {
     if (_length > remaining_ || _length > _target.capacity()) {
         return false;
     }
-    _target.assign(position_, position_ + _length);
-    position_ += _length;
+    _target.assign(position_, position_ + long(_length));
+    position_ += long(_length);
     remaining_ -= _length;
 
     return true;
@@ -135,7 +135,7 @@ bool deserializer::deserialize(std::vector< uint8_t >& _value) {
 }
 
 bool deserializer::look_ahead(std::size_t _index, uint8_t &_value) const {
-    if (_index >= data_.size())
+    if (_index > remaining_)
         return false;
 
     _value = *(position_ + static_cast<std::vector<byte_t>::difference_type>(_index));
@@ -144,7 +144,7 @@ bool deserializer::look_ahead(std::size_t _index, uint8_t &_value) const {
 }
 
 bool deserializer::look_ahead(std::size_t _index, uint16_t &_value) const {
-    if (_index+1 >= data_.size())
+    if (_index+1 > remaining_)
         return false;
 
     std::vector< uint8_t >::iterator i = position_ +
@@ -155,7 +155,7 @@ bool deserializer::look_ahead(std::size_t _index, uint16_t &_value) const {
 }
 
 bool deserializer::look_ahead(std::size_t _index, uint32_t &_value) const {
-    if (_index+3 >= data_.size())
+    if (_index+3 > remaining_)
         return false;
 
     std::vector< uint8_t >::const_iterator i = position_ + static_cast<std::vector<byte_t>::difference_type>(_index);
@@ -164,17 +164,18 @@ bool deserializer::look_ahead(std::size_t _index, uint32_t &_value) const {
     return true;
 }
 
-message_impl * deserializer::deserialize_message() {
-    message_impl* deserialized_message = new message_impl;
-    if (0 != deserialized_message) {
-        if (false == deserialized_message->deserialize(this)) {
-            VSOMEIP_ERROR << "SOME/IP message deserialization failed!";
-            delete deserialized_message;
-            deserialized_message = nullptr;
-        }
+message_impl * deserializer::deserialize_message() try {
+    std::unique_ptr<message_impl> deserialized_message = std::make_unique<message_impl>();
+    if (false == deserialized_message->deserialize(this)) {
+        VSOMEIP_ERROR << "SOME/IP message deserialization failed!";
+        deserialized_message = nullptr;
     }
 
-    return deserialized_message;
+    return deserialized_message.release();
+}
+catch (const std::exception& e) {
+    VSOMEIP_ERROR << "SOME/IP message deserialization failed with exception: " << e.what();
+    return nullptr;
 }
 
 void deserializer::set_data(const byte_t *_data,  std::size_t _length) {
@@ -187,6 +188,14 @@ void deserializer::set_data(const byte_t *_data,  std::size_t _length) {
         position_ = data_.end();
         remaining_ = 0;
     }
+}
+
+void
+deserializer::set_data(const std::vector<byte_t> &_data) {
+
+    data_ = std::move(_data);
+    position_ = data_.begin();
+    remaining_ = data_.size();
 }
 
 void deserializer::append_data(const byte_t *_data, std::size_t _length) {
@@ -226,10 +235,10 @@ void deserializer::show() const {
     its_message << "("
             << std::hex << std::setw(2) << std::setfill('0')
             << (int)*position_ << ", "
-            << std:: dec << remaining_ << ") ";
+            << std:: dec << remaining_ << ") "
+            << std::hex << std::setfill('0');
     for (int i = 0; i < data_.size(); ++i)
-        its_message << std::hex << std::setw(2) << std::setfill('0')
-                    << (int)data_[i] << " ";
+        its_message << std::setw(2) << (int)data_[i] << " ";
     VSOMEIP_INFO << its_message;
 }
 #endif

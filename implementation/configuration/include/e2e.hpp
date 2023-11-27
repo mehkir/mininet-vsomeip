@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -25,7 +25,7 @@ struct e2e {
         event_id(0) {
     }
 
-    e2e(std::string _variant, std::string _profile, service_t _service_id,
+    e2e(const std::string &_variant, const std::string &_profile, service_t _service_id,
         event_t _event_id, custom_parameters_t&& _custom_parameters) :
         variant(_variant),
         profile(_profile),

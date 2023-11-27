@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2018 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -165,7 +165,7 @@ bool eventgroupentry_impl::matches(const eventgroupentry_impl& _other,
         for (const auto& c : its_options_current) {
             bool found(false);
             for (const auto& o : its_options_other) {
-                if (*c == *o) {
+                if (c->equals(*o)) {
                     switch (c->get_type()) {
                         case option_type_e::IP4_ENDPOINT:
                             if (static_cast<ipv4_option_impl*>(c.get())->get_address()

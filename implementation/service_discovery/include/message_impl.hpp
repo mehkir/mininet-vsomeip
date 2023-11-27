@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2018 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -36,8 +36,6 @@ class serviceentry_impl;
 
 class option_impl;
 class configuration_option_impl;
-class ipv4_option_impl;
-class ipv6_option_impl;
 class load_balancing_option_impl;
 class protection_option_impl;
 class selective_option_impl;
@@ -104,6 +102,8 @@ public:
 
     uid_t get_uid() const;
     gid_t get_gid() const;
+    vsomeip_sec_client_t get_sec_client() const;
+    std::string get_env() const;
 
 private:
     entry_impl * deserialize_entry(vsomeip_v3::deserializer *_from);

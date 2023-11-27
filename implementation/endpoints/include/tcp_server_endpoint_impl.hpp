@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -29,7 +29,7 @@ public:
     tcp_server_endpoint_impl(const std::shared_ptr<endpoint_host>& _endpoint_host,
                              const std::shared_ptr<routing_host>& _routing_host,
                              const endpoint_type& _local,
-                             boost::asio::io_service &_io,
+                             boost::asio::io_context &_io,
                              const std::shared_ptr<configuration>& _configuration);
     virtual ~tcp_server_endpoint_impl();
 
@@ -40,18 +40,18 @@ public:
                  const byte_t *_data, uint32_t _size);
     bool send_error(const std::shared_ptr<endpoint_definition> _target,
                 const byte_t *_data, uint32_t _size);
-    void send_queued(const queue_iterator_type _queue_iterator);
-    void send_queued_sync(const queue_iterator_type _queue_iterator);
+    bool send_queued(const target_data_iterator_type _it);
     void get_configured_times_from_endpoint(
             service_t _service, method_t _method,
             std::chrono::nanoseconds *_debouncing,
             std::chrono::nanoseconds *_maximum_retention) const;
 
-    VSOMEIP_EXPORT bool is_established(const std::shared_ptr<endpoint_definition>& _endpoint);
+    VSOMEIP_EXPORT bool is_established_to(const std::shared_ptr<endpoint_definition>& _endpoint);
 
     bool get_default_target(service_t, endpoint_type &) const;
 
     std::uint16_t get_local_port() const;
+    void set_local_port(uint16_t _port);
     bool is_reliable() const;
     bool is_local() const;
 
@@ -69,8 +69,11 @@ private:
                           std::uint32_t _max_message_size,
                           std::uint32_t _buffer_shrink_threshold,
                           bool _magic_cookies_enabled,
-                          boost::asio::io_service & _io_service,
+                          boost::asio::io_context & _io,
                           std::chrono::milliseconds _send_timeout);
+
+        ~connection();
+
         socket_type & get_socket();
         std::unique_lock<std::mutex> get_socket_lock();
 
@@ -78,11 +81,10 @@ private:
         void stop();
         void receive();
 
-        void send_queued(const queue_iterator_type _queue_iterator);
-        void send_queued_sync(const queue_iterator_type _queue_iterator);
+        void send_queued(const target_data_iterator_type _it);
 
         void set_remote_info(const endpoint_type &_remote);
-        const std::string get_address_port_remote() const;
+        std::string get_address_port_remote() const;
         std::size_t get_recv_buffer_capacity() const;
 
     private:
@@ -91,14 +93,14 @@ private:
                    std::uint32_t _recv_buffer_size_initial,
                    std::uint32_t _buffer_shrink_threshold,
                    bool _magic_cookies_enabled,
-                   boost::asio::io_service & _io_service,
+                   boost::asio::io_context &_io,
                    std::chrono::milliseconds _send_timeout);
         bool send_magic_cookie(message_buffer_ptr_t &_buffer);
         bool is_magic_cookie(size_t _offset) const;
         void receive_cbk(boost::system::error_code const &_error,
                          std::size_t _bytes);
         void calculate_shrink_count();
-        const std::string get_address_port_local() const;
+        std::string get_address_port_local() const;
         void handle_recv_buffer_exception(const std::exception &_e);
         std::size_t write_completion_condition(
                 const boost::system::error_code& _error,
@@ -144,7 +146,7 @@ private:
     void accept_cbk(const connection::ptr& _connection,
                     boost::system::error_code const &_error);
     std::string get_remote_information(
-            const queue_iterator_type _queue_iterator) const;
+            const target_data_iterator_type _it) const;
     std::string get_remote_information(const endpoint_type& _remote) const;
     bool tp_segmentation_enabled(service_t _service, method_t _method) const;
 };

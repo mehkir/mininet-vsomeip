@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -35,15 +35,22 @@ runtime_impl::~runtime_impl() {
 
 std::shared_ptr<application> runtime_impl::create_application(
         const std::string &_name) {
+
+    return create_application(_name, "");
+}
+
+std::shared_ptr<application> runtime_impl::create_application(
+        const std::string &_name, const std::string &_path) {
     static std::uint32_t postfix_id = 0;
     std::lock_guard<std::mutex> its_lock(applications_mutex_);
-    std::string its_name_ = _name;
+    std::string its_name = _name;
     auto found_application = applications_.find(_name);
     if( found_application != applications_.end()) {
-        its_name_ += "_" + std::to_string(postfix_id++);
+        its_name += "_" + std::to_string(postfix_id++);
     }
-    std::shared_ptr<application> application = std::make_shared<application_impl>(its_name_);
-    applications_[its_name_] = application;
+    std::shared_ptr<application> application
+        = std::make_shared<application_impl>(its_name, _path);
+    applications_[its_name] = application;
     return application;
 }
 
@@ -54,7 +61,7 @@ std::shared_ptr<message> runtime_impl::create_message(bool _reliable) const {
     its_message->set_return_code(return_code_e::E_OK);
     its_message->set_reliable(_reliable);
     its_message->set_interface_version(DEFAULT_MAJOR);
-    return (its_message);
+    return its_message;
 }
 
 std::shared_ptr<message> runtime_impl::create_request(bool _reliable) const {
@@ -65,7 +72,7 @@ std::shared_ptr<message> runtime_impl::create_request(bool _reliable) const {
     its_request->set_return_code(return_code_e::E_OK);
     its_request->set_reliable(_reliable);
     its_request->set_interface_version(DEFAULT_MAJOR);
-    return (its_request);
+    return its_request;
 }
 
 std::shared_ptr<message> runtime_impl::create_response(
@@ -81,7 +88,7 @@ std::shared_ptr<message> runtime_impl::create_response(
     its_response->set_message_type(message_type_e::MT_RESPONSE);
     its_response->set_return_code(return_code_e::E_OK);
     its_response->set_reliable(_request->is_reliable());
-    return (its_response);
+    return its_response;
 }
 
 std::shared_ptr<message> runtime_impl::create_notification(
@@ -93,21 +100,21 @@ std::shared_ptr<message> runtime_impl::create_notification(
     its_notification->set_return_code(return_code_e::E_OK);
     its_notification->set_reliable(_reliable);
     its_notification->set_interface_version(DEFAULT_MAJOR);
-    return (its_notification);
+    return its_notification;
 }
 
 std::shared_ptr<payload> runtime_impl::create_payload() const {
-    return (std::make_shared<payload_impl>());
+    return std::make_shared<payload_impl>();
 }
 
 std::shared_ptr<payload> runtime_impl::create_payload(const byte_t *_data,
         uint32_t _size) const {
-    return (std::make_shared<payload_impl>(_data, _size));
+    return std::make_shared<payload_impl>(_data, _size);
 }
 
 std::shared_ptr<payload> runtime_impl::create_payload(
         const std::vector<byte_t> &_data) const {
-    return (std::make_shared<payload_impl>(_data));
+    return std::make_shared<payload_impl>(_data);
 }
 
 std::shared_ptr<application> runtime_impl::get_application(

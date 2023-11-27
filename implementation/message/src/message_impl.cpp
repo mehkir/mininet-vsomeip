@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,7 +19,8 @@ namespace vsomeip_v3 {
 
 message_impl::message_impl()
     : payload_(runtime::get()->create_payload()),
-      check_result_(0), uid_(ANY_UID), gid_(ANY_GID) {
+      check_result_ {0},
+      sec_client_ {ANY_UID, ANY_GID, 0, VSOMEIP_SEC_PORT_UNUSED} {
 }
 
 message_impl::~message_impl() {
@@ -66,19 +67,31 @@ bool message_impl::is_valid_crc() const {
 }
 
 uid_t message_impl::get_uid() const {
-    return uid_;
+
+    return sec_client_.user;
 }
 
-void message_impl::set_uid(uid_t _uid) {
-    uid_ = _uid;
+gid_t message_impl::get_gid() const {
+
+    return sec_client_.group;
 }
 
-uid_t message_impl::get_gid() const {
-    return gid_;
+vsomeip_sec_client_t message_impl::get_sec_client() const {
+
+    return sec_client_;
 }
 
-void message_impl::set_gid(gid_t _gid) {
-    gid_ = _gid;
+void message_impl::set_sec_client(const vsomeip_sec_client_t &_sec_client) {
+
+    sec_client_ = _sec_client;
+}
+
+std::string message_impl::get_env() const {
+    return env_;
+}
+
+void message_impl::set_env(const std::string &_env) {
+    env_ = _env;
 }
 
 } // namespace vsomeip_v3

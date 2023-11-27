@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2018 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -27,6 +27,7 @@
 #include "../include/protection_option_impl.hpp"
 #include "../include/selective_option_impl.hpp"
 #include "../include/message_impl.hpp"
+#include "../include/unknown_option_impl.hpp"
 #include "../../message/include/deserializer.hpp"
 #include "../../message/include/payload_impl.hpp"
 #include "../../message/include/serializer.hpp"
@@ -178,7 +179,7 @@ const message_impl::options_t & message_impl::get_options() const {
 std::shared_ptr<option_impl>
 message_impl::find_option(const std::shared_ptr<option_impl> &_option) const {
     for (auto its_option : options_) {
-        if (its_option->equals(_option))
+        if (its_option->equals(*_option))
             return its_option;
     }
     return nullptr;
@@ -399,7 +400,7 @@ option_impl * message_impl::deserialize_option(vsomeip_v3::deserializer *_from) 
             break;
 
         default:
-            deserialized_option = new option_impl();
+            deserialized_option = new unknown_option_impl();
             break;
         };
 
@@ -426,6 +427,17 @@ gid_t message_impl::get_gid() const {
     return ANY_GID;
 }
 
+vsomeip_sec_client_t message_impl::get_sec_client() const {
+    static vsomeip_sec_client_t its_dummy_sec_client{
+        ANY_UID, ANY_GID, 0, VSOMEIP_SEC_PORT_UNUSED
+    };
+
+    return its_dummy_sec_client;
+}
+
+std::string message_impl::get_env() const {
+    return ("");
+}
 
 } // namespace sd
 } // namespace vsomeip_v3

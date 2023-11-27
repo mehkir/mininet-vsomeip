@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2019-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -49,9 +49,10 @@ public:
     }
 
     static tp_split_messages_t tp_split_message(
-            const std::uint8_t * const _data, std::uint32_t _size);
+            const std::uint8_t * const _data, std::uint32_t _size,
+            std::uint16_t _max_segment_length);
 
-    static const std::uint16_t tp_max_segment_length_;
+    static const std::uint16_t tp_max_segment_length_ = 1392;
 };
 
 } // namespace tp

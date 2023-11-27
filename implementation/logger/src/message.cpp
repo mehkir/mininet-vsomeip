@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2020-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,14 +10,57 @@
 #include <iostream>
 
 #ifdef ANDROID
-#include <android/log.h>
+#include <utils/Log.h>
 
-#ifndef LOG_TAG
-#define LOG_TAG NULL
+#ifdef ALOGE
+#undef ALOGE
 #endif
+
+#define ALOGE(LOG_TAG, ...) ((void)ALOG(LOG_ERROR, LOG_TAG, __VA_ARGS__))
+#ifndef LOGE
+#define LOGE ALOGE
+#endif
+
+#ifdef ALOGW
+#undef ALOGW
+#endif
+
+#define ALOGW(LOG_TAG, ...) ((void)ALOG(LOG_WARN, LOG_TAG, __VA_ARGS__))
+#ifndef LOGE
+#define LOGW ALOGW
+#endif
+
+#ifdef ALOGI
+#undef ALOGI
+#endif
+
+#define ALOGI(LOG_TAG, ...) ((void)ALOG(LOG_INFO, LOG_TAG, __VA_ARGS__))
+#ifndef LOGE
+#define LOGI ALOGI
+#endif
+
+#ifdef ALOGD
+#undef ALOGD
+#endif
+
+#define ALOGD(LOG_TAG, ...) ((void)ALOG(LOG_DEBUG, LOG_TAG, __VA_ARGS__))
+#ifndef LOGE
+#define LOGD ALOGD
+#endif
+
+#ifdef ALOGV
+#undef ALOGV
+#endif
+
+#define ALOGV(LOG_TAG, ...) ((void)ALOG(LOG_VERBOSE, LOG_TAG, __VA_ARGS__))
+#ifndef LOGE
+#define LOGV ALOGV
+#endif
+
 #endif
 
 #include <vsomeip/internal/logger.hpp>
+#include <vsomeip/runtime.hpp>
 
 #include "../include/logger_impl.hpp"
 #include "../../configuration/include/configuration.hpp"
@@ -34,7 +77,7 @@ message::message(level_e _level)
     when_ = std::chrono::system_clock::now();
 }
 
-message::~message() {
+message::~message() try {
     std::lock_guard<std::mutex> its_lock(mutex__);
     auto its_logger = logger_impl::get();
     auto its_configuration = its_logger->get_configuration();
@@ -75,44 +118,53 @@ message::~message() {
 
         // Prepare time stamp
         auto its_time_t = std::chrono::system_clock::to_time_t(when_);
-        auto its_time = std::localtime(&its_time_t);
+        struct tm its_time;
+#ifdef _WIN32
+        localtime_s(&its_time, &its_time_t);
+#else
+        localtime_r(&its_time_t, &its_time);
+#endif
         auto its_ms = (when_.time_since_epoch().count() / 100) % 1000000;
 
         if (its_configuration->has_console_log()) {
 #ifndef ANDROID
             std::cout
-                << std::dec << std::setw(4) << its_time->tm_year + 1900 << "-"
-                << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_mon << "-"
-                << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_mday << " "
-                << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_hour << ":"
-                << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_min << ":"
-                << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_sec << "."
-                << std::dec << std::setw(6) << std::setfill('0') << its_ms << " ["
+                << std::dec
+                << std::setw(4) << its_time.tm_year + 1900 << "-"
+                << std::setfill('0')
+                << std::setw(2) << its_time.tm_mon + 1 << "-"
+                << std::setw(2) << its_time.tm_mday << " "
+                << std::setw(2) << its_time.tm_hour << ":"
+                << std::setw(2) << its_time.tm_min << ":"
+                << std::setw(2) << its_time.tm_sec << "."
+                << std::setw(6) << its_ms << " ["
                 << its_level << "] "
                 << buffer_.data_.str()
                 << std::endl;
 #else
+            std::string app = runtime::get_property("LogApplication");
+
             switch (level_) {
             case level_e::LL_FATAL:
-                (void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, "%s", buffer_.data_.str().c_str());
+                ALOGE(app.c_str(), ("VSIP: " + buffer_.data_.str()).c_str());
                 break;
             case level_e::LL_ERROR:
-                (void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, "%s", buffer_.data_.str().c_str());
+                ALOGE(app.c_str(), ("VSIP: " + buffer_.data_.str()).c_str());
                 break;
             case level_e::LL_WARNING:
-                (void)__android_log_print(ANDROID_LOG_WARN, LOG_TAG, "%s", buffer_.data_.str().c_str());
+                ALOGW(app.c_str(), ("VSIP: " + buffer_.data_.str()).c_str());
                 break;
             case level_e::LL_INFO:
-                (void)__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s", buffer_.data_.str().c_str());
+                ALOGI(app.c_str(), ("VSIP: " + buffer_.data_.str()).c_str());
                 break;
             case level_e::LL_DEBUG:
-                (void)__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, "%s", buffer_.data_.str().c_str());
+                ALOGD(app.c_str(), ("VSIP: " + buffer_.data_.str()).c_str());
                 break;
             case level_e::LL_VERBOSE:
-                (void)__android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, "%s", buffer_.data_.str().c_str());
+                ALOGV(app.c_str(), ("VSIP: " + buffer_.data_.str()).c_str());
                 break;
             default:
-                (void)__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s", buffer_.data_.str().c_str());
+                ALOGI(app.c_str(), ("VSIP: " + buffer_.data_.str()).c_str());
             };
 #endif // !ANDROID
         }
@@ -123,23 +175,30 @@ message::~message() {
                     std::ios_base::app);
             if (its_logfile.is_open()) {
                 its_logfile
-                    << std::dec << std::setw(4) << its_time->tm_year + 1900 << "-"
-                    << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_mon << "-"
-                    << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_mday << " "
-                    << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_hour << ":"
-                    << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_min << ":"
-                    << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_sec << "."
-                    << std::dec << std::setw(6) << std::setfill('0') << its_ms << " ["
+                    << std::dec
+                    << std::setw(4) << its_time.tm_year + 1900 << "-"
+                    << std::setfill('0')
+                    << std::setw(2) << its_time.tm_mon + 1 << "-"
+                    << std::setw(2) << its_time.tm_mday << " "
+                    << std::setw(2) << its_time.tm_hour << ":"
+                    << std::setw(2) << its_time.tm_min << ":"
+                    << std::setw(2) << its_time.tm_sec << "."
+                    << std::setw(6) << its_ms << " ["
                     << its_level << "] "
                     << buffer_.data_.str()
                     << std::endl;
             }
         }
-    } else if (its_configuration->has_dlt_log()) {
+    }
+    if (its_configuration->has_dlt_log()) {
 #ifdef USE_DLT
+#ifndef ANDROID
         its_logger->log(level_, buffer_.data_.str().c_str());
+#endif
 #endif // USE_DLT
     }
+} catch (const std::exception& e) {
+    std::cout << "\nVSIP: Error destroying message class: " << e.what() << '\n';
 }
 
 std::streambuf::int_type
@@ -148,13 +207,13 @@ message::buffer::overflow(std::streambuf::int_type c) {
         data_ << (char)c;
     }
 
-    return (c);
+    return c;
 }
 
 std::streamsize
 message::buffer::xsputn(const char *s, std::streamsize n) {
     data_.write(s, n);
-    return (n);
+    return n;
 }
 
 } // namespace logger

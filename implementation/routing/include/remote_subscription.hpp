@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2018-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -31,6 +31,7 @@ public:
 
     bool operator==(const remote_subscription &_other) const;
     bool equals(const std::shared_ptr<remote_subscription> &_other) const;
+    bool address_equals(const std::shared_ptr<remote_subscription> &_other) const;
 
     VSOMEIP_EXPORT void reset(const std::set<client_t> &_clients);
 
@@ -89,6 +90,8 @@ public:
     VSOMEIP_EXPORT std::uint32_t get_answers() const;
     VSOMEIP_EXPORT void set_answers(const std::uint32_t _answers);
 
+    VSOMEIP_EXPORT bool get_ip_address(boost::asio::ip::address &_address) const;
+
 private:
     std::atomic<remote_subscription_id_t> id_;
     std::atomic<bool> is_initial_;
@@ -97,7 +100,6 @@ private:
 
     std::weak_ptr<eventgroupinfo> eventgroupinfo_;
 
-    major_version_t major_;
     ttl_t ttl_;
     std::uint16_t reserved_;
     std::uint8_t counter_;

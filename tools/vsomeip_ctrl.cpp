@@ -28,7 +28,6 @@ public:
         user_message_(_user_message),
         instance_(_instance),
         app_(vsomeip::runtime::get()->create_application("vsomeip_ctrl")),
-        wait_registered_(true),
         wait_service_available_(true),
         send_thread_(std::bind(&vsomeip_sender::send, this)),
         service_id_(0x0),
@@ -112,10 +111,10 @@ public:
     }
 
     void on_message(const std::shared_ptr<vsomeip::message> &_response) {
-        VSOMEIP_INFO << "Received a response from Service [" << std::setw(4)
-            << std::setfill('0') << std::hex << _response->get_service()
-            << "." << std::setw(4) << std::setfill('0') << std::hex
-            << _response->get_instance() << "]:";
+        VSOMEIP_INFO << "Received a response from Service ["
+            << std::setfill('0') << std::hex
+            << std::setw(4) << _response->get_service() << "."
+            << std::setw(4) << _response->get_instance() << "]:";
         VSOMEIP_INFO << "########## begin message";
         VSOMEIP_INFO << std::hex << std::setw(4)  << std::setfill('0')
                 << _response->get_service() 
@@ -321,7 +320,6 @@ private:
     std::shared_ptr<vsomeip::application> app_;
     std::mutex mutex_;
     std::condition_variable condition_;
-    bool wait_registered_;
     bool wait_service_available_;
     std::thread send_thread_;
     vsomeip::service_t service_id_;
@@ -404,23 +402,22 @@ int main(int argc, char** argv) {
             vsomeip::byte_t low(0x0);
             std::cout << "Instance: " << instance_str << std::endl;
             for (unsigned int i = 0; i < instance_str.length(); i += 2) {
-                vsomeip::byte_t its_byte;
                 try {
                     std::uint64_t tmp = std::stoul(instance_str.substr(i, 2), 0, 16);
                     tmp = (tmp > (std::numeric_limits<std::uint8_t>::max)()) ?
                             (std::numeric_limits<std::uint8_t>::max)() : tmp;
-                    its_byte = static_cast<vsomeip::byte_t>(tmp);
-                    its_byte = static_cast<vsomeip::byte_t>(tmp);
+
+                    vsomeip::byte_t its_byte = static_cast<vsomeip::byte_t>(tmp);
+                    if (i == 0) {
+                        high = its_byte;
+                    } else {
+                        low = its_byte;
+                    }
                 } catch (std::invalid_argument &e) {
                     std::cerr << e.what() << ": Couldn't convert '"
                             << instance_str.substr(i, 2) << "' to hex, exiting: "
                             << std::endl;
                     exit(EXIT_FAILURE);
-                }
-                if(i == 0) {
-                    high = its_byte;
-                } else {
-                    low = its_byte;
                 }
             }
             instance = VSOMEIP_BYTES_TO_WORD(high, low);

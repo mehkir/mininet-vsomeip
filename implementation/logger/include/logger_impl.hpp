@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,7 +10,9 @@
 #include <mutex>
 
 #ifdef USE_DLT
+#ifndef ANDROID
 #include <dlt/dlt.h>
+#endif
 #endif
 
 #include <vsomeip/internal/logger.hpp>
@@ -30,6 +32,7 @@ public:
     ~logger_impl();
 
     std::shared_ptr<configuration> get_configuration() const;
+    void set_configuration(const std::shared_ptr<configuration> &_configuration);
 
 #ifdef USE_DLT
     void log(level_e _level, const char *_data);
@@ -40,10 +43,14 @@ private:
 
 private:
     static std::mutex mutex__;
+
     std::shared_ptr<configuration> configuration_;
+    mutable std::mutex configuration_mutex_;
 
 #ifdef USE_DLT
-    DLT_DECLARE_CONTEXT(dlt_);
+#ifndef ANDROID
+    DLT_DECLARE_CONTEXT(dlt_)
+#endif
 #endif
 };
 

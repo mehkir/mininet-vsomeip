@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,8 +10,7 @@ namespace vsomeip_v3 {
 serviceinfo::serviceinfo(service_t _service, instance_t _instance,
         major_version_t _major, minor_version_t _minor,
         ttl_t _ttl, bool _is_local)
-    : group_(0),
-      service_(_service),
+    : service_(_service),
       instance_(_instance),
       major_(_major),
       minor_(_minor),
@@ -26,7 +25,6 @@ serviceinfo::serviceinfo(service_t _service, instance_t _instance,
 }
 
 serviceinfo::serviceinfo(const serviceinfo& _other) :
-    group_(_other.group_),
     service_(_other.service_),
     instance_(_other.instance_),
     major_(_other.major_),
@@ -35,19 +33,11 @@ serviceinfo::serviceinfo(const serviceinfo& _other) :
     reliable_(_other.reliable_),
     unreliable_(_other.unreliable_),
     requesters_(_other.requesters_),
-    is_local_(_other.is_local_),
-    is_in_mainphase_(_other.is_in_mainphase_)
+    is_local_(_other.is_local_.load()),
+    is_in_mainphase_(_other.is_in_mainphase_.load())
     {}
 
 serviceinfo::~serviceinfo() {
-}
-
-servicegroup * serviceinfo::get_group() const {
-  return group_;
-}
-
-void serviceinfo::set_group(servicegroup *_group) {
-  group_ = _group;
 }
 
 service_t serviceinfo::get_service() const {
@@ -90,7 +80,7 @@ void serviceinfo::set_precise_ttl(std::chrono::milliseconds _precise_ttl) {
 
 std::shared_ptr<endpoint> serviceinfo::get_endpoint(bool _reliable) const {
   std::lock_guard<std::mutex> its_lock(endpoint_mutex_);
-  return (_reliable ? reliable_ : unreliable_);
+  return _reliable ? reliable_ : unreliable_;
 }
 
 void serviceinfo::set_endpoint(const std::shared_ptr<endpoint>& _endpoint,

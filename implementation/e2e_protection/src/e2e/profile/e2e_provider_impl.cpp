@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -99,9 +99,9 @@ std::size_t e2e_provider_impl::get_protection_base(e2exf::data_identifier_t id) 
 {
     const auto found_base = custom_bases_.find(id);
     if (found_base != custom_bases_.end())
-        return (found_base->second);
+        return found_base->second;
 
-    return (0);
+    return 0;
 }
 
 void e2e_provider_impl::protect(e2exf::data_identifier_t id, e2e_buffer &_buffer,

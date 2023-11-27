@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -48,7 +48,6 @@ enum class remote_subscription_state_e : std::uint8_t {
 };
 
 typedef std::uint16_t remote_subscription_id_t;
-typedef std::uint32_t pending_remote_offer_id_t;
 
 struct msg_statistic_t {
     uint32_t counter_;

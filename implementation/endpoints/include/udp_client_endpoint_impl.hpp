@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include <boost/asio/io_service.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/ip/udp.hpp>
 
@@ -32,7 +31,7 @@ public:
                              const std::shared_ptr<routing_host>& _routing_host,
                              const endpoint_type& _local,
                              const endpoint_type& _remote,
-                             boost::asio::io_service &_io,
+                             boost::asio::io_context &_io,
                              const std::shared_ptr<configuration>& _configuration);
     virtual ~udp_client_endpoint_impl();
 
@@ -42,13 +41,20 @@ public:
     void receive_cbk(boost::system::error_code const &_error,
                      std::size_t _bytes, const message_buffer_ptr_t& _recv_buffer);
 
+    std::uint16_t get_local_port() const;
+    void set_local_port(port_t _port);
+
     bool get_remote_address(boost::asio::ip::address &_address) const;
     std::uint16_t get_remote_port() const;
     bool is_local() const;
+
     void print_status();
     bool is_reliable() const;
+
+    void send_cbk(boost::system::error_code const &_error,
+                          std::size_t _bytes, const message_buffer_ptr_t &_sent_msg);
 private:
-    void send_queued();
+    void send_queued(std::pair<message_buffer_ptr_t, uint32_t> &_entry);
     void get_configured_times_from_endpoint(
             service_t _service, method_t _method,
             std::chrono::nanoseconds *_debouncing,
@@ -56,8 +62,8 @@ private:
     void connect();
     void receive();
     void set_local_port();
-    const std::string get_address_port_remote() const;
-    const std::string get_address_port_local() const;
+    std::string get_address_port_remote() const;
+    std::string get_address_port_local() const;
     std::string get_remote_information() const;
     bool tp_segmentation_enabled(service_t _service, method_t _method) const;
     std::uint32_t get_max_allowed_reconnects() const;
@@ -66,8 +72,11 @@ private:
 private:
     const boost::asio::ip::address remote_address_;
     const std::uint16_t remote_port_;
-    const std::uint32_t udp_receive_buffer_size_;
+    const int udp_receive_buffer_size_;
     std::shared_ptr<tp::tp_reassembler> tp_reassembler_;
+
+    std::mutex last_sent_mutex_;
+    std::chrono::steady_clock::time_point last_sent_;
 };
 
 } // namespace vsomeip_v3
