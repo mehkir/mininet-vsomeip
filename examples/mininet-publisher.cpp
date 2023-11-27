@@ -186,9 +186,11 @@ public:
         std::unique_lock<std::mutex> its_lock(mutex_);
         while (!blocked_)
             condition_.wait(its_lock);
-        offer();
         while(running_) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            offer();
+            std::this_thread::sleep_for(std::chrono::seconds(10));
+            stop_offer();
+            std::this_thread::sleep_for(std::chrono::seconds(10));
         }
 
         /*
