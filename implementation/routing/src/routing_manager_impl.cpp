@@ -585,7 +585,7 @@ void routing_manager_impl::stop_offer_service(client_t _client,
 void routing_manager_impl::request_service(client_t _client, service_t _service,
         instance_t _instance, major_version_t _major, minor_version_t _minor) {
 
-    //Addition for Service Authentication
+    //Addition for Service Authentication Start ##########################################################################
     service_data_and_cbs* service_data_and_cbs_ = new service_data_and_cbs();
     service_data_and_cbs_->service_ = _service;
     service_data_and_cbs_->instance_ = _instance;
@@ -622,6 +622,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     service_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, crypto_operator::get_instance(),
                                             std::placeholders::_1);
     svcb_resolver_.request_svcb_record(service_data_and_cbs_);
+    //Addition for Service Authentication End ############################################################################
 
     VSOMEIP_INFO << "REQUEST("
         << std::hex << std::setfill('0')

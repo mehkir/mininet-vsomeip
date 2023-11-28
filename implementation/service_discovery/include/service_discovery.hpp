@@ -81,15 +81,17 @@ public:
             const reboot_notification_handler_t &_handler) = 0;
     virtual std::recursive_mutex& get_subscribed_mutex() = 0;
 
-    // Addition for service authentication
+    // Addition for Service Authentication Start #########################################################################
     virtual void set_request_cache(request_cache* _request_cache) = 0;
     virtual void set_svcb_cache(svcb_cache* _svcb_cache) = 0;
     virtual void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache) = 0;
     virtual void set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache* _eventgroup_subscription_ack_cache) = 0;
     virtual void verify_service_info(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) = 0;
     virtual void verify_publisher_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance) = 0;
-    // Addition for time measurement
+    // Addition for Service Authentication End ###########################################################################
+    // Addition for Time Measurement Start ###############################################################################
     virtual void set_timestamp_collector(timestamp_collector* _timestamp_collector) = 0;
+    // Addition for Time Measurement End #################################################################################
 };
 
 } // namespace sd

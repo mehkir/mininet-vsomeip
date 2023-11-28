@@ -475,7 +475,7 @@ private:
     std::mutex offer_mutex_;
     std::mutex check_ttl_mutex_;
 
-// Addition for service authentication
+// Addition for Service Authentication Start #############################################################################
 public:
     void set_request_cache(request_cache* _request_cache);
     void set_svcb_cache(svcb_cache* _svcb_cache);
@@ -503,6 +503,7 @@ private:
     crypto_operator* crypto_operator_;
     std::vector<CryptoPP::byte> certificate_data_;
     CryptoPP::RSA::PrivateKey private_key_;
+// Addition for Service Authentication End ###############################################################################
 };
 
 }  // namespace sd

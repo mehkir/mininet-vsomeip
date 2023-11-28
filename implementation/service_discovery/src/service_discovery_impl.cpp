@@ -83,12 +83,13 @@ service_discovery_impl::service_discovery_impl(
       last_msg_received_timer_(_host->get_io()),
       last_msg_received_timer_timeout_(VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY +
                                            (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10)),
-    // Additional member initializations for service authentication
+    // Additional member initializations for service authentication Start ################################################
       crypto_operator_(crypto_operator::get_instance()) {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
     certificate_data_ = crypto_operator_->load_certificate_from_file(configuration_->get_certificate_path());
     crypto_operator_->load_pem_private_key(configuration_->get_private_key_path(), private_key_);
+    // Additional member initializations for service authentication End ##################################################
 }
 
 service_discovery_impl::~service_discovery_impl() {
@@ -998,7 +999,7 @@ service_discovery_impl::create_eventgroup_entry(
         }
     }
 
-    // Service Authentication
+    // Service Authentication Start ######################################################################################
     if (its_data.entry_->get_type() == entry_type_e::SUBSCRIBE_EVENTGROUP && its_data.entry_->get_ttl() > 0) {
         boost::asio::ip::address its_address;
         std::shared_ptr<endpoint> its_dummy;
@@ -1031,6 +1032,7 @@ service_discovery_impl::create_eventgroup_entry(
         data_partitioner().partition_data(NONCEKEY, configuration_option, nonce_vector);
         its_data.options_.push_back(configuration_option);
     }
+    // Service Authentication End ########################################################################################
 
     if (its_entry &&_subscription->is_selective()) {
         auto its_selective_option = std::make_shared<selective_option_impl>();
@@ -1126,7 +1128,7 @@ service_discovery_impl::insert_subscription_ack(
         }
     }
 
-    // Service Authentication
+    // Service Authentication Start ######################################################################################
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
     std::vector<unsigned char> nonce_to_be_signed = request_cache_->get_request_nonce(_target->get_address().to_v4(), its_service, its_instance);
     if (nonce_to_be_signed.empty()) {
@@ -1142,6 +1144,7 @@ service_discovery_impl::insert_subscription_ack(
     std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
     data_partitioner().partition_data(SIGNATUREKEY, configuration_option, signature);
     its_data.options_.push_back(configuration_option);
+    // Service Authentication End ########################################################################################
 
     // Selective
     if (_clients.size() > 1 || (*(_clients.begin())) != 0) {
@@ -2379,7 +2382,7 @@ service_discovery_impl::process_eventgroupentry(
                             std::dynamic_pointer_cast < configuration_option_impl
                                     > (its_option);
 
-                // Service Authentication
+                // Service Authentication Start ##########################################################################
                 std::vector<unsigned char> nonce = data_partitioner().reassemble_data(NONCEKEY, its_configuration_option);
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type && its_ttl > 0) {
                     request_cache_->add_request_nonce(_sender.to_v4(), its_service, its_instance, nonce);
@@ -2393,6 +2396,7 @@ service_discovery_impl::process_eventgroupentry(
                     std::vector<byte_t> signature = data_partitioner().reassemble_data(SIGNATUREKEY, its_configuration_option);
                     eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance, its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port, nonce, signature);
                 }
+                // Service Authentication End ############################################################################
                 break;
             }
             case option_type_e::SELECTIVE: {
@@ -2430,7 +2434,7 @@ service_discovery_impl::process_eventgroupentry(
     } else {
         if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type) { //this type is used for ACK and NACK messages
             if (its_ttl > 0) {
-                verify_publisher_signature(_sender.to_v4(), its_service, its_instance);
+                verify_publisher_signature(_sender.to_v4(), its_service, its_instance); // Service Authentication
             } else {
                 handle_eventgroup_subscription_nack(its_service, its_instance, its_eventgroup,
                         0, its_clients);
