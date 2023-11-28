@@ -1455,6 +1455,7 @@ service_discovery_impl::process_serviceentry(
                     break;
                 case option_type_e::UNKNOWN:
                     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry UNKNOWN (MEHMET MUELLER DEBUG) <<<<<";
+                    break;
                 default:
                     VSOMEIP_ERROR << __func__ << ": Unsupported service option";
                     break;
@@ -1480,6 +1481,7 @@ service_discovery_impl::process_serviceentry(
                 break;
             case entry_type_e::UNKNOWN:
                 VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry UNKNOWN (MEHMET MUELLER DEBUG) <<<<<";
+                break;
             default:
                 VSOMEIP_ERROR << __func__ << ": Unsupported service entry type";
         }

@@ -86,7 +86,7 @@ int dns_resolver::initialize(in_addr_t _address) {
 }
 
 void dns_resolver::process() {
-    int nfds, count;
+    int nfds/*, count*/;
     fd_set readers, writers;
     struct timeval tv, *tvp;
     //bool waitBool;
@@ -124,7 +124,7 @@ void dns_resolver::process() {
                 if (nfds == 0)
                     break;
                 tvp = ares_timeout(channel_, NULL, &tv);
-                count = select(nfds, &readers, &writers, NULL, tvp);
+                /* count = */ select(nfds, &readers, &writers, NULL, tvp);
                 ares_process(channel_, &readers, &writers);
             }
             free(const_cast<char *>(dns_request.name_));

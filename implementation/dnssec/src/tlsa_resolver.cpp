@@ -18,7 +18,12 @@ namespace vsomeip_v3 {
         service_data_and_cbs* servicedata_and_cbs = reinterpret_cast<service_data_and_cbs*>(_data);
         
         if (_status) {
-            std::cout << "Bad DNS response" << std::endl;
+            std::cerr << __func__ << " Bad DNS response" << std::endl;
+            return;
+        }
+
+        if (_timeouts) {
+            std::cerr << __func__ << " DNS request timeout" << std::endl;
             return;
         }
 
@@ -26,7 +31,7 @@ namespace vsomeip_v3 {
         memcpy(copy, _abuf, _alen);
         tlsa_reply* tlsareply;
         if ((parse_tlsa_reply(copy, _alen, &tlsareply)) != ARES_SUCCESS) {
-            std::cout << "Parsing TLSA reply failed" << std::endl;
+            std::cerr << "Parsing TLSA reply failed" << std::endl;
             delete_tlsa_reply(tlsareply);
             return;
         }

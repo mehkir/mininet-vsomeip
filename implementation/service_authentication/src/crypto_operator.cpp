@@ -34,8 +34,8 @@ std::vector<CryptoPP::byte> crypto_operator::encrypt(CryptoPP::PublicKey& _publi
     CryptoPP::RSAES_OAEP_SHA_Encryptor encryptor(_public_key);
     try {
         CryptoPP::VectorSource vectorSource(_data, true, new CryptoPP::PK_EncryptorFilter(rng_, encryptor, new CryptoPP::VectorSink(encypted_data)));
-    } catch (std::exception exception) {
-        std::cerr << exception.what() << std::endl;
+    } catch (std::exception& _exception) {
+        std::cerr << _exception.what() << std::endl;
         encypted_data.clear();
     }
     return encypted_data;
@@ -64,8 +64,8 @@ bool crypto_operator::verify(CryptoPP::PublicKey& _public_key, std::vector<Crypt
                                                             CryptoPP::SignatureVerificationFilter::THROW_EXCEPTION));
         //std::cout << "Verified signature on data" << std::endl;
         verified = true;
-    } catch (CryptoPP::SignatureVerificationFilter::SignatureVerificationFailed exception) {
-        std::cout << exception.GetWhat() << std::endl;
+    } catch (CryptoPP::SignatureVerificationFilter::SignatureVerificationFailed& _exception) {
+        std::cerr << _exception.GetWhat() << std::endl;
     }
     return verified;
 }

@@ -60,7 +60,7 @@ namespace vsomeip_v3 {
         }
         timepoints_file.open(filename.str());
         //Write header
-        for(int timepoint_count = 0; timepoint_count < timepoints.size(); timepoint_count++) {
+        for(size_t timepoint_count = 0; timepoint_count < timepoints.size(); timepoint_count++) {
             timepoints_file << timepoints[timepoint_count];
             if(timepoint_count != timepoints.size()-1) {
                 timepoints_file << ",";
@@ -69,7 +69,7 @@ namespace vsomeip_v3 {
             }
         }
         //Write values
-        for(int timepoint_count = 0; timepoint_count < timepoints.size(); timepoint_count++) {
+        for(size_t timepoint_count = 0; timepoint_count < timepoints.size(); timepoint_count++) {
             timepoints_file << timestamps_[timepoints[timepoint_count]].time_since_epoch().count();
             if(timepoint_count != timepoints.size()-1) {
                 timepoints_file << ",";

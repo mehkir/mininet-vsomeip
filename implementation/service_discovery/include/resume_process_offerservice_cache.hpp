@@ -16,7 +16,7 @@ namespace vsomeip_v3 {
         major_version_t major_ = -1;
         minor_version_t minor_ = -1;
         ttl_t ttl_ = -1;
-        boost::asio::ip::address_v4 reliable_address_ = boost::asio::ip::address_v4::from_string("0.0.0.0");;
+        boost::asio::ip::address_v4 reliable_address_ = boost::asio::ip::address_v4::from_string("0.0.0.0");
         uint16_t reliable_port_ = -1;
         boost::asio::ip::address_v4 unreliable_address_ = boost::asio::ip::address_v4::from_string("0.0.0.0");
         uint16_t unreliable_port_ = -1;
