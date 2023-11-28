@@ -19,10 +19,9 @@
 
 class multiple_notifications {
 public:
-    multiple_notifications(bool _use_tcp, uint32_t _cycle) :
+    multiple_notifications(uint32_t _cycle) :
             app_(vsomeip::runtime::get()->create_application()),
             is_registered_(false),
-            use_tcp_(_use_tcp),
             cycle_(_cycle),
             blocked_(false),
             running_(true),
@@ -128,6 +127,7 @@ public:
     }
 
     void on_get(const std::shared_ptr<vsomeip::message> &_message) {
+        /*
         std::stringstream its_message;
         its_message << "on_get for Event ["
                 << std::setw(4)    << std::setfill('0') << std::hex
@@ -142,18 +142,20 @@ public:
                 << _message->get_session()
                 << "]";
         std::cout << its_message.str() << std::endl;
+        */
 
         std::shared_ptr<vsomeip::message> its_response
             = vsomeip::runtime::get()->create_response(_message);
         {
             std::lock_guard<std::mutex> its_lock(payload_mutex_);
             its_response->set_payload(payload_);
-            its_response->set_instance(_message->get_instance());
+            /*its_response->set_instance(_message->get_instance());*/
         }
         app_->send(its_response);
     }
 
     void on_set(const std::shared_ptr<vsomeip::message> &_message) {
+        /*
         std::stringstream its_message;
         its_message << "on_set for Event ["
                 << std::setw(4)    << std::setfill('0') << std::hex
@@ -168,6 +170,7 @@ public:
                 << _message->get_session()
                 << "]";
         std::cout << its_message.str() << std::endl;
+        */
 
         std::shared_ptr<vsomeip::message> its_response
             = vsomeip::runtime::get()->create_response(_message);
@@ -210,15 +213,6 @@ public:
     }
 
     void notify() {
-        /*
-        std::shared_ptr<vsomeip::message> its_message
-            = vsomeip::runtime::get()->create_request(use_tcp_);
-
-        its_message->set_service(SPEED_SERVICE_ID);
-        its_message->set_instance(SPEED_INSTANCE_ID);
-        its_message->set_method(SPEED_SET_METHOD_ID);
-        */
-
         vsomeip::byte_t its_data[10];
         uint32_t its_size = 1;
 
@@ -251,7 +245,6 @@ public:
 private:
     std::shared_ptr<vsomeip::application> app_;
     bool is_registered_;
-    bool use_tcp_;
     uint32_t cycle_;
 
     std::mutex mutex_;
@@ -281,23 +274,11 @@ private:
 #endif
 
 int main(int argc, char **argv) {
-    bool use_tcp = false;
     uint32_t cycle = 1000; // default 1s
 
-    std::string tcp_enable("--tcp");
-    std::string udp_enable("--udp");
     std::string cycle_arg("--cycle");
 
     for (int i = 1; i < argc; i++) {
-        if (tcp_enable == argv[i]) {
-            use_tcp = true;
-            break;
-        }
-        if (udp_enable == argv[i]) {
-            use_tcp = false;
-            break;
-        }
-
         if (cycle_arg == argv[i] && i + 1 < argc) {
             i++;
             std::stringstream converter;
@@ -306,7 +287,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    multiple_notifications its_sample(use_tcp, cycle);
+    multiple_notifications its_sample(cycle);
 #ifndef VSOMEIP_ENABLE_SIGNAL_HANDLING
     its_sample_ptr = &its_sample;
     signal(SIGINT, handle_signal);
