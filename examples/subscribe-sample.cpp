@@ -28,12 +28,10 @@ public:
             std::cerr << "Couldn't initialize application" << std::endl;
             return false;
         }
-        /*
         std::cout << "Client settings [protocol="
                 << (use_tcp_ ? "TCP" : "UDP")
                 << "]"
                 << std::endl;
-        */
 
         app_->register_state_handler(
                 std::bind(&client_sample::on_state, this,
@@ -103,7 +101,6 @@ public:
                 << std::setw(4) << _response->get_client() << "/"
                 << std::setw(4) << _response->get_session()
                 << "] = ";
-
         std::shared_ptr<vsomeip::payload> its_payload =
                 _response->get_payload();
         its_message << "(" << std::dec << its_payload->get_length() << ") "
