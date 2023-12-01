@@ -1749,6 +1749,7 @@ void application_impl::on_message(std::shared_ptr<message> &&_message) {
             for (const auto &handler : its_handlers) {
                 std::shared_ptr<sync_handler> its_sync_handler =
                         std::make_shared<sync_handler>([handler, _message]() {
+                            //TODO decrypt payload here / Mehmet Mueller
                             handler(_message);
                         });
                 its_sync_handler->handler_type_ = handler_type_e::MESSAGE;
