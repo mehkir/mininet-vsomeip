@@ -1456,8 +1456,23 @@ service_discovery_impl::process_serviceentry(
                 case option_type_e::IP6_MULTICAST:
                     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry IP4/6_MULTICAST (MEHMET MUELLER DEBUG) <<<<<";
                     break;
-                case option_type_e::CONFIGURATION:
-                    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry CONFIGURATION (MEHMET MUELLER DEBUG) <<<<<";
+                case option_type_e::CONFIGURATION: {
+                        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry CONFIGURATION (MEHMET MUELLER DEBUG) <<<<<";
+                        // Service Authentication Start ##########################################################################
+                        boost::asio::ip::address its_address;
+                        if (its_unreliable_address.to_v4().to_string().compare("0.0.0.0")) {
+                            its_address = its_unreliable_address;
+                        } else {
+                            its_address = its_reliable_address;
+                        }
+
+                        std::shared_ptr < configuration_option_impl > its_configuration_option = std::dynamic_pointer_cast < configuration_option_impl > (its_option);
+                        std::vector<unsigned char> nonce = data_partitioner().reassemble_data(NONCEKEY, its_configuration_option);
+                        VSOMEIP_DEBUG << "Received Nonce from Publisher (OFFER_ARRIVED)"
+                        << "(" << its_address.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
+                        << std::hex << std::string(nonce.begin(), nonce.end());
+                        // Service Authentication End ############################################################################
+                    }
                     break;
                 case option_type_e::UNKNOWN:
                     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry UNKNOWN (MEHMET MUELLER DEBUG) <<<<<";
