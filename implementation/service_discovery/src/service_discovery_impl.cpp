@@ -1031,6 +1031,8 @@ service_discovery_impl::create_eventgroup_entry(
         std::vector<unsigned char> nonce_vector(nonce.begin(), nonce.end());
         data_partitioner().partition_data(NONCEKEY, configuration_option, nonce_vector);
         its_data.options_.push_back(configuration_option);
+        
+        VSOMEIP_DEBUG << std::hex << configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME)));
     }
     // Service Authentication End ########################################################################################
 
