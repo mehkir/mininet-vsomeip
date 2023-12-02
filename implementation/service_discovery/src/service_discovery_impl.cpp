@@ -1026,7 +1026,7 @@ service_discovery_impl::create_eventgroup_entry(
         CryptoPP::SecByteBlock nonce = crypto_operator_->get_random_byte_block();
         request_cache_->add_nonce(its_address.to_v4(), _service, _instance, std::vector<unsigned char>(nonce.begin(), nonce.end()));
         VSOMEIP_DEBUG << "Generated Nonce by Subscriber"
-        << "(" << its_address.to_v4().to_string() << "," << _service << "," << _instance << ")"
+        << " for Publisher Endpoint(" << its_address.to_v4().to_string() << "," << _service << "," << _instance << ")"
         << std::hex << std::string(nonce.begin(), nonce.end());
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
         std::vector<unsigned char> nonce_vector(nonce.begin(), nonce.end());
@@ -1975,6 +1975,9 @@ service_discovery_impl::insert_offer_service(
 
         // Service Authentication Start ################################
         CryptoPP::SecByteBlock nonce = crypto_operator_->get_random_byte_block();
+        VSOMEIP_DEBUG << "Generated Nonce by Publisher"
+        << " at Endpoint(" << configuration_->get_unicast_address().to_v4().to_string() << "," << _info->get_service() << "," << _info->get_instance() << ")"
+        << std::hex << std::string(nonce.begin(), nonce.end());
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
         std::vector<unsigned char> nonce_vector(nonce.begin(), nonce.end());
         data_partitioner().partition_data(NONCEKEY, configuration_option, nonce_vector);
