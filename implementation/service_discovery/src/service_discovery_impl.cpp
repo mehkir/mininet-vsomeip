@@ -82,10 +82,15 @@ service_discovery_impl::service_discovery_impl(
       is_diagnosis_(false),
       last_msg_received_timer_(_host->get_io()),
       last_msg_received_timer_timeout_(VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY +
-                                           (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10))
+                                           (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10)),
+      crypto_operator_(crypto_operator::get_instance()) // Addition for Service Authentication
        {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
+    // Addition for Service Authentication Start ############################################################
+    certificate_data_ = crypto_operator_->load_certificate_from_file(configuration_->get_certificate_path());
+    crypto_operator_->load_pem_private_key(configuration_->get_private_key_path(), private_key_);
+    // Addition for Service Authentication End ##############################################################
 }
 
 service_discovery_impl::~service_discovery_impl() {
@@ -95,15 +100,8 @@ boost::asio::io_context &service_discovery_impl::get_io() {
     return io_;
 }
 
-void service_discovery_impl::init_crypto_parameters() {
-    crypto_operator_ = crypto_operator::get_instance();
-    certificate_data_ = crypto_operator_->load_certificate_from_file(configuration_->get_certificate_path());
-    crypto_operator_->load_pem_private_key(configuration_->get_private_key_path(), private_key_);
-}
-
 void
 service_discovery_impl::init() {
-    init_crypto_parameters();
     runtime_ = std::dynamic_pointer_cast<sd::runtime>(
             plugin_manager::get()->get_plugin(
                     plugin_type_e::SD_RUNTIME_PLUGIN, VSOMEIP_SD_LIBRARY));

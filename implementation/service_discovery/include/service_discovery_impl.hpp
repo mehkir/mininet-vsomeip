@@ -495,7 +495,6 @@ public:
     void verify_publisher_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance);
 
 private:
-    void init_crypto_parameters();
     challenge_response_cache* request_cache_;
     svcb_cache* svcb_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
