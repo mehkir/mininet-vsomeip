@@ -88,7 +88,7 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         ignored_statistics_counter_(0),
         dns_resolver_(dns_resolver::get_instance()),
         svcb_cache_(svcb_cache::get_instance()),
-        request_cache_(request_cache::get_instance()),
+        request_cache_(challenge_response_cache::get_instance()),
         resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance()),
         eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance())
 {
@@ -605,7 +605,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
                                             std::placeholders::_4);
-    service_data_and_cbs_->request_cache_callback_ = std::bind(&request_cache::add_request_certificate, request_cache_,
+    service_data_and_cbs_->request_cache_callback_ = std::bind(&challenge_response_cache::add_certificate, request_cache_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,

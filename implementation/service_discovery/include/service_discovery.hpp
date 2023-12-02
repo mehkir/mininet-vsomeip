@@ -17,7 +17,7 @@
 
 //Additional includes for service authentication
 #include "../../service_authentication/include/svcb_cache.hpp"
-#include "../../service_authentication/include/request_cache.hpp"
+#include "../../service_authentication/include/challenge_response_cache.hpp"
 #include "../../service_discovery/include/resume_process_offerservice_cache.hpp"
 #include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
 //Additional include for time measurement
@@ -82,7 +82,7 @@ public:
     virtual std::recursive_mutex& get_subscribed_mutex() = 0;
 
     // Addition for Service Authentication Start #########################################################################
-    virtual void set_request_cache(request_cache* _request_cache) = 0;
+    virtual void set_request_cache(challenge_response_cache* _request_cache) = 0;
     virtual void set_svcb_cache(svcb_cache* _svcb_cache) = 0;
     virtual void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache) = 0;
     virtual void set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache* _eventgroup_subscription_ack_cache) = 0;

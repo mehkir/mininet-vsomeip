@@ -1023,7 +1023,7 @@ service_discovery_impl::create_eventgroup_entry(
                 break;
         }
         CryptoPP::SecByteBlock nonce = crypto_operator_->get_random_byte_block();
-        request_cache_->add_request_nonce(its_address.to_v4(), _service, _instance, std::vector<unsigned char>(nonce.begin(), nonce.end()));
+        request_cache_->add_nonce(its_address.to_v4(), _service, _instance, std::vector<unsigned char>(nonce.begin(), nonce.end()));
         VSOMEIP_DEBUG << "Generated Nonce by Subscriber"
         << "(" << its_address.to_v4().to_string() << "," << _service << "," << _instance << ")"
         << std::hex << std::string(nonce.begin(), nonce.end());
@@ -1130,7 +1130,7 @@ service_discovery_impl::insert_subscription_ack(
 
     // Service Authentication Start ######################################################################################
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-    std::vector<unsigned char> nonce_to_be_signed = request_cache_->get_request_nonce(_target->get_address().to_v4(), its_service, its_instance);
+    std::vector<unsigned char> nonce_to_be_signed = request_cache_->get_nonce(_target->get_address().to_v4(), its_service, its_instance);
     if (nonce_to_be_signed.empty()) {
         throw std::runtime_error("Nonce is empty!");
     }
@@ -1506,7 +1506,7 @@ service_discovery_impl::process_serviceentry(
 }
 
 void
-service_discovery_impl::set_request_cache(request_cache* _request_cache) {
+service_discovery_impl::set_request_cache(challenge_response_cache* _request_cache) {
     this->request_cache_ = _request_cache;
 }
 
@@ -2385,7 +2385,7 @@ service_discovery_impl::process_eventgroupentry(
                 // Service Authentication Start ##########################################################################
                 std::vector<unsigned char> nonce = data_partitioner().reassemble_data(NONCEKEY, its_configuration_option);
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type && its_ttl > 0) {
-                    request_cache_->add_request_nonce(_sender.to_v4(), its_service, its_instance, nonce);
+                    request_cache_->add_nonce(_sender.to_v4(), its_service, its_instance, nonce);
                     VSOMEIP_DEBUG << "Received Nonce from Subscriber (SUBSCRIBE_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
                     << std::hex << std::string(nonce.begin(), nonce.end());
@@ -2448,7 +2448,7 @@ service_discovery_impl::verify_publisher_signature(boost::asio::ip::address_v4 _
     bool requirements_are_fulfilled = false;
     bool service_authenticated = false;
     // Check if the certificate has already been received
-    std::vector<byte_t> certificate_data = request_cache_->get_request_certificate(_sender_ip_address, _service, _instance);
+    std::vector<byte_t> certificate_data = request_cache_->get_certificate(_sender_ip_address, _service, _instance);
     requirements_are_fulfilled = !certificate_data.empty();
     // Check if there is already a subscription ack entry
     eventgroup_subscription_ack_cache_entry _eventgroup_subscription_ack_cache_entry = eventgroup_subscription_ack_cache_->get_eventgroup_subscription_ack_cache_entry(_sender_ip_address, _service, _instance);
