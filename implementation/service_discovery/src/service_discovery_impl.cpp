@@ -1024,7 +1024,7 @@ service_discovery_impl::create_eventgroup_entry(
         }
         CryptoPP::SecByteBlock nonce = crypto_operator_->get_random_byte_block();
         request_cache_->add_request_nonce(its_address.to_v4(), _service, _instance, std::vector<unsigned char>(nonce.begin(), nonce.end()));
-        VSOMEIP_DEBUG << "Generated Nonce"
+        VSOMEIP_DEBUG << "Generated Nonce by Subscriber"
         << "(" << its_address.to_v4().to_string() << "," << _service << "," << _instance << ")"
         << std::hex << std::string(nonce.begin(), nonce.end());
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
@@ -2386,11 +2386,11 @@ service_discovery_impl::process_eventgroupentry(
                 std::vector<unsigned char> nonce = data_partitioner().reassemble_data(NONCEKEY, its_configuration_option);
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type && its_ttl > 0) {
                     request_cache_->add_request_nonce(_sender.to_v4(), its_service, its_instance, nonce);
-                    VSOMEIP_DEBUG << "Received Nonce (SUBSCRIBE_ARRIVED)"
+                    VSOMEIP_DEBUG << "Received Nonce from Subscriber (SUBSCRIBE_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
                     << std::hex << std::string(nonce.begin(), nonce.end());
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
-                    VSOMEIP_DEBUG << "Received Nonce (SUBSCRIBE_ACK_ARRIVED)"
+                    VSOMEIP_DEBUG << "Received Signed Nonce from Publisher (SUBSCRIBE_ACK_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
                     << std::hex << std::string(nonce.begin(), nonce.end());
                     std::vector<byte_t> signature = data_partitioner().reassemble_data(SIGNATUREKEY, its_configuration_option);
