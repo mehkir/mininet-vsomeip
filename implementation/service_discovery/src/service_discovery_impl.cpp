@@ -82,14 +82,10 @@ service_discovery_impl::service_discovery_impl(
       is_diagnosis_(false),
       last_msg_received_timer_(_host->get_io()),
       last_msg_received_timer_timeout_(VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY +
-                                           (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10)),
-    // Additional member initializations for service authentication Start ################################################
-      crypto_operator_(crypto_operator::get_instance()) {
+                                           (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10))
+       {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
-    certificate_data_ = crypto_operator_->load_certificate_from_file(configuration_->get_certificate_path());
-    crypto_operator_->load_pem_private_key(configuration_->get_private_key_path(), private_key_);
-    // Additional member initializations for service authentication End ##################################################
 }
 
 service_discovery_impl::~service_discovery_impl() {
@@ -99,8 +95,15 @@ boost::asio::io_context &service_discovery_impl::get_io() {
     return io_;
 }
 
+void service_discovery_impl::init_crypto_parameters() {
+    crypto_operator_ = crypto_operator::get_instance();
+    certificate_data_ = crypto_operator_->load_certificate_from_file(configuration_->get_certificate_path());
+    crypto_operator_->load_pem_private_key(configuration_->get_private_key_path(), private_key_);
+}
+
 void
 service_discovery_impl::init() {
+    init_crypto_parameters();
     runtime_ = std::dynamic_pointer_cast<sd::runtime>(
             plugin_manager::get()->get_plugin(
                     plugin_type_e::SD_RUNTIME_PLUGIN, VSOMEIP_SD_LIBRARY));
@@ -1662,10 +1665,15 @@ service_discovery_impl::process_offerservice_serviceentry(
             }
         }
     }
+
+    // NOTE: The rest of the code which actually belongs in to this method is now in resume_process_offerservice_serviceentry
+
+    // Service Authentication Start ##########################################################################
     resume_process_offerservice_cache_->add_offerservice_entry(_service, _instance, _major, _minor, _ttl, boost::asio::ip::address_v4::from_string(_reliable_address.to_string()), _reliable_port, boost::asio::ip::address_v4::from_string(_unreliable_address.to_string()), _unreliable_port, _resubscribes, _received_via_mcast);
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_offerservice_serviceentry: Add offerservice entry service=" << _service
     << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << ", tcp=(" << _reliable_address.to_string() << "," << _reliable_port << ")" << ", udp=(" << _unreliable_address.to_string() << "," << _unreliable_port << ")" << " (MEHMET MUELLER DEBUG) <<<<<";
     verify_service_info(_service, _instance, _major, _minor);
+    // Service Authentication End ############################################################################
 }
 
 void
@@ -1705,6 +1713,8 @@ service_discovery_impl::resume_process_offerservice_serviceentry(
     
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::resume_process_offerservice_serviceentry: service=" << _service
     << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << ", tcp=(" << _reliable_address.to_string() << "," << _reliable_port << ")" << ", udp=(" << _unreliable_address.to_string() << "," << _unreliable_port << ")" << " (MEHMET MUELLER DEBUG) <<<<<";
+
+    // NOTE: Code below belongs actually in to the process_offerservice_serviceentry method above
 
     // No need to resubscribe for unicast offers
     if (_received_via_mcast) {
