@@ -1391,6 +1391,8 @@ service_discovery_impl::process_serviceentry(
         bool _received_via_mcast,
         const sd_acceptance_state_t& _sd_ac_state) {
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry (MEHMET MUELLER DEBUG) <<<<<";
+    // Addition for service authenticity
+    std::vector<unsigned char> nonce;
     // Read service info from entry
     entry_type_e its_type = _entry->get_type();
     service_t its_service = _entry->get_service();
@@ -1458,20 +1460,8 @@ service_discovery_impl::process_serviceentry(
                     break;
                 case option_type_e::CONFIGURATION: {
                         VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry CONFIGURATION (MEHMET MUELLER DEBUG) <<<<<";
-                        // Service Authentication Start ##########################################################################
-                        boost::asio::ip::address its_address;
-                        if (its_unreliable_address.to_v4().to_string().compare("0.0.0.0")) {
-                            its_address = its_unreliable_address;
-                        } else {
-                            its_address = its_reliable_address;
-                        }
-
                         std::shared_ptr < configuration_option_impl > its_configuration_option = std::dynamic_pointer_cast < configuration_option_impl > (its_option);
-                        std::vector<unsigned char> nonce = data_partitioner().reassemble_data(NONCEKEY, its_configuration_option);
-                        VSOMEIP_DEBUG << "Received Nonce from Publisher (OFFER_ARRIVED)"
-                        << "(" << its_address.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
-                        << std::hex << std::string(nonce.begin(), nonce.end());
-                        // Service Authentication End ############################################################################
+                        nonce = data_partitioner().reassemble_data(NONCEKEY, its_configuration_option);
                     }
                     break;
                 case option_type_e::UNKNOWN:
@@ -1484,6 +1474,19 @@ service_discovery_impl::process_serviceentry(
             }
         }
     }
+
+    // Service Authentication Start ##########################################################################
+    boost::asio::ip::address its_address;
+    if (its_unreliable_address.to_v4().to_string().compare("0.0.0.0")) {
+        its_address = its_unreliable_address;
+    } else {
+        its_address = its_reliable_address;
+    }
+    offer_cache_->add_nonce(its_address.to_v4(), its_service, its_instance, nonce);
+    VSOMEIP_DEBUG << "Received Nonce from Publisher (OFFER_ARRIVED)"
+    << "(" << its_address.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
+    << std::hex << std::string(nonce.begin(), nonce.end());
+    // Service Authentication End ############################################################################
 
     if (0 < its_ttl) {
         switch(its_type) {
@@ -1526,6 +1529,11 @@ service_discovery_impl::process_serviceentry(
 void
 service_discovery_impl::set_request_cache(challenge_response_cache* _request_cache) {
     this->request_cache_ = _request_cache;
+}
+
+void
+service_discovery_impl::set_offer_cache(challenge_response_cache* _offer_cache) {
+    this->offer_cache_ = _offer_cache;
 }
 
 void

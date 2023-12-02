@@ -65,4 +65,20 @@ namespace vsomeip_v3 {
                         vsomeip_v3::instance_t _instance) {
         return std::make_tuple(_ipv4_address, _service, _instance);
     }
+    
+    void challenge_response_cache::set_offered_nonce(vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance, std::vector<unsigned char> _nonce) {
+        std::lock_guard<std::mutex> guard(mutex_);
+        auto key_tuple = make_key_tupe(_service, _instance);
+        offered_nonce_map_[key_tuple] = _nonce;
+    }
+
+    std::vector<unsigned char> challenge_response_cache::get_offered_nonce(vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance) {
+        std::lock_guard<std::mutex> guard(mutex_);
+        auto key_tuple = make_key_tupe(_service, _instance);
+        return offered_nonce_map_[key_tuple];
+    }
+
+    std::tuple<vsomeip_v3::service_t, vsomeip_v3::instance_t> challenge_response_cache::make_key_tupe(vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance) {
+        return std::make_tuple(_service, _instance);
+    }
 } /* end namespace vsomeip_v3 */

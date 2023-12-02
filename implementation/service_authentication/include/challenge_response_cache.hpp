@@ -22,6 +22,7 @@ private:
     static std::mutex mutex_;
     static challenge_response_cache* instance_;
     std::map<std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t, vsomeip_v3::instance_t>, challenge_response_data> challenge_response_map_;
+    std::map<std::tuple<vsomeip_v3::service_t, vsomeip_v3::instance_t>, std::vector<unsigned char>> offered_nonce_map_;
 public:
     static challenge_response_cache* get_instance();
 
@@ -45,6 +46,9 @@ public:
     std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t,
                     vsomeip_v3::instance_t> make_key_tupe(boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service,
                     vsomeip_v3::instance_t _instance);
+    void set_offered_nonce(vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance, std::vector<unsigned char> _nonce);
+    std::vector<unsigned char> get_offered_nonce(vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance);
+    std::tuple<vsomeip_v3::service_t, vsomeip_v3::instance_t> make_key_tupe(vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance);
 };
 } /* end namespace vsomeip_v3 */
 #endif /* VSOMEIP_V3_CHALLENGE_RESPONSE_CACHE_HPP */

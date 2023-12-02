@@ -478,6 +478,7 @@ private:
 // Addition for Service Authentication Start #############################################################################
 public:
     void set_request_cache(challenge_response_cache* _request_cache);
+    void set_offer_cache(challenge_response_cache* _offer_cache);
     void set_svcb_cache(svcb_cache* _svcb_cache);
     void set_timestamp_collector(timestamp_collector* _timestamp_collector);
     void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache);
@@ -496,6 +497,7 @@ public:
 
 private:
     challenge_response_cache* request_cache_;
+    challenge_response_cache* offer_cache_;
     svcb_cache* svcb_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
     eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;

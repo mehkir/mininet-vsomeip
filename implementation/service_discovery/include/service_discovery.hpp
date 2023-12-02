@@ -83,6 +83,7 @@ public:
 
     // Addition for Service Authentication Start #########################################################################
     virtual void set_request_cache(challenge_response_cache* _request_cache) = 0;
+    virtual void set_offer_cache(challenge_response_cache* _offer_cache) = 0;
     virtual void set_svcb_cache(svcb_cache* _svcb_cache) = 0;
     virtual void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache) = 0;
     virtual void set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache* _eventgroup_subscription_ack_cache) = 0;

@@ -89,6 +89,7 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         dns_resolver_(dns_resolver::get_instance()),
         svcb_cache_(svcb_cache::get_instance()),
         request_cache_(challenge_response_cache::get_instance()),
+        offer_cache_(challenge_response_cache::get_instance()),
         resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance()),
         eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance())
 {
@@ -180,6 +181,7 @@ void routing_manager_impl::init() {
             discovery_ = std::dynamic_pointer_cast<sd::runtime>(its_plugin)->create_service_discovery(this, configuration_);
             discovery_->init();
             discovery_->set_request_cache(request_cache_);
+            discovery_->set_offer_cache(offer_cache_);
             discovery_->set_svcb_cache(svcb_cache_);
             discovery_->set_resume_process_offerservice_cache(resume_process_offerservice_cache_);
             discovery_->set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache_);
