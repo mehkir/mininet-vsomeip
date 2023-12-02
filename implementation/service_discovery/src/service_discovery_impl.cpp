@@ -1973,6 +1973,14 @@ service_discovery_impl::insert_offer_service(
             its_ttl = ttl_;
         its_entry->set_ttl(its_ttl);
 
+        // Service Authentication Start ################################
+        CryptoPP::SecByteBlock nonce = crypto_operator_->get_random_byte_block();
+        std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
+        std::vector<unsigned char> nonce_vector(nonce.begin(), nonce.end());
+        data_partitioner().partition_data(NONCEKEY, configuration_option, nonce_vector);
+        its_data.options_.push_back(configuration_option);
+        // Service Authentication End ##################################
+
         add_entry_data(_messages, its_data);
     } else {
         VSOMEIP_ERROR << __func__ << ": Failed to create service entry.";
