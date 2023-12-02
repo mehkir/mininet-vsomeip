@@ -1,3 +1,4 @@
+/* NOTE: THIS CLASS IS CURRENTLY NOT USED */
 #include "../include/service_authenticator.hpp"
 
 std::mutex service_authenticator::mutex_;
