@@ -2005,6 +2005,7 @@ service_discovery_impl::insert_offer_service(
         std::vector<unsigned char> nonce_vector(nonce.begin(), nonce.end());
         data_partitioner().partition_data(NONCEKEY, configuration_option, nonce_vector);
         its_data.options_.push_back(configuration_option);
+        offer_cache_->set_offered_nonce(_info->get_service(), _info->get_instance(), nonce_vector);
         // Service Authentication End ##################################
 
         add_entry_data(_messages, its_data);
