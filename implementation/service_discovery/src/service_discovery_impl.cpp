@@ -49,6 +49,7 @@
 #define GENERATED_NONCE_CONFIG_OPTION_KEY "gn"
 #define SIGNED_NONCE_CONFIG_OPTION_KEY "sn"
 #define NONCE_SIGNATURE_CONFIG_OPTION_KEY "ns"
+#define CLIENT_ID_CONFIG_OPTION_KEY "cid"
 
 namespace vsomeip_v3 {
 namespace sd {
