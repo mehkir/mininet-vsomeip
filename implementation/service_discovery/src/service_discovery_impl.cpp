@@ -2466,7 +2466,7 @@ service_discovery_impl::process_eventgroupentry(
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl
                     << "Signed nonce=" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << std::endl
                     << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end());
-                    eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance, its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port, nonce, signature);
+                    eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance, its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port, signed_nonce, nonce_signature);
                 }
                 // Service Authentication End ############################################################################
                 break;
