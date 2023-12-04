@@ -1135,6 +1135,7 @@ service_discovery_impl::insert_subscription_ack(
 
     // Service Authentication Start ######################################################################################
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
+    // Signing nonce from subscriber and add signature
     std::vector<unsigned char> nonce_to_be_signed = request_cache_->get_nonce(_target->get_address().to_v4(), its_service, its_instance);
     if (nonce_to_be_signed.empty()) {
         throw std::runtime_error("Nonce is empty!");
@@ -1142,7 +1143,6 @@ service_discovery_impl::insert_subscription_ack(
     VSOMEIP_DEBUG << "Signing Nonce (SIGNING_START)"
     << "(" << _target->get_address().to_v4().to_string() << "," << its_service << "," << its_instance << ")"
     << std::hex << std::string(nonce_to_be_signed.begin(), nonce_to_be_signed.end());
-    // Add nonce and signature
     data_partitioner().partition_data(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(nonce_to_be_signed.begin(), nonce_to_be_signed.end()));
     std::vector<CryptoPP::byte> nonce_data;
     nonce_data.insert(nonce_data.end(), nonce_to_be_signed.begin(), nonce_to_be_signed.end());
