@@ -1047,10 +1047,10 @@ service_discovery_impl::create_eventgroup_entry(
         std::string client_id(ss.str());
         data_partitioner().partition_data(CLIENT_ID_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(client_id.begin(), client_id.end()));
         its_data.options_.push_back(configuration_option);
-        VSOMEIP_DEBUG << "Generated Nonce by Subscriber" << " for Publisher Endpoint(" << its_address.to_v4().to_string() << "," << _service << "," << _instance << ")" << "\n"
-        << "Generated nonce=" << std::hex << std::string(generated_nonce.begin(), generated_nonce.end()) << "\n"
-        << "Signed nonce=" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << "\n"
-        << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end()) << "\n"
+        VSOMEIP_DEBUG << "Generated Nonce by Subscriber" << " for Publisher Endpoint(" << its_address.to_v4().to_string() << "," << _service << "," << _instance << ")" << std::endl
+        << "Generated nonce=" << std::hex << std::string(generated_nonce.begin(), generated_nonce.end()) << std::endl
+        << "Signed nonce=" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << std::endl
+        << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end()) << std::endl
         << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end());
     }
     // Service Authentication End ########################################################################################
