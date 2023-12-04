@@ -1027,20 +1027,20 @@ service_discovery_impl::create_eventgroup_entry(
         }
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
         // Generate challenge nonce for publisher and add to configuration option
-        CryptoPP::SecByteBlock nonce = crypto_operator_->get_random_byte_block();
-        request_cache_->add_nonce(its_address.to_v4(), _service, _instance, std::vector<unsigned char>(nonce.begin(), nonce.end()));
-        std::vector<unsigned char> nonce_vector(nonce.begin(), nonce.end());
-        data_partitioner().partition_data(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, nonce_vector);
+        CryptoPP::SecByteBlock generated_nonce = crypto_operator_->get_random_byte_block();
+        request_cache_->add_nonce(its_address.to_v4(), _service, _instance, std::vector<unsigned char>(generated_nonce.begin(), generated_nonce.end()));
+        std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
+        data_partitioner().partition_data(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, generated_nonce_vector);
         // Signing nonce from publisher and add signature
-        std::vector<unsigned char> nonce_to_be_signed = offer_cache_->get_nonce(its_address.to_v4(), _service, _instance);
-        if (nonce_to_be_signed.empty()) {
+        std::vector<unsigned char> signed_nonce_vector = offer_cache_->get_nonce(its_address.to_v4(), _service, _instance);
+        if (signed_nonce_vector.empty()) {
             throw std::runtime_error("Nonce is empty!");
         }
-        data_partitioner().partition_data(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(nonce_to_be_signed.begin(), nonce_to_be_signed.end()));
-        std::vector<CryptoPP::byte> nonce_data;
-        nonce_data.insert(nonce_data.end(), nonce_to_be_signed.begin(), nonce_to_be_signed.end());
-        std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
-        data_partitioner().partition_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
+        data_partitioner().partition_data(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(signed_nonce_vector.begin(), signed_nonce_vector.end()));
+        std::vector<CryptoPP::byte> signed_nonce;
+        signed_nonce.insert(signed_nonce.end(), signed_nonce_vector.begin(), signed_nonce_vector.end());
+        std::vector<CryptoPP::byte> nonce_signature = crypto_operator_->sign(private_key_, signed_nonce);
+        data_partitioner().partition_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, configuration_option, nonce_signature);
         // Add client id
         std::stringstream ss;
         ss << std::hex << configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME)));
@@ -1048,9 +1048,9 @@ service_discovery_impl::create_eventgroup_entry(
         data_partitioner().partition_data(CLIENT_ID_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(client_id.begin(), client_id.end()));
         its_data.options_.push_back(configuration_option);
         VSOMEIP_DEBUG << "Generated Nonce by Subscriber" << " for Publisher Endpoint(" << its_address.to_v4().to_string() << "," << _service << "," << _instance << ")" << std::endl
-        << "Generated nonce=" << std::hex << std::string(nonce.begin(), nonce.end()) << std::endl
-        << "Signed nonce=" << std::hex << std::string(nonce_to_be_signed.begin(), nonce_to_be_signed.end()) << std::endl
-        << "Nonce signature=" << std::hex << std::string(signature.begin(), signature.end()) << std::endl
+        << "Generated nonce=" << std::hex << std::string(generated_nonce.begin(), generated_nonce.end()) << std::endl
+        << "Signed nonce=" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << std::endl
+        << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end()) << std::endl
         << "Client id=" << client_id;
     }
     // Service Authentication End ########################################################################################
