@@ -46,8 +46,9 @@
 #include <netinet/in.h>
 
 #define CERTKEY "cert"
-#define NONCEKEY "nonce"
-#define SIGNATUREKEY "sig"
+#define GENERATED_NONCE_CONFIG_OPTION_KEY "gn"
+#define SIGNED_NONCE_CONFIG_OPTION_KEY "sn"
+#define NONCE_SIGNATURE_CONFIG_OPTION_KEY "ns"
 
 namespace vsomeip_v3 {
 namespace sd {
@@ -1030,7 +1031,7 @@ service_discovery_impl::create_eventgroup_entry(
         << std::hex << std::string(nonce.begin(), nonce.end());
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
         std::vector<unsigned char> nonce_vector(nonce.begin(), nonce.end());
-        data_partitioner().partition_data(NONCEKEY, configuration_option, nonce_vector);
+        data_partitioner().partition_data(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, nonce_vector);
         its_data.options_.push_back(configuration_option);
         
         VSOMEIP_DEBUG << std::hex << configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME)));
@@ -1140,12 +1141,12 @@ service_discovery_impl::insert_subscription_ack(
     VSOMEIP_DEBUG << "Signing Nonce (SIGNING_START)"
     << "(" << _target->get_address().to_v4().to_string() << "," << its_service << "," << its_instance << ")"
     << std::hex << std::string(nonce_to_be_signed.begin(), nonce_to_be_signed.end());
-    data_partitioner().partition_data(NONCEKEY, configuration_option, std::vector<unsigned char>(nonce_to_be_signed.begin(), nonce_to_be_signed.end()));
-    // Sign and add nonce
+    // Add nonce and signature
+    data_partitioner().partition_data(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(nonce_to_be_signed.begin(), nonce_to_be_signed.end()));
     std::vector<CryptoPP::byte> nonce_data;
     nonce_data.insert(nonce_data.end(), nonce_to_be_signed.begin(), nonce_to_be_signed.end());
     std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
-    data_partitioner().partition_data(SIGNATUREKEY, configuration_option, signature);
+    data_partitioner().partition_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
     its_data.options_.push_back(configuration_option);
     // Service Authentication End ########################################################################################
 
@@ -1461,7 +1462,7 @@ service_discovery_impl::process_serviceentry(
                 case option_type_e::CONFIGURATION: {
                         VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry CONFIGURATION (MEHMET MUELLER DEBUG) <<<<<";
                         std::shared_ptr < configuration_option_impl > its_configuration_option = std::dynamic_pointer_cast < configuration_option_impl > (its_option);
-                        nonce = data_partitioner().reassemble_data(NONCEKEY, its_configuration_option);
+                        nonce = data_partitioner().reassemble_data(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     }
                     break;
                 case option_type_e::UNKNOWN:
@@ -2003,7 +2004,7 @@ service_discovery_impl::insert_offer_service(
         << std::hex << std::string(nonce.begin(), nonce.end());
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
         std::vector<unsigned char> nonce_vector(nonce.begin(), nonce.end());
-        data_partitioner().partition_data(NONCEKEY, configuration_option, nonce_vector);
+        data_partitioner().partition_data(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, nonce_vector);
         its_data.options_.push_back(configuration_option);
         offer_cache_->set_offered_nonce(_info->get_service(), _info->get_instance(), nonce_vector);
         // Service Authentication End ##################################
@@ -2428,17 +2429,18 @@ service_discovery_impl::process_eventgroupentry(
                                     > (its_option);
 
                 // Service Authentication Start ##########################################################################
-                std::vector<unsigned char> nonce = data_partitioner().reassemble_data(NONCEKEY, its_configuration_option);
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type && its_ttl > 0) {
+                    std::vector<unsigned char> nonce = data_partitioner().reassemble_data(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     request_cache_->add_nonce(_sender.to_v4(), its_service, its_instance, nonce);
                     VSOMEIP_DEBUG << "Received Nonce from Subscriber (SUBSCRIBE_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
                     << std::hex << std::string(nonce.begin(), nonce.end());
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
+                    std::vector<unsigned char> nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     VSOMEIP_DEBUG << "Received Signed Nonce from Publisher (SUBSCRIBE_ACK_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
                     << std::hex << std::string(nonce.begin(), nonce.end());
-                    std::vector<byte_t> signature = data_partitioner().reassemble_data(SIGNATUREKEY, its_configuration_option);
+                    std::vector<byte_t> signature = data_partitioner().reassemble_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
                     eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance, its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port, nonce, signature);
                 }
                 // Service Authentication End ############################################################################
