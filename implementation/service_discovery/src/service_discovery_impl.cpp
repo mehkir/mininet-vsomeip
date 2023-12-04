@@ -2450,6 +2450,8 @@ service_discovery_impl::process_eventgroupentry(
                     std::vector<unsigned char> signed_nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     std::vector<unsigned char> nonce_signature = data_partitioner().reassemble_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
                     std::vector<unsigned char> client_id = data_partitioner().reassemble_data(CLIENT_ID_CONFIG_OPTION_KEY, its_configuration_option);
+                    std::vector<unsigned char> old_sub_nonce = request_cache_->get_nonce(_sender.to_v4(), its_service, its_instance);
+                    VSOMEIP_DEBUG << "Old sub nonce=" << std::hex << std::string(old_sub_nonce.begin(), old_sub_nonce.end());
                     request_cache_->add_nonce(_sender.to_v4(), its_service, its_instance, generated_nonce);
                     VSOMEIP_DEBUG << "Received Nonce from Subscriber (SUBSCRIBE_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl
