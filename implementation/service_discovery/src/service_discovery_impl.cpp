@@ -2446,11 +2446,17 @@ service_discovery_impl::process_eventgroupentry(
 
                 // Service Authentication Start ##########################################################################
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type && its_ttl > 0) {
-                    std::vector<unsigned char> nonce = data_partitioner().reassemble_data(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
-                    request_cache_->add_nonce(_sender.to_v4(), its_service, its_instance, nonce);
+                    std::vector<unsigned char> generated_nonce = data_partitioner().reassemble_data(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
+                    std::vector<unsigned char> signed_nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
+                    std::vector<unsigned char> nonce_signature = data_partitioner().reassemble_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
+                    std::vector<unsigned char> client_id = data_partitioner().reassemble_data(CLIENT_ID_CONFIG_OPTION_KEY, its_configuration_option);
+                    request_cache_->add_nonce(_sender.to_v4(), its_service, its_instance, generated_nonce);
                     VSOMEIP_DEBUG << "Received Nonce from Subscriber (SUBSCRIBE_ARRIVED)"
-                    << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
-                    << std::hex << std::string(nonce.begin(), nonce.end());
+                    << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl
+                    << "Generated nonce=" << std::hex << std::string(generated_nonce.begin(), generated_nonce.end()) << std::endl
+                    << "Signed nonce=" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << std::endl
+                    << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end()) << std::endl
+                    << "Client id=" << client_id
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
                     std::vector<unsigned char> nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     VSOMEIP_DEBUG << "Received Signed Nonce from Publisher (SUBSCRIBE_ACK_ARRIVED)"
