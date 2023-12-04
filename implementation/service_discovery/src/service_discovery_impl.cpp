@@ -2016,7 +2016,7 @@ service_discovery_impl::insert_offer_service(
         // Service Authentication Start ################################
         CryptoPP::SecByteBlock generated_nonce = crypto_operator_->get_random_byte_block();
         VSOMEIP_DEBUG << "Generated Nonce by Publisher"
-        << " at Endpoint(" << configuration_->get_unicast_address().to_v4().to_string() << "," << _info->get_service() << "," << _info->get_instance() << ")"
+        << " at Endpoint(" << configuration_->get_unicast_address().to_v4().to_string() << "," << _info->get_service() << "," << _info->get_instance() << ") "
         << std::hex << std::string(generated_nonce.begin(), generated_nonce.end());
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
         std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
