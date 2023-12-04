@@ -1029,9 +1029,6 @@ service_discovery_impl::create_eventgroup_entry(
         // Generate challenge nonce for publisher and add to configuration option
         CryptoPP::SecByteBlock nonce = crypto_operator_->get_random_byte_block();
         request_cache_->add_nonce(its_address.to_v4(), _service, _instance, std::vector<unsigned char>(nonce.begin(), nonce.end()));
-        VSOMEIP_DEBUG << "Generated Nonce by Subscriber"
-        << " for Publisher Endpoint(" << its_address.to_v4().to_string() << "," << _service << "," << _instance << ")"
-        << std::hex << std::string(nonce.begin(), nonce.end());
         std::vector<unsigned char> nonce_vector(nonce.begin(), nonce.end());
         data_partitioner().partition_data(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, nonce_vector);
         // Signing nonce from publisher and add signature
@@ -1050,6 +1047,11 @@ service_discovery_impl::create_eventgroup_entry(
         std::string client_id(ss.str());
         data_partitioner().partition_data(CLIENT_ID_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(client_id.begin(), client_id.end()));
         its_data.options_.push_back(configuration_option);
+        VSOMEIP_DEBUG << "Generated Nonce by Subscriber" << " for Publisher Endpoint(" << its_address.to_v4().to_string() << "," << _service << "," << _instance << ")" << std::endl
+        << "Generated nonce=" << std::hex << std::string(nonce.begin(), nonce.end()) << std::endl
+        << "Signed nonce=" << std::hex << std::string(nonce_to_be_signed.begin(), nonce_to_be_signed.end()) << std::endl
+        << "Nonce signature=" << std::hex << std::string(signature.begin(), signature.end()) << std::endl
+        << "Client id=" << client_id;
     }
     // Service Authentication End ########################################################################################
 
