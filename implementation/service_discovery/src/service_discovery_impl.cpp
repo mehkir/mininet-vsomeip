@@ -1051,7 +1051,7 @@ service_discovery_impl::create_eventgroup_entry(
         << "Generated nonce=" << std::hex << std::string(generated_nonce.begin(), generated_nonce.end()) << "\n"
         << "Signed nonce=" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << "\n"
         << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end()) << "\n"
-        << "Client id=" << client_id;
+        << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end());
     }
     // Service Authentication End ########################################################################################
 
