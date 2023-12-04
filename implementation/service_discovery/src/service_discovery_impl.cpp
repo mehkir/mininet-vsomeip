@@ -2458,11 +2458,12 @@ service_discovery_impl::process_eventgroupentry(
                     << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end()) << std::endl
                     << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end());
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
-                    std::vector<unsigned char> nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
+                    std::vector<unsigned char> signed_nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
+                    std::vector<byte_t> nonce_signature = data_partitioner().reassemble_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
                     VSOMEIP_DEBUG << "Received Signed Nonce from Publisher (SUBSCRIBE_ACK_ARRIVED)"
-                    << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
-                    << std::hex << std::string(nonce.begin(), nonce.end());
-                    std::vector<byte_t> signature = data_partitioner().reassemble_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
+                    << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl
+                    << "Signed nonce=" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << std::endl
+                    << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end());
                     eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance, its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port, nonce, signature);
                 }
                 // Service Authentication End ############################################################################
