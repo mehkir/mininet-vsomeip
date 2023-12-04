@@ -2014,15 +2014,15 @@ service_discovery_impl::insert_offer_service(
         its_entry->set_ttl(its_ttl);
 
         // Service Authentication Start ################################
-        CryptoPP::SecByteBlock nonce = crypto_operator_->get_random_byte_block();
+        CryptoPP::SecByteBlock generated_nonce = crypto_operator_->get_random_byte_block();
         VSOMEIP_DEBUG << "Generated Nonce by Publisher"
         << " at Endpoint(" << configuration_->get_unicast_address().to_v4().to_string() << "," << _info->get_service() << "," << _info->get_instance() << ")"
-        << std::hex << std::string(nonce.begin(), nonce.end());
+        << std::hex << std::string(generated_nonce.begin(), generated_nonce.end());
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-        std::vector<unsigned char> nonce_vector(nonce.begin(), nonce.end());
-        data_partitioner().partition_data(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, nonce_vector);
+        std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
+        data_partitioner().partition_data(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, generated_nonce_vector);
         its_data.options_.push_back(configuration_option);
-        offer_cache_->set_offered_nonce(_info->get_service(), _info->get_instance(), nonce_vector);
+        offer_cache_->set_offered_nonce(_info->get_service(), _info->get_instance(), generated_nonce_vector);
         // Service Authentication End ##################################
 
         add_entry_data(_messages, its_data);
