@@ -2456,7 +2456,7 @@ service_discovery_impl::process_eventgroupentry(
                     << "Generated nonce=" << std::hex << std::string(generated_nonce.begin(), generated_nonce.end()) << "\n"
                     << "Signed nonce=" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << "\n"
                     << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end()) << "\n"
-                    << "Client id=" << client_id;
+                    << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end());
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
                     std::vector<unsigned char> nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     VSOMEIP_DEBUG << "Received Signed Nonce from Publisher (SUBSCRIBE_ACK_ARRIVED)"
