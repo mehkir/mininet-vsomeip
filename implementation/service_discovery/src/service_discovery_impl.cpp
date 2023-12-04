@@ -1154,15 +1154,14 @@ service_discovery_impl::insert_subscription_ack(
     if (nonce_to_be_signed.empty()) {
         throw std::runtime_error("Nonce is empty!");
     }
-    VSOMEIP_DEBUG << "Signing Nonce (SIGNING_START)"
-    << "(" << _target->get_address().to_v4().to_string() << "," << its_service << "," << its_instance << ")"
-    << std::hex << std::string(nonce_to_be_signed.begin(), nonce_to_be_signed.end());
     data_partitioner().partition_data(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(nonce_to_be_signed.begin(), nonce_to_be_signed.end()));
     std::vector<CryptoPP::byte> nonce_data;
     nonce_data.insert(nonce_data.end(), nonce_to_be_signed.begin(), nonce_to_be_signed.end());
     std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
     data_partitioner().partition_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
     its_data.options_.push_back(configuration_option);
+    VSOMEIP_DEBUG << "Signed nonce" << "(" << _target->get_address().to_v4().to_string() << "," << its_service << "," << its_instance << ")" << " "
+    << std::hex << std::string(nonce_to_be_signed.begin(), nonce_to_be_signed.end());
     // Service Authentication End ########################################################################################
 
     // Selective
