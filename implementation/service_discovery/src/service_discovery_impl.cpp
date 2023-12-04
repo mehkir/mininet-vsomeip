@@ -1501,7 +1501,7 @@ service_discovery_impl::process_serviceentry(
     }
     offer_cache_->add_nonce(its_address.to_v4(), its_service, its_instance, nonce);
     VSOMEIP_DEBUG << "Received Nonce from Publisher (OFFER_ARRIVED)"
-    << "(" << its_address.to_v4().to_string() << "," << its_service << "," << its_instance << ")"
+    << "(" << its_address.to_v4().to_string() << "," << its_service << "," << its_instance << ") "
     << std::hex << std::string(nonce.begin(), nonce.end());
     // Service Authentication End ############################################################################
 
