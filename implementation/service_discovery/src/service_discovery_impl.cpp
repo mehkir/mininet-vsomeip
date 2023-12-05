@@ -1544,12 +1544,12 @@ service_discovery_impl::process_serviceentry(
 }
 
 void
-service_discovery_impl::set_request_cache(challenge_response_cache* _request_cache) {
+service_discovery_impl::set_request_cache(std::shared_ptr<challenge_response_cache> _request_cache) {
     this->request_cache_ = _request_cache;
 }
 
 void
-service_discovery_impl::set_offer_cache(challenge_response_cache* _offer_cache) {
+service_discovery_impl::set_offer_cache(std::shared_ptr<challenge_response_cache> _offer_cache) {
     this->offer_cache_ = _offer_cache;
 }
 

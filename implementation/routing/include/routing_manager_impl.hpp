@@ -575,8 +575,8 @@ private:
     svcb_resolver svcb_resolver_;
     tlsa_resolver tlsa_resolver_;
     svcb_cache* svcb_cache_;
-    challenge_response_cache* request_cache_;
-    challenge_response_cache* offer_cache_;
+    std::shared_ptr<challenge_response_cache> request_cache_;
+    std::shared_ptr<challenge_response_cache> offer_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
     eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
     //Addition for time measurement

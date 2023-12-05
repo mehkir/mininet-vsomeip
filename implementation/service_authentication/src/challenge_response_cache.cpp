@@ -2,23 +2,11 @@
 #include <iostream>
 
 namespace vsomeip_v3 {
-    std::mutex challenge_response_cache::mutex_;
-    challenge_response_cache* challenge_response_cache::instance_;
-
     challenge_response_cache::challenge_response_cache() {
     }
 
     challenge_response_cache::~challenge_response_cache() {
     }
-
-    challenge_response_cache* challenge_response_cache::get_instance() {
-        std::lock_guard<std::mutex> guard(mutex_);
-        if(instance_ == nullptr) {
-            instance_ = new challenge_response_cache();
-        }
-        return instance_;
-    }
-
     void challenge_response_cache::add_nonce(boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service,
                                 vsomeip_v3::instance_t _instance, std::vector<unsigned char> _nonce) {
         std::lock_guard<std::mutex> guard(mutex_);

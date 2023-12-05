@@ -17,20 +17,12 @@ struct challenge_response_data {
 
 class challenge_response_cache {
 private:
-    challenge_response_cache();
-    ~challenge_response_cache();
-    static std::mutex mutex_;
-    static challenge_response_cache* instance_;
+    std::mutex mutex_;
     std::map<std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t, vsomeip_v3::instance_t>, challenge_response_data> challenge_response_map_;
     std::map<std::tuple<vsomeip_v3::service_t, vsomeip_v3::instance_t>, std::vector<unsigned char>> offered_nonce_map_;
 public:
-    static challenge_response_cache* get_instance();
-
-    challenge_response_cache(challenge_response_cache const&) = delete;
-    challenge_response_cache(challenge_response_cache&&) = delete;
-    challenge_response_cache& operator=(challenge_response_cache &) = delete;
-    challenge_response_cache& operator=(challenge_response_cache &&) = delete;
-
+    challenge_response_cache();
+    ~challenge_response_cache();
     void add_nonce(boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service,
                     vsomeip_v3::instance_t _instance, std::vector<unsigned char> _nonce);
     bool has_nonce_and_remove(boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service,
