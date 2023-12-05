@@ -1162,8 +1162,9 @@ service_discovery_impl::insert_subscription_ack(
     std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
     data_partitioner().partition_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
     its_data.options_.push_back(configuration_option);
-    VSOMEIP_DEBUG << "Signed nonce" << "(" << _target->get_address().to_v4().to_string() << "," << its_service << "," << its_instance << ")" << " "
-    << std::hex << std::string(nonce_to_be_signed.begin(), nonce_to_be_signed.end());
+    VSOMEIP_DEBUG << "Signed nonce (SUBSCRIBE_ACK_SENDING)" << "(" << _target->get_address().to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl
+    << "Signed nonce" << std::hex << std::string(nonce_to_be_signed.begin(), nonce_to_be_signed.end()) << std::endl
+    << "Nonce signature" << std::hex << std::string(signature.begin(), signature.end());
     // Service Authentication End ########################################################################################
 
     // Selective
@@ -2451,7 +2452,6 @@ service_discovery_impl::process_eventgroupentry(
                     std::vector<unsigned char> nonce_signature = data_partitioner().reassemble_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
                     std::vector<unsigned char> client_id = data_partitioner().reassemble_data(CLIENT_ID_CONFIG_OPTION_KEY, its_configuration_option);
                     std::vector<unsigned char> old_sub_nonce = request_cache_->get_nonce(_sender.to_v4(), its_service, its_instance);
-                    VSOMEIP_DEBUG << "Old sub nonce=" << std::hex << std::string(old_sub_nonce.begin(), old_sub_nonce.end());
                     request_cache_->add_nonce(_sender.to_v4(), its_service, its_instance, generated_nonce);
                     VSOMEIP_DEBUG << "Received Nonce from Subscriber (SUBSCRIBE_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl
