@@ -1720,15 +1720,15 @@ service_discovery_impl::process_offerservice_serviceentry(
 void
 service_discovery_impl::verify_service_info(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) {
     resume_process_offerservice_entry resume_processofferservice_entry = resume_process_offerservice_cache_->get_offerservice_entry(_service, _instance, _major, _minor);
-    svcb_cache_entry svcbcache_entry = svcb_cache_->get_svcb_cache_entry(_service, _instance, _major, _minor);
-    if (resume_processofferservice_entry.service_ == svcbcache_entry.service_
-        && resume_processofferservice_entry.instance_ == svcbcache_entry.instance_
-        && resume_processofferservice_entry.major_ == svcbcache_entry.major_
-        && resume_processofferservice_entry.minor_ == svcbcache_entry.minor_
-        && (   (svcbcache_entry.l4protocol_ == IPPROTO_UDP && resume_processofferservice_entry.unreliable_address_ == svcbcache_entry.ipv4_address_
-                && resume_processofferservice_entry.unreliable_port_ == svcbcache_entry.port_) 
-            || (svcbcache_entry.l4protocol_ == IPPROTO_TCP && resume_processofferservice_entry.reliable_address_ == svcbcache_entry.ipv4_address_
-                && resume_processofferservice_entry.reliable_port_ == svcbcache_entry.port_)
+    service_svcb_cache_entry service_svcbcache_entry = svcb_cache_->get_service_svcb_cache_entry(_service, _instance, _major, _minor);
+    if (resume_processofferservice_entry.service_ == service_svcbcache_entry.service_
+        && resume_processofferservice_entry.instance_ == service_svcbcache_entry.instance_
+        && resume_processofferservice_entry.major_ == service_svcbcache_entry.major_
+        && resume_processofferservice_entry.minor_ == service_svcbcache_entry.minor_
+        && (   (service_svcbcache_entry.l4protocol_ == IPPROTO_UDP && resume_processofferservice_entry.unreliable_address_ == service_svcbcache_entry.ipv4_address_
+                && resume_processofferservice_entry.unreliable_port_ == service_svcbcache_entry.port_) 
+            || (service_svcbcache_entry.l4protocol_ == IPPROTO_TCP && resume_processofferservice_entry.reliable_address_ == service_svcbcache_entry.ipv4_address_
+                && resume_processofferservice_entry.reliable_port_ == service_svcbcache_entry.port_)
            )
         ) {
         VSOMEIP_DEBUG << ">>>>> service_discovery_impl::verify_service_info: Found SVCB record for service=" << _service
