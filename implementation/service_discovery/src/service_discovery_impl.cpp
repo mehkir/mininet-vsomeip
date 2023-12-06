@@ -1545,6 +1545,21 @@ service_discovery_impl::process_serviceentry(
 }
 
 void
+service_discovery_impl::set_dns_resolver(dns_resolver* _dns_resolver) {
+    this->dns_resolver_ = _dns_resolver;
+}
+
+void
+service_discovery_impl::set_svcb_resolver(std::shared_ptr<svcb_resolver> _svcb_resolver) {
+    this->svcb_resolver_ = _svcb_resolver;
+}
+
+void
+service_discovery_impl::set_tlsa_resolver(std::shared_ptr<tlsa_resolver> _tlsa_resolver) {
+    this->tlsa_resolver_ = _tlsa_resolver;
+}
+
+void
 service_discovery_impl::set_request_cache(std::shared_ptr<challenge_response_cache> _request_cache) {
     this->request_cache_ = _request_cache;
 }
@@ -1562,6 +1577,11 @@ service_discovery_impl::set_svcb_cache(svcb_cache* _svcb_cache) {
 void
 service_discovery_impl::set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache) {
     this->resume_process_offerservice_cache_ = _resume_process_offerservice_cache;
+}
+
+void
+service_discovery_impl::set_eventgroup_subscription_cache(eventgroup_subscription_cache* _eventgroup_subscription_cache) {
+    this->eventgroup_subscription_cache_ = _eventgroup_subscription_cache;
 }
 
 void
@@ -2042,6 +2062,12 @@ service_discovery_impl::process_eventgroupentry(
         bool _is_stop_subscribe_subscribe, bool _force_initial_events,
         const sd_acceptance_state_t& _sd_ac_state) {
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_eventgroupentry (MEHMET MUELLER DEBUG) <<<<<";
+    // Additional varaibles for service Authentication Start ##############
+    client_t client = -1;
+    std::vector<unsigned char> signed_nonce;
+    std::vector<unsigned char> nonce_signature;
+    // Additional varaibles for service Authentication End ################
+
     std::set<client_t> its_clients({0}); // maybe overridden for selectives
 
     auto its_sender = _acknowledgement->get_target_address();
@@ -2448,10 +2474,9 @@ service_discovery_impl::process_eventgroupentry(
                 // Service Authentication Start ##########################################################################
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type && its_ttl > 0) {
                     std::vector<unsigned char> generated_nonce = data_partitioner().reassemble_data(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
-                    std::vector<unsigned char> signed_nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
-                    std::vector<unsigned char> nonce_signature = data_partitioner().reassemble_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
+                    signed_nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
+                    nonce_signature = data_partitioner().reassemble_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
                     std::vector<unsigned char> client_id = data_partitioner().reassemble_data(CLIENT_ID_CONFIG_OPTION_KEY, its_configuration_option);
-                    std::vector<unsigned char> old_sub_nonce = request_cache_->get_nonce(_sender.to_v4(), its_service, its_instance);
                     request_cache_->add_nonce(_sender.to_v4(), its_service, its_instance, generated_nonce);
                     VSOMEIP_DEBUG << "Received Nonce from Subscriber (SUBSCRIBE_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl
@@ -2459,14 +2484,50 @@ service_discovery_impl::process_eventgroupentry(
                     << "Signed nonce=" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << std::endl
                     << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end()) << std::endl
                     << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end());
+                    // Request client svcb record
+                    // client_data_and_cbs* client_data_and_cbs_ = new client_data_and_cbs();
+                    // client_data_and_cbs_->service_ = its_service;
+                    // client_data_and_cbs_->instance_ = its_instance;
+                    // client_data_and_cbs_->major_ = its_major;
+                    // client_data_and_cbs_->ipv4_address_ = configuration_->get_unicast_address().to_v4();
+                    // client_data_and_cbs_->add_client_svcb_entry_cache_callback_ = std::bind(&svcb_cache::add_client_svcb_cache_entry, svcb_cache_,
+                    //                                         std::placeholders::_1,
+                    //                                         std::placeholders::_2,
+                    //                                         std::placeholders::_3,
+                    //                                         std::placeholders::_4,
+                    //                                         std::placeholders::_5,
+                    //                                         std::placeholders::_6,
+                    //                                         std::placeholders::_7);
+                    // client_data_and_cbs_->verify_client_info_callback_ = std::bind(&sd::service_discovery::verify_service_info, this,
+                    //                                         std::placeholders::_1,
+                    //                                         std::placeholders::_2,
+                    //                                         std::placeholders::_3,
+                    //                                         std::placeholders::_4);
+                    // client_data_and_cbs_->request_cache_callback_ = std::bind(&challenge_response_cache::add_certificate, request_cache_,
+                    //                                         std::placeholders::_1,
+                    //                                         std::placeholders::_2,
+                    //                                         std::placeholders::_3,
+                    //                                         std::placeholders::_4);
+                    // client_data_and_cbs_->request_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_tlsa_record, tlsa_resolver_,
+                    //                                         std::placeholders::_1,
+                    //                                         std::placeholders::_2);
+                    // client_data_and_cbs_->verify_publisher_signature_callback_ = std::bind(&sd::service_discovery::verify_publisher_signature, discovery_,
+                    //                                         std::placeholders::_1,
+                    //                                         std::placeholders::_2,
+                    //                                         std::placeholders::_3);
+                    // client_data_and_cbs_->record_timestamp_callback_ = std::bind(&timestamp_collector::record_timestamp, timestamp_collector_,
+                    //                                         std::placeholders::_1);
+                    // client_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, crypto_operator::get_instance(),
+                    //                                         std::placeholders::_1);
+                    // svcb_resolver_.request_svcb_record(client_data_and_cbs_);
+                    client = (client_t) std::stoi(std::string(client_id.begin(), client_id.end()));
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
-                    std::vector<unsigned char> signed_nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
-                    std::vector<byte_t> nonce_signature = data_partitioner().reassemble_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
+                    signed_nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
+                    nonce_signature = data_partitioner().reassemble_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
                     VSOMEIP_DEBUG << "Received Signed Nonce from Publisher (SUBSCRIBE_ACK_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl
                     << "Signed nonce=" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << std::endl
                     << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end());
-                    eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance, its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port, signed_nonce, nonce_signature);
                 }
                 // Service Authentication End ############################################################################
                 break;
@@ -2495,17 +2556,26 @@ service_discovery_impl::process_eventgroupentry(
             }
         }
     }
-
+    // TODO: Make sure eventgroup subscription (ack) cache hold parameters like they would be when handle eventgroup method is called directly.
+    // Do a breakpoint near this line and check parameters which would be passed to handle eventgroup methods
     if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
-        handle_eventgroup_subscription(its_service, its_instance,
-                its_eventgroup, its_major, its_ttl, 0, 0,
-                its_first_address, its_first_port, is_first_reliable,
-                its_second_address, its_second_port, is_second_reliable,
-                _acknowledgement, _is_stop_subscribe_subscribe,
-                _force_initial_events, its_clients, _sd_ac_state, its_info);
+        eventgroup_subscription_cache_->add_eventgroup_subscription_cache_entry(client, its_service, its_instance,
+            its_eventgroup, its_major, its_ttl, 0, 0,
+            its_first_address.to_v4(), its_first_port, is_first_reliable,
+            its_second_address.to_v4(), its_second_port, is_second_reliable,
+            _acknowledgement, _is_stop_subscribe_subscribe,
+            _force_initial_events, its_clients, _sd_ac_state.expired_ports_, _sd_ac_state.sd_acceptance_required_, _sd_ac_state.accept_entries_, its_info, signed_nonce, nonce_signature);
+        verify_client_info(client, its_service, its_instance, its_major);
+        // handle_eventgroup_subscription(its_service, its_instance,
+        //         its_eventgroup, its_major, its_ttl, 0, 0,
+        //         its_first_address, its_first_port, is_first_reliable,
+        //         its_second_address, its_second_port, is_second_reliable,
+        //         _acknowledgement, _is_stop_subscribe_subscribe,
+        //         _force_initial_events, its_clients, _sd_ac_state, its_info);
     } else {
         if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type) { //this type is used for ACK and NACK messages
             if (its_ttl > 0) {
+                eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance, its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port, signed_nonce, nonce_signature);
                 verify_publisher_signature(_sender.to_v4(), its_service, its_instance); // Service Authentication
             } else {
                 handle_eventgroup_subscription_nack(its_service, its_instance, its_eventgroup,
@@ -2513,6 +2583,39 @@ service_discovery_impl::process_eventgroupentry(
             }
         }
     }
+}
+
+void
+service_discovery_impl::verify_client_info(client_t _client, service_t _service, instance_t _instance, major_version_t _major) {
+    eventgroup_subscription_cache_entry _eventgroup_subscription_cache_entry = eventgroup_subscription_cache_->get_eventgroup_subscription_cache_entry(_client, _service, _instance, _major);
+    service_t its_service = _eventgroup_subscription_cache_entry.service_;
+    instance_t its_instance = _eventgroup_subscription_cache_entry.instance_;
+    eventgroup_t its_eventgroup = _eventgroup_subscription_cache_entry.eventgroup_;
+    major_version_t its_major = _eventgroup_subscription_cache_entry.major_;
+    ttl_t its_ttl = _eventgroup_subscription_cache_entry.ttl_;
+    uint8_t its_counter = _eventgroup_subscription_cache_entry.counter_;
+    uint16_t its_reserved = _eventgroup_subscription_cache_entry.reserved_;
+    boost::asio::ip::address its_first_address = _eventgroup_subscription_cache_entry.first_address_;
+    uint16_t its_first_port = _eventgroup_subscription_cache_entry.first_port_;
+    bool is_first_reliable = _eventgroup_subscription_cache_entry.is_first_reliable_;
+    boost::asio::ip::address its_second_address = _eventgroup_subscription_cache_entry.second_address_;
+    uint16_t its_second_port = _eventgroup_subscription_cache_entry.second_port_;
+    bool is_second_reliable = _eventgroup_subscription_cache_entry.is_second_reliable_;
+    std::shared_ptr<vsomeip_v3::sd::remote_subscription_ack> _acknowledgement = _eventgroup_subscription_cache_entry.acknowledgement_;
+    bool _is_stop_subscribe_subscribe = _eventgroup_subscription_cache_entry.is_stop_subscribe_subscribe_;
+    bool _force_initial_events = _eventgroup_subscription_cache_entry.force_initial_events_;
+    std::set<client_t> its_clients = _eventgroup_subscription_cache_entry.clients_;
+    sd_acceptance_state_t _sd_ac_state(_eventgroup_subscription_cache_entry.expired_ports_);
+    _sd_ac_state.sd_acceptance_required_ = _eventgroup_subscription_cache_entry.sd_acceptance_required_;
+    _sd_ac_state.accept_entries_ = _eventgroup_subscription_cache_entry.accept_entries_;
+    std::shared_ptr<vsomeip_v3::eventgroupinfo> its_info = _eventgroup_subscription_cache_entry.info_;
+
+    handle_eventgroup_subscription(its_service, its_instance,
+        its_eventgroup, its_major, its_ttl, its_counter, its_reserved,
+        its_first_address, its_first_port, is_first_reliable,
+        its_second_address, its_second_port, is_second_reliable,
+        _acknowledgement, _is_stop_subscribe_subscribe,
+        _force_initial_events, its_clients, _sd_ac_state, its_info);
 }
 
 void

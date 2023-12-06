@@ -477,11 +477,15 @@ private:
 
 // Addition for Service Authentication Start #############################################################################
 public:
+    void set_dns_resolver(dns_resolver* _dns_resolver);
+    void set_svcb_resolver(std::shared_ptr<svcb_resolver> _svcb_resolver);
+    void set_tlsa_resolver(std::shared_ptr<tlsa_resolver> _tlsa_resolver);
     void set_request_cache(std::shared_ptr<challenge_response_cache> _request_cache);
     void set_offer_cache(std::shared_ptr<challenge_response_cache> _offer_cache);
     void set_svcb_cache(svcb_cache* _svcb_cache);
     void set_timestamp_collector(timestamp_collector* _timestamp_collector);
     void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache);
+    void set_eventgroup_subscription_cache(eventgroup_subscription_cache* _eventgroup_subscription_cache);
     void set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache* _eventgroup_subscription_ack_cache);
     void verify_service_info(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor);
     void resume_process_offerservice_serviceentry(
@@ -496,10 +500,17 @@ public:
     void verify_publisher_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance);
 
 private:
+    // Additional Method for Service Authenticity
+    void verify_client_info(client_t _client, service_t _service, instance_t _instance, major_version_t _major);
+    // Addtional Member for Service Authenticity
+    dns_resolver* dns_resolver_;
+    std::shared_ptr<svcb_resolver> svcb_resolver_;
+    std::shared_ptr<tlsa_resolver> tlsa_resolver_;
     std::shared_ptr<challenge_response_cache> request_cache_;
     std::shared_ptr<challenge_response_cache> offer_cache_;
     svcb_cache* svcb_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
+    eventgroup_subscription_cache* eventgroup_subscription_cache_;
     eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
     timestamp_collector* timestamp_collector_;
     crypto_operator* crypto_operator_;
