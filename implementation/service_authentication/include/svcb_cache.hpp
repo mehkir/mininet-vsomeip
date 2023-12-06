@@ -10,15 +10,23 @@
 #include "vsomeip/primitive_types.hpp"
 
 namespace vsomeip_v3 {
-    struct svcb_cache_entry {
-        service_t service_ = -1;
-        instance_t instance_ = -1;
-        major_version_t major_ = -1;
-        minor_version_t minor_ = -1;
-        int l4protocol_ = -1;
-        boost::asio::ip::address_v4 ipv4_address_ = boost::asio::ip::address_v4::from_string("0.0.0.0");
-        uint16_t port_ = -1;
+    struct service_svcb_cache_entry {
+    public:
+        service_t service_;
+        instance_t instance_;
+        major_version_t major_;
+        minor_version_t minor_;
+        int l4protocol_;
+        boost::asio::ip::address_v4 ipv4_address_;
+        uint16_t port_;
+        service_svcb_cache_entry() : service_(-1), instance_(-1), major_(-1), minor_(-1), l4protocol_(-1), ipv4_address_(boost::asio::ip::address_v4::from_string("0.0.0.0")), port_(-1) {}
     };
+
+    struct client_svcb_cache_entry : public service_svcb_cache_entry {
+        client_t client_;
+        client_svcb_cache_entry() : client_(-1) {}
+    };
+
 
     class svcb_cache {
         private:
@@ -26,7 +34,8 @@ namespace vsomeip_v3 {
             ~svcb_cache();
             static std::mutex mutex_;
             static svcb_cache* instance_;
-            std::map<std::tuple<service_t, instance_t, major_version_t, minor_version_t>, svcb_cache_entry> svcb_cache_map_;
+            std::map<std::tuple<service_t, instance_t, major_version_t, minor_version_t>, service_svcb_cache_entry> service_svcb_cache_map_;
+            std::map<std::tuple<client_t, service_t, instance_t, major_version_t, minor_version_t>, client_svcb_cache_entry> client_svcb_cache_map_;
         public:
             static svcb_cache* get_instance();
 
@@ -35,12 +44,14 @@ namespace vsomeip_v3 {
             svcb_cache& operator=(svcb_cache &) = delete;
             svcb_cache& operator=(svcb_cache &&) = delete;
 
-            void add_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version, int _l4protocol, const boost::asio::ip::address_v4 _ipv4_address, uint16_t _port);
-            void remove_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
-            svcb_cache_entry get_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
-            std::tuple<service_t, instance_t, major_version_t, minor_version_t> make_key_tuple(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
-
-
+            void add_service_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version, int _l4protocol, const boost::asio::ip::address_v4 _ipv4_address, uint16_t _port);
+            void add_client_svcb_cache_entry(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version, int _l4protocol, const boost::asio::ip::address_v4 _ipv4_address, uint16_t _port);
+            void remove_service_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
+            void remove_client_svcb_cache_entry(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
+            service_svcb_cache_entry get_service_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
+            client_svcb_cache_entry get_client_svcb_cache_entry(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
+            std::tuple<service_t, instance_t, major_version_t, minor_version_t> make_service_key_tuple(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
+            std::tuple<client_t, service_t, instance_t, major_version_t, minor_version_t> make_client_key_tuple(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
     };
 
 } /* end namespace vsomeip_v3 */
