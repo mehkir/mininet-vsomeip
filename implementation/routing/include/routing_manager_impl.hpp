@@ -34,6 +34,7 @@
 #include "../../service_authentication/include/challenge_response_cache.hpp"
 #include "../../service_authentication/include/svcb_cache.hpp"
 #include "../../service_discovery/include/resume_process_offerservice_cache.hpp"
+#include "../../service_authentication/include/eventgroup_subscription_cache.hpp"
 #include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
 
 //Additional include for time measurement
@@ -572,12 +573,13 @@ private:
 
     // Addtional Member for Service Authenticity
     dns_resolver* dns_resolver_;
-    svcb_resolver svcb_resolver_;
-    tlsa_resolver tlsa_resolver_;
+    std::shared_ptr<svcb_resolver> svcb_resolver_;
+    std::shared_ptr<tlsa_resolver> tlsa_resolver_;
     svcb_cache* svcb_cache_;
     std::shared_ptr<challenge_response_cache> request_cache_;
     std::shared_ptr<challenge_response_cache> offer_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
+    eventgroup_subscription_cache* eventgroup_subscription_cache_;
     eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
     //Addition for time measurement
     timestamp_collector* timestamp_collector_;

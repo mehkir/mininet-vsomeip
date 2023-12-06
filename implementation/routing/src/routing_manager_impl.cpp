@@ -87,10 +87,13 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         statistics_log_timer_(_host->get_io()),
         ignored_statistics_counter_(0),
         dns_resolver_(dns_resolver::get_instance()),
+        svcb_resolver_(std::make_shared<svcb_resolver>()),
+        tlsa_resolver_(std::make_shared<tlsa_resolver>()),
         svcb_cache_(svcb_cache::get_instance()),
         request_cache_(std::make_shared<challenge_response_cache>()),
         offer_cache_(std::make_shared<challenge_response_cache>()),
         resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance()),
+        eventgroup_subscription_cache_(eventgroup_subscription_cache::get_instance()),
         eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance())
 {
 }
@@ -180,10 +183,14 @@ void routing_manager_impl::init() {
             VSOMEIP_INFO << "Service Discovery module loaded.";
             discovery_ = std::dynamic_pointer_cast<sd::runtime>(its_plugin)->create_service_discovery(this, configuration_);
             discovery_->init();
+            discovery_->set_dns_resolver(dns_resolver_);
+            discovery_->set_svcb_resolver(svcb_resolver_);
+            discovery_->set_tlsa_resolver(tlsa_resolver_);
             discovery_->set_request_cache(request_cache_);
             discovery_->set_offer_cache(offer_cache_);
             discovery_->set_svcb_cache(svcb_cache_);
             discovery_->set_resume_process_offerservice_cache(resume_process_offerservice_cache_);
+            discovery_->set_eventgroup_subscription_cache(eventgroup_subscription_cache_);
             discovery_->set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache_);
             discovery_->set_timestamp_collector(timestamp_collector_);
         } else {
@@ -623,7 +630,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_1);
     service_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, crypto_operator::get_instance(),
                                             std::placeholders::_1);
-    svcb_resolver_.request_svcb_record(service_data_and_cbs_);
+    svcb_resolver_->request_svcb_record(service_data_and_cbs_);
     //Addition for Service Authentication End ############################################################################
 
     VSOMEIP_INFO << "REQUEST("
