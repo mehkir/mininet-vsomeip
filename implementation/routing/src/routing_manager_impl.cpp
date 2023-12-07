@@ -619,7 +619,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
                                             std::placeholders::_4);
-    service_data_and_cbs_->request_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_tlsa_record, tlsa_resolver_,
+    service_data_and_cbs_->request_service_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_service_tlsa_record, tlsa_resolver_,
                                             std::placeholders::_1,
                                             std::placeholders::_2);
     service_data_and_cbs_->verify_publisher_signature_callback_ = std::bind(&sd::service_discovery::verify_publisher_signature, discovery_,
@@ -630,7 +630,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_1);
     service_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, crypto_operator::get_instance(),
                                             std::placeholders::_1);
-    svcb_resolver_->request_svcb_record(service_data_and_cbs_);
+    svcb_resolver_->request_service_svcb_record(service_data_and_cbs_);
     //Addition for Service Authentication End ############################################################################
 
     VSOMEIP_INFO << "REQUEST("

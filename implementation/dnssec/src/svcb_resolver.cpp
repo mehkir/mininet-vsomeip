@@ -15,9 +15,9 @@ namespace vsomeip_v3 {
     svcb_resolver::~svcb_resolver() {
     }
 
-    void svcb_resolve_callback(void* _data, int _status, int _timeouts,
+    void service_svcb_resolve_callback(void* _data, int _status, int _timeouts,
                 unsigned char* _abuf, int _alen) {
-        LOG_DEBUG("svcb_resolve_callback is called")
+        LOG_DEBUG(__func__ << " is called")
         service_data_and_cbs* servicedata_and_cbs = reinterpret_cast<service_data_and_cbs*>(_data);
         
         if (_status) {
@@ -77,8 +77,8 @@ namespace vsomeip_v3 {
             tlsa_request << ".";
             tlsa_request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << servicedata_and_cbs->service_;
             tlsa_request << ".";
-            tlsa_request << PARENTDOMAIN;
-            servicedata_and_cbs->request_tlsa_record_callback_(servicedata_and_cbs, tlsa_request.str());
+            tlsa_request << SERVICE_PARENTDOMAIN;
+            servicedata_and_cbs->request_service_tlsa_record_callback_(servicedata_and_cbs, tlsa_request.str());
 
             svcb_reply_ptr = svcb_reply_ptr->svcb_reply_next_;
         }
@@ -88,7 +88,7 @@ namespace vsomeip_v3 {
         delete[] copy;
     }
 
-    void svcb_resolver::request_svcb_record(service_data_and_cbs* _service_data_and_cbs) {
+    void svcb_resolver::request_service_svcb_record(service_data_and_cbs* _service_data_and_cbs) {
         std::stringstream request;
         request << ATTRLEAFBRANCH;
         if (_service_data_and_cbs->minor_ != ANY_MINOR) {
@@ -105,7 +105,7 @@ namespace vsomeip_v3 {
         }
         request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << _service_data_and_cbs->service_;
         request << ".";
-        request << PARENTDOMAIN;
-        dns_resolver_->resolve(request.str().c_str(), C_IN, T_SVCB, svcb_resolve_callback, _service_data_and_cbs);
+        request << SERVICE_PARENTDOMAIN;
+        dns_resolver_->resolve(request.str().c_str(), C_IN, T_SVCB, service_svcb_resolve_callback, _service_data_and_cbs);
     }
 } /* end namespace vsomeip_v3 */

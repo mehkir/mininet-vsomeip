@@ -48,7 +48,7 @@ namespace vsomeip_v3 {
         delete[] copy;
     }
 
-    void tlsa_resolver::request_tlsa_record(void* _service_data, std::string _tlsa_request) {
+    void tlsa_resolver::request_service_tlsa_record(void* _service_data, std::string _tlsa_request) {
         dns_resolver_->resolve(_tlsa_request.c_str(), C_IN, T_TLSA, tlsa_resolve_callback, _service_data);
     }
 } /* end namespace vsomeip_v3 */
