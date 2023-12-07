@@ -31,7 +31,7 @@
 #include "../../dnssec/include/dns_resolver.hpp"
 #include "../../dnssec/include/svcb_resolver.hpp"
 #include "../../dnssec/include/tlsa_resolver.hpp"
-#include "../../service_authentication/include/challenge_response_cache.hpp"
+#include "../../service_authentication/include/challenge_nonce_cache.hpp"
 #include "../../service_authentication/include/svcb_cache.hpp"
 #include "../../service_discovery/include/resume_process_offerservice_cache.hpp"
 #include "../../service_authentication/include/eventgroup_subscription_cache.hpp"
@@ -576,8 +576,7 @@ private:
     std::shared_ptr<svcb_resolver> svcb_resolver_;
     std::shared_ptr<tlsa_resolver> tlsa_resolver_;
     svcb_cache* svcb_cache_;
-    std::shared_ptr<challenge_response_cache> request_cache_;
-    std::shared_ptr<challenge_response_cache> offer_cache_;
+    std::shared_ptr<challenge_nonce_cache> challenge_nonce_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
     eventgroup_subscription_cache* eventgroup_subscription_cache_;
     eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;

@@ -480,8 +480,7 @@ public:
     void set_dns_resolver(dns_resolver* _dns_resolver);
     void set_svcb_resolver(std::shared_ptr<svcb_resolver> _svcb_resolver);
     void set_tlsa_resolver(std::shared_ptr<tlsa_resolver> _tlsa_resolver);
-    void set_request_cache(std::shared_ptr<challenge_response_cache> _request_cache);
-    void set_offer_cache(std::shared_ptr<challenge_response_cache> _offer_cache);
+    void set_challenge_nonce_cache(std::shared_ptr<challenge_nonce_cache> _challenge_nonce_cache);
     void set_svcb_cache(svcb_cache* _svcb_cache);
     void set_timestamp_collector(timestamp_collector* _timestamp_collector);
     void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache);
@@ -506,8 +505,7 @@ private:
     dns_resolver* dns_resolver_;
     std::shared_ptr<svcb_resolver> svcb_resolver_;
     std::shared_ptr<tlsa_resolver> tlsa_resolver_;
-    std::shared_ptr<challenge_response_cache> request_cache_;
-    std::shared_ptr<challenge_response_cache> offer_cache_;
+    std::shared_ptr<challenge_nonce_cache> challenge_nonce_cache_;
     svcb_cache* svcb_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
     eventgroup_subscription_cache* eventgroup_subscription_cache_;

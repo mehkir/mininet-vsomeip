@@ -90,8 +90,7 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         svcb_resolver_(std::make_shared<svcb_resolver>()),
         tlsa_resolver_(std::make_shared<tlsa_resolver>()),
         svcb_cache_(svcb_cache::get_instance()),
-        request_cache_(std::make_shared<challenge_response_cache>()),
-        offer_cache_(std::make_shared<challenge_response_cache>()),
+        challenge_nonce_cache_(std::make_shared<challenge_nonce_cache>()),
         resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance()),
         eventgroup_subscription_cache_(eventgroup_subscription_cache::get_instance()),
         eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance())
@@ -186,8 +185,7 @@ void routing_manager_impl::init() {
             discovery_->set_dns_resolver(dns_resolver_);
             discovery_->set_svcb_resolver(svcb_resolver_);
             discovery_->set_tlsa_resolver(tlsa_resolver_);
-            discovery_->set_request_cache(request_cache_);
-            discovery_->set_offer_cache(offer_cache_);
+            discovery_->set_challenge_nonce_cache(challenge_nonce_cache_);
             discovery_->set_svcb_cache(svcb_cache_);
             discovery_->set_resume_process_offerservice_cache(resume_process_offerservice_cache_);
             discovery_->set_eventgroup_subscription_cache(eventgroup_subscription_cache_);
@@ -614,7 +612,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
                                             std::placeholders::_4);
-    service_data_and_cbs_->request_cache_callback_ = std::bind(&challenge_response_cache::add_certificate, request_cache_,
+    service_data_and_cbs_->add_publisher_certificate_callback_ = std::bind(&challenge_nonce_cache::add_publisher_certificate, challenge_nonce_cache_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,

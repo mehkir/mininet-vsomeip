@@ -1028,15 +1028,15 @@ service_discovery_impl::create_eventgroup_entry(
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
         // Generate challenge nonce for publisher and add to configuration option
         CryptoPP::SecByteBlock generated_nonce = crypto_operator_->get_random_byte_block();
-        request_cache_->add_nonce(its_address.to_v4(), _service, _instance, std::vector<unsigned char>(generated_nonce.begin(), generated_nonce.end()));
+        challenge_nonce_cache_->add_subscriber_challenge_nonce(its_address.to_v4(), _service, _instance, std::vector<unsigned char>(generated_nonce.begin(), generated_nonce.end()));
         std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
         data_partitioner().partition_data(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, generated_nonce_vector);
         // Signing nonce from publisher and add signature
-        std::vector<unsigned char> signed_nonce_vector = offer_cache_->get_nonce(its_address.to_v4(), _service, _instance);
+        std::vector<unsigned char> signed_nonce_vector = challenge_nonce_cache_->get_publisher_challenge_nonce(configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME))), its_address.to_v4(), _service, _instance);
         if (signed_nonce_vector.empty()) {
             throw std::runtime_error("Nonce is empty!");
         }
-        data_partitioner().partition_data(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(signed_nonce_vector.begin(), signed_nonce_vector.end()));
+        data_partitioner().partition_data(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce_vector);
         std::vector<CryptoPP::byte> signed_nonce;
         signed_nonce.insert(signed_nonce.end(), signed_nonce_vector.begin(), signed_nonce_vector.end());
         std::vector<CryptoPP::byte> nonce_signature = crypto_operator_->sign(private_key_, signed_nonce);
@@ -1152,18 +1152,18 @@ service_discovery_impl::insert_subscription_ack(
     // Service Authentication Start ######################################################################################
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
     // Signing nonce from subscriber and add signature
-    std::vector<unsigned char> nonce_to_be_signed = request_cache_->get_nonce(_target->get_address().to_v4(), its_service, its_instance);
-    if (nonce_to_be_signed.empty()) {
+    std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(_target->get_address().to_v4(), its_service, its_instance);
+    if (signed_nonce.empty()) {
         throw std::runtime_error("Nonce is empty!");
     }
-    data_partitioner().partition_data(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(nonce_to_be_signed.begin(), nonce_to_be_signed.end()));
+    data_partitioner().partition_data(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce);
     std::vector<CryptoPP::byte> nonce_data;
-    nonce_data.insert(nonce_data.end(), nonce_to_be_signed.begin(), nonce_to_be_signed.end());
+    nonce_data.insert(nonce_data.end(), signed_nonce.begin(), signed_nonce.end());
     std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
     data_partitioner().partition_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
     its_data.options_.push_back(configuration_option);
     VSOMEIP_DEBUG << "Signed nonce (SUBSCRIBE_ACK_SENDING)" << "(" << _target->get_address().to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl
-    << "Signed nonce" << std::hex << std::string(nonce_to_be_signed.begin(), nonce_to_be_signed.end()) << std::endl
+    << "Signed nonce" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << std::endl
     << "Nonce signature" << std::hex << std::string(signature.begin(), signature.end());
     // Service Authentication End ########################################################################################
 
@@ -1500,7 +1500,7 @@ service_discovery_impl::process_serviceentry(
     } else {
         its_address = its_reliable_address;
     }
-    offer_cache_->add_nonce(its_address.to_v4(), its_service, its_instance, nonce);
+    challenge_nonce_cache_->add_publisher_challenge_nonce(configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME))), its_address.to_v4(), its_service, its_instance, nonce);
     VSOMEIP_DEBUG << "Received Nonce from Publisher (OFFER_ARRIVED)"
     << "(" << its_address.to_v4().to_string() << "," << its_service << "," << its_instance << ") "
     << std::hex << std::string(nonce.begin(), nonce.end());
@@ -1560,13 +1560,8 @@ service_discovery_impl::set_tlsa_resolver(std::shared_ptr<tlsa_resolver> _tlsa_r
 }
 
 void
-service_discovery_impl::set_request_cache(std::shared_ptr<challenge_response_cache> _request_cache) {
-    this->request_cache_ = _request_cache;
-}
-
-void
-service_discovery_impl::set_offer_cache(std::shared_ptr<challenge_response_cache> _offer_cache) {
-    this->offer_cache_ = _offer_cache;
+service_discovery_impl::set_challenge_nonce_cache(std::shared_ptr<challenge_nonce_cache> _challenge_nonce_cache) {
+    this->challenge_nonce_cache_ = _challenge_nonce_cache;
 }
 
 void
@@ -2043,7 +2038,7 @@ service_discovery_impl::insert_offer_service(
         std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
         data_partitioner().partition_data(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, generated_nonce_vector);
         its_data.options_.push_back(configuration_option);
-        offer_cache_->set_offered_nonce(_info->get_service(), _info->get_instance(), generated_nonce_vector);
+        challenge_nonce_cache_->set_offered_nonce(_info->get_service(), _info->get_instance(), generated_nonce_vector);
         // Service Authentication End ##################################
 
         add_entry_data(_messages, its_data);
@@ -2477,7 +2472,7 @@ service_discovery_impl::process_eventgroupentry(
                     signed_nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     nonce_signature = data_partitioner().reassemble_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
                     std::vector<unsigned char> client_id = data_partitioner().reassemble_data(CLIENT_ID_CONFIG_OPTION_KEY, its_configuration_option);
-                    request_cache_->add_nonce(_sender.to_v4(), its_service, its_instance, generated_nonce);
+                    challenge_nonce_cache_->add_subscriber_challenge_nonce(_sender.to_v4(), its_service, its_instance, generated_nonce);
                     VSOMEIP_DEBUG << "Received Nonce from Subscriber (SUBSCRIBE_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl
                     << "Generated nonce=" << std::hex << std::string(generated_nonce.begin(), generated_nonce.end()) << std::endl
@@ -2623,7 +2618,7 @@ service_discovery_impl::verify_publisher_signature(boost::asio::ip::address_v4 _
     bool requirements_are_fulfilled = false;
     bool service_authenticated = false;
     // Check if the certificate has already been received
-    std::vector<byte_t> certificate_data = request_cache_->get_certificate(_sender_ip_address, _service, _instance);
+    std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_publisher_certificate(_sender_ip_address, _service, _instance);
     requirements_are_fulfilled = !certificate_data.empty();
     // Check if there is already a subscription ack entry
     eventgroup_subscription_ack_cache_entry _eventgroup_subscription_ack_cache_entry = eventgroup_subscription_ack_cache_->get_eventgroup_subscription_ack_cache_entry(_sender_ip_address, _service, _instance);
@@ -2634,7 +2629,7 @@ service_discovery_impl::verify_publisher_signature(boost::asio::ip::address_v4 _
     // Check if nonce is valid
     std::vector<unsigned char> nonce = _eventgroup_subscription_ack_cache_entry.nonce_;
     std::vector<byte_t> signature = _eventgroup_subscription_ack_cache_entry.signature_;
-    if (requirements_are_fulfilled && request_cache_->has_nonce_and_remove(_sender_ip_address, _service, _instance, nonce)) {
+    if (requirements_are_fulfilled && challenge_nonce_cache_->has_subscriber_challenge_nonce_and_remove(_sender_ip_address, _service, _instance, nonce)) {
         CryptoPP::RSA::PublicKey public_key;
         // Verify service authenticity
         if (crypto_operator_->extract_public_key_from_certificate(certificate_data, public_key)
