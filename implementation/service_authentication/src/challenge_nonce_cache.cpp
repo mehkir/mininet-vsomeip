@@ -77,7 +77,7 @@ namespace vsomeip_v3 {
     std::vector<unsigned char> challenge_nonce_cache::get_publisher_challenge_nonce(client_t _client, boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance) {
         std::lock_guard<std::mutex> guard(mutex_);
         auto key_tuple = make_key_tuple(_client, _ipv4_address, _service, _instance);
-        publisher_challenge_nonce_map_[key_tuple].nonce_;
+        return publisher_challenge_nonce_map_[key_tuple].nonce_;
     }
 
     std::vector<unsigned char> challenge_nonce_cache::get_subscriber_certificate(client_t _client, boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance) {
