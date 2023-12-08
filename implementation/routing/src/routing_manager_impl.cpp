@@ -598,7 +598,6 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     service_data_and_cbs_->instance_ = _instance;
     service_data_and_cbs_->major_ = _major;
     service_data_and_cbs_->minor_ = _minor;
-    service_data_and_cbs_->ipv4_address_ = configuration_->get_unicast_address().to_v4();
     service_data_and_cbs_->add_service_svcb_entry_cache_callback_ = std::bind(&svcb_cache::add_service_svcb_cache_entry, svcb_cache_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
