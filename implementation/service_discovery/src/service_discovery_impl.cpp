@@ -2487,41 +2487,36 @@ service_discovery_impl::process_eventgroupentry(
                     << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end()) << std::endl
                     << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end());
                     // Request client svcb record
-                    // client_data_and_cbs* client_data_and_cbs_ = new client_data_and_cbs();
-                    // client_data_and_cbs_->service_ = its_service;
-                    // client_data_and_cbs_->instance_ = its_instance;
-                    // client_data_and_cbs_->major_ = its_major;
-                    // client_data_and_cbs_->ipv4_address_ = configuration_->get_unicast_address().to_v4();
-                    // client_data_and_cbs_->add_client_svcb_entry_cache_callback_ = std::bind(&svcb_cache::add_client_svcb_cache_entry, svcb_cache_,
-                    //                                         std::placeholders::_1,
-                    //                                         std::placeholders::_2,
-                    //                                         std::placeholders::_3,
-                    //                                         std::placeholders::_4,
-                    //                                         std::placeholders::_5,
-                    //                                         std::placeholders::_6,
-                    //                                         std::placeholders::_7);
-                    // client_data_and_cbs_->verify_client_info_callback_ = std::bind(&sd::service_discovery::verify_service_info, this,
-                    //                                         std::placeholders::_1,
-                    //                                         std::placeholders::_2,
-                    //                                         std::placeholders::_3,
-                    //                                         std::placeholders::_4);
-                    // client_data_and_cbs_->request_cache_callback_ = std::bind(&challenge_response_cache::add_certificate, request_cache_,
-                    //                                         std::placeholders::_1,
-                    //                                         std::placeholders::_2,
-                    //                                         std::placeholders::_3,
-                    //                                         std::placeholders::_4);
-                    // client_data_and_cbs_->request_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_tlsa_record, tlsa_resolver_,
-                    //                                         std::placeholders::_1,
-                    //                                         std::placeholders::_2);
-                    // client_data_and_cbs_->verify_publisher_signature_callback_ = std::bind(&sd::service_discovery::verify_publisher_signature, discovery_,
-                    //                                         std::placeholders::_1,
-                    //                                         std::placeholders::_2,
-                    //                                         std::placeholders::_3);
-                    // client_data_and_cbs_->record_timestamp_callback_ = std::bind(&timestamp_collector::record_timestamp, timestamp_collector_,
-                    //                                         std::placeholders::_1);
-                    // client_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, crypto_operator::get_instance(),
-                    //                                         std::placeholders::_1);
-                    // svcb_resolver_.request_svcb_record(client_data_and_cbs_);
+                    client_data_and_cbs* client_data_and_cbs_ = new client_data_and_cbs();
+                    client_data_and_cbs_->client_ = client;
+                    client_data_and_cbs_->service_ = its_service;
+                    client_data_and_cbs_->instance_ = its_instance;
+                    client_data_and_cbs_->major_ = its_major;
+                    client_data_and_cbs_->add_client_svcb_entry_cache_callback_ = std::bind(&svcb_cache::add_client_svcb_cache_entry, svcb_cache_,
+                                                            std::placeholders::_1,
+                                                            std::placeholders::_2,
+                                                            std::placeholders::_3,
+                                                            std::placeholders::_4,
+                                                            std::placeholders::_5,
+                                                            std::placeholders::_6,
+                                                            std::placeholders::_7);
+                    client_data_and_cbs_->request_client_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_client_tlsa_record, tlsa_resolver_,
+                                                            std::placeholders::_1);
+                    client_data_and_cbs_->add_subscriber_certificate_callback_ = std::bind(&challenge_nonce_cache::add_subscriber_certificate, challenge_nonce_cache_,
+                                                            std::placeholders::_1,
+                                                            std::placeholders::_2,
+                                                            std::placeholders::_3,
+                                                            std::placeholders::_4,
+                                                            std::placeholders::_5);
+                    client_data_and_cbs_->verify_client_info_and_signature_callback_ = std::bind(&sd::service_discovery_impl::verify_client_info_and_signature, this,
+                                                            std::placeholders::_1,
+                                                            std::placeholders::_2,
+                                                            std::placeholders::_3,
+                                                            std::placeholders::_4,
+                                                            std::placeholders::_5);
+                    client_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, crypto_operator::get_instance(),
+                                                            std::placeholders::_1);
+                    svcb_resolver_.request_client_svcb_record(client_data_and_cbs_);
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
                     signed_nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     nonce_signature = data_partitioner().reassemble_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
@@ -2582,6 +2577,16 @@ service_discovery_impl::process_eventgroupentry(
 
 void
 service_discovery_impl::verify_client_info_and_signature(client_t _client, boost::asio::ip::address_v4 _subscriber_ip_address, service_t _service, instance_t _instance, major_version_t _major) {
+    bool requirements_are_fulfilled = false;
+    bool service_authenticated = false;
+    std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_subscriber_certificate(_client, _subscriber_ip_address, _service, _instance);
+    requirements_are_fulfilled = !certificate_data.empty();
+
+    if (!requirements_are_fulfilled) {
+        VSOMEIP_DEBUG << "REQUIREMENTS ARE NOT FULFILLED";
+        return;
+    }
+    VSOMEIP_DEBUG << "REQUIREMENTS ARE FULFILLED";
     eventgroup_subscription_cache_entry _eventgroup_subscription_cache_entry = eventgroup_subscription_cache_->get_eventgroup_subscription_cache_entry(_client, _service, _instance, _major);
     service_t its_service = _eventgroup_subscription_cache_entry.service_;
     instance_t its_instance = _eventgroup_subscription_cache_entry.instance_;
@@ -2604,8 +2609,6 @@ service_discovery_impl::verify_client_info_and_signature(client_t _client, boost
     _sd_ac_state.sd_acceptance_required_ = _eventgroup_subscription_cache_entry.sd_acceptance_required_;
     _sd_ac_state.accept_entries_ = _eventgroup_subscription_cache_entry.accept_entries_;
     std::shared_ptr<vsomeip_v3::eventgroupinfo> its_info = _eventgroup_subscription_cache_entry.info_;
-
-    std::cout << _subscriber_ip_address.to_string() << std::endl;
 
     handle_eventgroup_subscription(its_service, its_instance,
         its_eventgroup, its_major, its_ttl, its_counter, its_reserved,
@@ -2631,16 +2634,17 @@ service_discovery_impl::verify_publisher_signature(boost::asio::ip::address_v4 _
     // Check if nonce is valid
     std::vector<unsigned char> nonce = _eventgroup_subscription_ack_cache_entry.nonce_;
     std::vector<byte_t> signature = _eventgroup_subscription_ack_cache_entry.signature_;
-    if (requirements_are_fulfilled && challenge_nonce_cache_->has_subscriber_challenge_nonce_and_remove(_sender_ip_address, _service, _instance, nonce)) {
-        CryptoPP::RSA::PublicKey public_key;
-        // Verify service authenticity
-        if (crypto_operator_->extract_public_key_from_certificate(certificate_data, public_key)
-            && !_eventgroup_subscription_ack_cache_entry.signature_.empty()) {
-            std::vector<byte_t> data_to_be_verified;
-            data_to_be_verified.insert(data_to_be_verified.end(), nonce.begin(), nonce.end());
-            data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
-            service_authenticated = crypto_operator_->verify(public_key, data_to_be_verified);
-        }
+    if (!(requirements_are_fulfilled && challenge_nonce_cache_->has_subscriber_challenge_nonce_and_remove(_sender_ip_address, _service, _instance, nonce))) {
+        return;
+    }
+    CryptoPP::RSA::PublicKey public_key;
+    // Verify service authenticity
+    if (crypto_operator_->extract_public_key_from_certificate(certificate_data, public_key)
+        && !_eventgroup_subscription_ack_cache_entry.signature_.empty()) {
+        std::vector<byte_t> data_to_be_verified;
+        data_to_be_verified.insert(data_to_be_verified.end(), nonce.begin(), nonce.end());
+        data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
+        service_authenticated = crypto_operator_->verify(public_key, data_to_be_verified);
     }
     if (service_authenticated) {
         handle_eventgroup_subscription_ack(_service, 
