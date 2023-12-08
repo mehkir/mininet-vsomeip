@@ -13,17 +13,19 @@ namespace vsomeip_v3 {
     tlsa_resolver::~tlsa_resolver() {
     }
 
-    void tlsa_resolve_callback(void* _data, int _status, int _timeouts,
+    void service_tlsa_resolve_callback(void* _data, int _status, int _timeouts,
                 unsigned char* _abuf, int _alen) {
         service_data_and_cbs* servicedata_and_cbs = reinterpret_cast<service_data_and_cbs*>(_data);
         
         if (_status) {
             std::cerr << __func__ << " Bad DNS response" << std::endl;
+            delete servicedata_and_cbs;
             return;
         }
 
         if (_timeouts) {
             std::cerr << __func__ << " DNS request timeout" << std::endl;
+            delete servicedata_and_cbs;
             return;
         }
 
@@ -31,7 +33,9 @@ namespace vsomeip_v3 {
         memcpy(copy, _abuf, _alen);
         tlsa_reply* tlsareply;
         if ((parse_tlsa_reply(copy, _alen, &tlsareply)) != ARES_SUCCESS) {
-            std::cerr << "Parsing TLSA reply failed" << std::endl;
+            std::cerr << "Parsing service TLSA reply failed" << std::endl;
+            delete servicedata_and_cbs;
+            delete[] copy;
             delete_tlsa_reply(tlsareply);
             return;
         }
@@ -42,13 +46,78 @@ namespace vsomeip_v3 {
             servicedata_and_cbs->verify_publisher_signature_callback_(servicedata_and_cbs->ipv4_address_, servicedata_and_cbs->service_, servicedata_and_cbs->instance_);
             tlsa_reply_ptr = tlsa_reply_ptr->tlsa_reply_next_;
         }
-        delete_tlsa_reply(tlsareply);
-        
         delete servicedata_and_cbs;
         delete[] copy;
+        delete_tlsa_reply(tlsareply);
     }
 
-    void tlsa_resolver::request_service_tlsa_record(void* _service_data, std::string _tlsa_request) {
-        dns_resolver_->resolve(_tlsa_request.c_str(), C_IN, T_TLSA, tlsa_resolve_callback, _service_data);
+    void client_tlsa_resolve_callback(void* _data, int _status, int _timeouts,
+                unsigned char* _abuf, int _alen) {
+        client_data_and_cbs* clientdata_and_cbs = reinterpret_cast<client_data_and_cbs*>(_data);
+        
+        if (_status) {
+            std::cerr << __func__ << " Bad DNS response" << std::endl;
+            delete clientdata_and_cbs;
+            return;
+        }
+
+        if (_timeouts) {
+            std::cerr << __func__ << " DNS request timeout" << std::endl;
+            delete clientdata_and_cbs;
+            return;
+        }
+
+        unsigned char* copy = new unsigned char[_alen];
+        memcpy(copy, _abuf, _alen);
+        tlsa_reply* tlsareply;
+        if ((parse_tlsa_reply(copy, _alen, &tlsareply)) != ARES_SUCCESS) {
+            std::cerr << "Parsing client TLSA reply failed" << std::endl;
+            delete clientdata_and_cbs;
+            delete[] copy;
+            delete_tlsa_reply(tlsareply);
+            return;
+        }
+
+        tlsa_reply* tlsa_reply_ptr = tlsareply;
+        while (tlsa_reply_ptr != nullptr) {
+            clientdata_and_cbs->add_subscriber_certificate_callback_(clientdata_and_cbs->client_, clientdata_and_cbs->ipv4_address_, clientdata_and_cbs->service_, clientdata_and_cbs->instance_, clientdata_and_cbs->convert_der_to_pem_callback_(tlsa_reply_ptr->certificate_association_data_));
+            clientdata_and_cbs->verify_client_info_and_signature_callback_(clientdata_and_cbs->client_, clientdata_and_cbs->ipv4_address_, clientdata_and_cbs->service_, clientdata_and_cbs->instance_, clientdata_and_cbs->major_);
+            tlsa_reply_ptr = tlsa_reply_ptr->tlsa_reply_next_;
+        }
+        delete clientdata_and_cbs;
+        delete[] copy;
+        delete_tlsa_reply(tlsareply);
+    }
+
+    void tlsa_resolver::request_service_tlsa_record(void* _service_data) {
+        service_data_and_cbs* servicedata_and_cbs = reinterpret_cast<service_data_and_cbs*>(_service_data);
+        std::stringstream request;
+        request << ATTRLEAFBRANCH;
+        request << "minor0x" << std::hex << std::setw(8) << std::setfill('0') << servicedata_and_cbs->minor_;
+        request << ".";
+        request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << servicedata_and_cbs->major_;
+        request << ".";
+        request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << servicedata_and_cbs->instance_;
+        request << ".";
+        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << servicedata_and_cbs->service_;
+        request << ".";
+        request << SERVICE_PARENTDOMAIN;
+        dns_resolver_->resolve(request.str().c_str(), C_IN, T_TLSA, service_tlsa_resolve_callback, _service_data);
+    }
+
+    void tlsa_resolver::request_client_tlsa_record(void* _client_data) {
+        client_data_and_cbs* clientdata_and_cbs = reinterpret_cast<client_data_and_cbs*>(_client_data);
+        std::stringstream request;
+        request << ATTRLEAFBRANCH;
+        request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << clientdata_and_cbs->major_;
+        request << ".";
+        request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << clientdata_and_cbs->instance_;
+        request << ".";
+        request << "service0x" << std::hex << std::setw(4) << std::setfill('0') << clientdata_and_cbs->service_;
+        request << ".";
+        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << clientdata_and_cbs->client_;
+        request << ".";
+        request << CLIENT_PARENTDOMAIN;
+        dns_resolver_->resolve(request.str().c_str(), C_IN, T_TLSA, client_tlsa_resolve_callback, _client_data);
     }
 } /* end namespace vsomeip_v3 */

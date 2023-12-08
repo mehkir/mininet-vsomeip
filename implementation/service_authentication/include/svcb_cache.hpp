@@ -4,6 +4,7 @@
 #include <mutex>
 #include <map>
 #include <tuple>
+#include <set>
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/ip/address_v4.hpp>
 #include <boost/asio/ip/address_v6.hpp>
@@ -24,6 +25,7 @@ namespace vsomeip_v3 {
 
     struct client_svcb_cache_entry : public service_svcb_cache_entry {
         client_t client_;
+        std::set<port_t> ports_;
         client_svcb_cache_entry() : client_(-1) {}
     };
 
@@ -45,7 +47,7 @@ namespace vsomeip_v3 {
             svcb_cache& operator=(svcb_cache &&) = delete;
 
             void add_service_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version, int _l4protocol, const boost::asio::ip::address_v4 _ipv4_address, uint16_t _port);
-            void add_client_svcb_cache_entry(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version, int _l4protocol, const boost::asio::ip::address_v4 _ipv4_address, uint16_t _port);
+            void add_client_svcb_cache_entry(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version, int _l4protocol, const boost::asio::ip::address_v4 _ipv4_address, std::set<port_t> _ports);
             void remove_service_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
             void remove_client_svcb_cache_entry(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version);
             service_svcb_cache_entry get_service_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);

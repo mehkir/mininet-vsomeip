@@ -500,7 +500,7 @@ public:
 
 private:
     // Additional Method for Service Authenticity
-    void verify_client_info(client_t _client, service_t _service, instance_t _instance, major_version_t _major);
+    void verify_client_info_and_signature(client_t _client, boost::asio::ip::address_v4 _subscriber_ip_address, service_t _service, instance_t _instance, major_version_t _major);
     // Addtional Member for Service Authenticity
     dns_resolver* dns_resolver_;
     std::shared_ptr<svcb_resolver> svcb_resolver_;

@@ -2562,13 +2562,7 @@ service_discovery_impl::process_eventgroupentry(
             its_second_address.to_v4(), its_second_port, is_second_reliable,
             _acknowledgement, _is_stop_subscribe_subscribe,
             _force_initial_events, its_clients, _sd_ac_state.expired_ports_, _sd_ac_state.sd_acceptance_required_, _sd_ac_state.accept_entries_, its_info, signed_nonce, nonce_signature);
-        verify_client_info(client, its_service, its_instance, its_major);
-        // handle_eventgroup_subscription(its_service, its_instance,
-        //         its_eventgroup, its_major, its_ttl, 0, 0,
-        //         its_first_address, its_first_port, is_first_reliable,
-        //         its_second_address, its_second_port, is_second_reliable,
-        //         _acknowledgement, _is_stop_subscribe_subscribe,
-        //         _force_initial_events, its_clients, _sd_ac_state, its_info);
+        verify_client_info_and_signature(client, _sender.to_v4(), its_service, its_instance, its_major);
     } else {
         if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type) { //this type is used for ACK and NACK messages
             if (its_ttl > 0) {
@@ -2583,7 +2577,7 @@ service_discovery_impl::process_eventgroupentry(
 }
 
 void
-service_discovery_impl::verify_client_info(client_t _client, service_t _service, instance_t _instance, major_version_t _major) {
+service_discovery_impl::verify_client_info_and_signature(client_t _client, boost::asio::ip::address_v4 _subscriber_ip_address, service_t _service, instance_t _instance, major_version_t _major) {
     eventgroup_subscription_cache_entry _eventgroup_subscription_cache_entry = eventgroup_subscription_cache_->get_eventgroup_subscription_cache_entry(_client, _service, _instance, _major);
     service_t its_service = _eventgroup_subscription_cache_entry.service_;
     instance_t its_instance = _eventgroup_subscription_cache_entry.instance_;
