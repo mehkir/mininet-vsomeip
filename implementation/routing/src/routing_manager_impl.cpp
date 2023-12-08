@@ -618,8 +618,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_3,
                                             std::placeholders::_4);
     service_data_and_cbs_->request_service_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_service_tlsa_record, tlsa_resolver_,
-                                            std::placeholders::_1,
-                                            std::placeholders::_2);
+                                            std::placeholders::_1);
     service_data_and_cbs_->verify_publisher_signature_callback_ = std::bind(&sd::service_discovery::verify_publisher_signature, discovery_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,

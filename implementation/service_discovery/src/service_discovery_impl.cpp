@@ -2601,6 +2601,8 @@ service_discovery_impl::verify_client_info_and_signature(client_t _client, boost
     _sd_ac_state.accept_entries_ = _eventgroup_subscription_cache_entry.accept_entries_;
     std::shared_ptr<vsomeip_v3::eventgroupinfo> its_info = _eventgroup_subscription_cache_entry.info_;
 
+    std::cout << _subscriber_ip_address.to_string() << std::endl;
+
     handle_eventgroup_subscription(its_service, its_instance,
         its_eventgroup, its_major, its_ttl, its_counter, its_reserved,
         its_first_address, its_first_port, is_first_reliable,
