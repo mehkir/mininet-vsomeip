@@ -2516,7 +2516,7 @@ service_discovery_impl::process_eventgroupentry(
                                                             std::placeholders::_5);
                     client_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, crypto_operator::get_instance(),
                                                             std::placeholders::_1);
-                    svcb_resolver_.request_client_svcb_record(client_data_and_cbs_);
+                    svcb_resolver_->request_client_svcb_record(client_data_and_cbs_);
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
                     signed_nonce = data_partitioner().reassemble_data(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     nonce_signature = data_partitioner().reassemble_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
