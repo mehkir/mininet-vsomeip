@@ -1155,6 +1155,7 @@ service_discovery_impl::insert_subscription_ack(
     boost::asio::ip::address_v4 subscriber_address = _target->get_address().to_v4();
     // Signing nonce from subscriber and add signature
     std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(subscriber_address, its_service, its_instance);
+    VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << subscriber_address.to_string() << std::endl;
     if (signed_nonce.empty()) {
         throw std::runtime_error("Nonce is empty!");
     }
