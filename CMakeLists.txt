@@ -334,6 +334,7 @@ endif()
 file(GLOB ${VSOMEIP_NAME}-sd_SRC
     "implementation/service_discovery/src/*.cpp"
     "implementation/service_authentication/src/*.cpp"
+    "implementation/dnssec/src/*.cpp"
     "implementation/timestamps/src/*.cpp"
 )
 list(SORT ${VSOMEIP_NAME}-sd_SRC)
