@@ -1029,6 +1029,7 @@ service_discovery_impl::create_eventgroup_entry(
         // Generate challenge nonce for publisher and add to configuration option
         CryptoPP::SecByteBlock generated_nonce = crypto_operator_->get_random_byte_block();
         challenge_nonce_cache_->add_subscriber_challenge_nonce(publisher_address.to_v4(), _service, _instance, std::vector<unsigned char>(generated_nonce.begin(), generated_nonce.end()));
+        VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string() << std::endl;
         std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
         data_partitioner().partition_data(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, generated_nonce_vector);
         // Signing nonce from publisher and add signature
@@ -1411,7 +1412,7 @@ service_discovery_impl::process_serviceentry(
         const sd_acceptance_state_t& _sd_ac_state) {
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry (MEHMET MUELLER DEBUG) <<<<<";
     // Addition for service authenticity
-    std::vector<unsigned char> nonce;
+    std::vector<unsigned char> generated_nonce;
     // Read service info from entry
     entry_type_e its_type = _entry->get_type();
     service_t its_service = _entry->get_service();
@@ -1480,7 +1481,7 @@ service_discovery_impl::process_serviceentry(
                 case option_type_e::CONFIGURATION: {
                         VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry CONFIGURATION (MEHMET MUELLER DEBUG) <<<<<";
                         std::shared_ptr < configuration_option_impl > its_configuration_option = std::dynamic_pointer_cast < configuration_option_impl > (its_option);
-                        nonce = data_partitioner().reassemble_data(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
+                        generated_nonce = data_partitioner().reassemble_data(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     }
                     break;
                 case option_type_e::UNKNOWN:
@@ -1501,10 +1502,11 @@ service_discovery_impl::process_serviceentry(
     } else {
         publisher_address = its_reliable_address;
     }
-    challenge_nonce_cache_->add_publisher_challenge_nonce(configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME))), publisher_address.to_v4(), its_service, its_instance, nonce);
+    challenge_nonce_cache_->add_publisher_challenge_nonce(configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME))), publisher_address.to_v4(), its_service, its_instance, generated_nonce);
+    VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string() << std::endl;
     VSOMEIP_DEBUG << "Received Nonce from Publisher (OFFER_ARRIVED)"
     << "(" << publisher_address.to_v4().to_string() << "," << its_service << "," << its_instance << ") "
-    << std::hex << std::string(nonce.begin(), nonce.end());
+    << std::hex << std::string(generated_nonce.begin(), generated_nonce.end());
     // Service Authentication End ############################################################################
 
     if (0 < its_ttl) {
@@ -2476,6 +2478,7 @@ service_discovery_impl::process_eventgroupentry(
                     client = (client_t) std::stoi(std::string(client_id.begin(), client_id.end()));
                     challenge_nonce_cache_->add_subscriber_challenge_nonce(_sender.to_v4(), its_service, its_instance, generated_nonce);
                     challenge_nonce_cache_->add_publisher_challenge_nonce(client, _sender.to_v4(), its_service, its_instance, signed_nonce);
+                    VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << _sender.to_v4().to_string() << std::endl;
                     VSOMEIP_DEBUG << "Received Nonce from Subscriber (SUBSCRIBE_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl
                     << "Generated nonce=" << std::hex << std::string(generated_nonce.begin(), generated_nonce.end()) << std::endl
