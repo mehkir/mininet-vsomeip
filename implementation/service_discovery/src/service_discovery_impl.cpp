@@ -2578,7 +2578,7 @@ service_discovery_impl::process_eventgroupentry(
 void
 service_discovery_impl::verify_client_info_and_signature(client_t _client, boost::asio::ip::address_v4 _subscriber_ip_address, service_t _service, instance_t _instance, major_version_t _major) {
     bool requirements_are_fulfilled = false;
-    bool service_authenticated = false;
+    //bool service_authenticated = false;
     std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_subscriber_certificate(_client, _subscriber_ip_address, _service, _instance);
     requirements_are_fulfilled = !certificate_data.empty();
 
