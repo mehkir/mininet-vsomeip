@@ -148,18 +148,18 @@ namespace vsomeip_v3 {
         std::stringstream request;
         request << ATTRLEAFBRANCH;
         if (_service_data_and_cbs->minor_ != ANY_MINOR) {
-            request << "minor0x" << std::hex << std::setw(8) << std::setfill('0') << _service_data_and_cbs->minor_;
+            request << "minor0x" << std::hex << std::setw(8) << std::setfill('0') << (int) _service_data_and_cbs->minor_;
             request << ".";
         }
         if (_service_data_and_cbs->major_ != ANY_MAJOR) {
-            request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << _service_data_and_cbs->major_;
+            request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << (int) _service_data_and_cbs->major_;
             request << ".";
         }
         if (_service_data_and_cbs->instance_ != ANY_INSTANCE) {
-            request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << _service_data_and_cbs->instance_;
+            request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << (int) _service_data_and_cbs->instance_;
             request << ".";
         }
-        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << _service_data_and_cbs->service_;
+        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << (int) _service_data_and_cbs->service_;
         request << ".";
         request << SERVICE_PARENTDOMAIN;
         dns_resolver_->resolve(request.str().c_str(), C_IN, T_SVCB, service_svcb_resolve_callback, _service_data_and_cbs);
@@ -169,16 +169,16 @@ namespace vsomeip_v3 {
         std::stringstream request;
         request << ATTRLEAFBRANCH;
         if (_client_data_and_cbs->major_ != ANY_MAJOR) {
-            request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << _client_data_and_cbs->major_;
+            request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << (int) _client_data_and_cbs->major_;
             request << ".";
         }
         if (_client_data_and_cbs->instance_ != ANY_INSTANCE) {
-            request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << _client_data_and_cbs->instance_;
+            request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << (int) _client_data_and_cbs->instance_;
             request << ".";
         }
-        request << "service0x" << std::hex << std::setw(4) << std::setfill('0') << _client_data_and_cbs->service_;
+        request << "service0x" << std::hex << std::setw(4) << std::setfill('0') << (int) _client_data_and_cbs->service_;
         request << ".";
-        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << _client_data_and_cbs->client_;
+        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << (int) _client_data_and_cbs->client_;
         request << ".";
         request << CLIENT_PARENTDOMAIN;
         dns_resolver_->resolve(request.str().c_str(), C_IN, T_SVCB, client_svcb_resolve_callback, _client_data_and_cbs);

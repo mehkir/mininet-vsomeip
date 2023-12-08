@@ -93,15 +93,16 @@ namespace vsomeip_v3 {
         service_data_and_cbs* servicedata_and_cbs = reinterpret_cast<service_data_and_cbs*>(_service_data);
         std::stringstream request;
         request << ATTRLEAFBRANCH;
-        request << "minor0x" << std::hex << std::setw(8) << std::setfill('0') << servicedata_and_cbs->minor_;
+        request << "minor0x" << std::hex << std::setw(8) << std::setfill('0') << (int) servicedata_and_cbs->minor_;
         request << ".";
-        request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << servicedata_and_cbs->major_;
+        request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << (int) servicedata_and_cbs->major_;
         request << ".";
-        request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << servicedata_and_cbs->instance_;
+        request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << (int) servicedata_and_cbs->instance_;
         request << ".";
-        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << servicedata_and_cbs->service_;
+        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << (int) servicedata_and_cbs->service_;
         request << ".";
         request << SERVICE_PARENTDOMAIN;
+        std::cout << "SERVICE TLSA QUERY NAME=" << request.str().c_str() << std::endl;
         dns_resolver_->resolve(request.str().c_str(), C_IN, T_TLSA, service_tlsa_resolve_callback, _service_data);
     }
 
@@ -109,13 +110,13 @@ namespace vsomeip_v3 {
         client_data_and_cbs* clientdata_and_cbs = reinterpret_cast<client_data_and_cbs*>(_client_data);
         std::stringstream request;
         request << ATTRLEAFBRANCH;
-        request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << clientdata_and_cbs->major_;
+        request << "major0x" << std::hex << std::setw(2) << std::setfill('0') << (int) clientdata_and_cbs->major_;
         request << ".";
-        request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << clientdata_and_cbs->instance_;
+        request << "instance0x" << std::hex << std::setw(4) << std::setfill('0') << (int) clientdata_and_cbs->instance_;
         request << ".";
-        request << "service0x" << std::hex << std::setw(4) << std::setfill('0') << clientdata_and_cbs->service_;
+        request << "service0x" << std::hex << std::setw(4) << std::setfill('0') << (int) clientdata_and_cbs->service_;
         request << ".";
-        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << clientdata_and_cbs->client_;
+        request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << (int) clientdata_and_cbs->client_;
         request << ".";
         request << CLIENT_PARENTDOMAIN;
         dns_resolver_->resolve(request.str().c_str(), C_IN, T_TLSA, client_tlsa_resolve_callback, _client_data);
