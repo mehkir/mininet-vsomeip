@@ -1043,9 +1043,7 @@ service_discovery_impl::create_eventgroup_entry(
         std::vector<CryptoPP::byte> nonce_signature = crypto_operator_->sign(private_key_, signed_nonce);
         data_partitioner().partition_data(NONCE_SIGNATURE_CONFIG_OPTION_KEY, configuration_option, nonce_signature);
         // Add client id
-        std::stringstream ss;
-        ss << std::hex << configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME)));
-        std::string client_id(ss.str());
+        std::string client_id(std::to_string(configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME)))));
         data_partitioner().partition_data(CLIENT_ID_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(client_id.begin(), client_id.end()));
         its_data.options_.push_back(configuration_option);
         VSOMEIP_DEBUG << "Generated Nonce by Subscriber" << " for Publisher Endpoint(" << publisher_address.to_v4().to_string() << "," << _service << "," << _instance << ")" << std::endl
