@@ -1738,7 +1738,9 @@ void
 service_discovery_impl::validate_offer(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) {
     resume_process_offerservice_entry resume_processofferservice_entry = resume_process_offerservice_cache_->get_offerservice_entry(_service, _instance, _major, _minor);
     service_svcb_cache_entry service_svcbcache_entry = svcb_cache_->get_service_svcb_cache_entry(_service, _instance, _major, _minor);
-    if (resume_processofferservice_entry.service_ == service_svcbcache_entry.service_
+    bool offer_verified = false;
+
+    offer_verified = resume_processofferservice_entry.service_ == service_svcbcache_entry.service_
         && resume_processofferservice_entry.instance_ == service_svcbcache_entry.instance_
         && resume_processofferservice_entry.major_ == service_svcbcache_entry.major_
         && resume_processofferservice_entry.minor_ == service_svcbcache_entry.minor_
@@ -1746,16 +1748,17 @@ service_discovery_impl::validate_offer(service_t _service, instance_t _instance,
                 && resume_processofferservice_entry.unreliable_port_ == service_svcbcache_entry.port_) 
             || (service_svcbcache_entry.l4protocol_ == IPPROTO_TCP && resume_processofferservice_entry.reliable_address_ == service_svcbcache_entry.ipv4_address_
                 && resume_processofferservice_entry.reliable_port_ == service_svcbcache_entry.port_)
-           )
-        ) {
-        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::validate_offer: Found SVCB record for service=" << _service
-        << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
-        resume_process_offerservice_serviceentry(resume_processofferservice_entry.service_, resume_processofferservice_entry.instance_, resume_processofferservice_entry.major_, resume_processofferservice_entry.minor_, resume_processofferservice_entry.ttl_, resume_processofferservice_entry.reliable_address_, resume_processofferservice_entry.reliable_port_, resume_processofferservice_entry.unreliable_address_, resume_processofferservice_entry.unreliable_port_, resume_processofferservice_entry.resubscribes_, resume_processofferservice_entry.received_via_mcast_);
-        resume_process_offerservice_cache_->remove_offerservice_entry(_service, _instance, _major, _minor);
-    } else {
+           );
+    if (!offer_verified) {
         VSOMEIP_DEBUG << ">>>>> service_discovery_impl::validate_offer: No offer or SVCB record for service=" << _service
         << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
+        return;
     }
+    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::validate_offer: Found SVCB record for service=" << _service
+    << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
+    VSOMEIP_DEBUG << "\n\nOFFER VERIFIED\n\n";
+    resume_process_offerservice_serviceentry(resume_processofferservice_entry.service_, resume_processofferservice_entry.instance_, resume_processofferservice_entry.major_, resume_processofferservice_entry.minor_, resume_processofferservice_entry.ttl_, resume_processofferservice_entry.reliable_address_, resume_processofferservice_entry.reliable_port_, resume_processofferservice_entry.unreliable_address_, resume_processofferservice_entry.unreliable_port_, resume_processofferservice_entry.resubscribes_, resume_processofferservice_entry.received_via_mcast_);
+    resume_process_offerservice_cache_->remove_offerservice_entry(_service, _instance, _major, _minor);
 }
 
 void
@@ -2652,6 +2655,8 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
         return;
     }
 
+    VSOMEIP_DEBUG << "\n\nSUBSCRIPTION VERIFIED\n\n";
+
     handle_eventgroup_subscription(its_service, its_instance,
         its_eventgroup, its_major, its_ttl, its_counter, its_reserved,
         its_first_address, its_first_port, is_first_reliable,
@@ -2705,6 +2710,8 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
         << ", instance=" << _instance << ", sender_ip_address=" << _sender_ip_address.to_string() << " (MEHMET MUELLER DEBUG) <<<<<";
         return;
     }
+
+    VSOMEIP_DEBUG << "\n\nSUBSCRIBE ACK VERIFIED\n\n";
 
     handle_eventgroup_subscription_ack(eventgroup_subscriptionackcache_entry.service_, 
                                         eventgroup_subscriptionackcache_entry.instance_,
