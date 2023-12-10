@@ -2594,6 +2594,8 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
         return;
     }
 
+    VSOMEIP_DEBUG << __func__ << " REQUIREMENTS ARE FULFILLED";
+
     service_t its_service = eventgroup_subscriptioncache_entry.service_;
     instance_t its_instance = eventgroup_subscriptioncache_entry.instance_;
     eventgroup_t its_eventgroup = eventgroup_subscriptioncache_entry.eventgroup_;
@@ -2641,6 +2643,8 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
         return;
     }
 
+    VSOMEIP_DEBUG << __func__ << " SUBSCRIPTION VALIDATED";
+
     bool signature_verified = false;
     CryptoPP::RSA::PublicKey public_key;
     if (!crypto_operator_->extract_public_key_from_certificate(certificate_data, public_key)) {
@@ -2655,7 +2659,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
         return;
     }
 
-    VSOMEIP_DEBUG << "\n\nSUBSCRIPTION VERIFIED\n\n";
+    VSOMEIP_DEBUG << __func__ << " SIGNATURE VERIFIED";
 
     handle_eventgroup_subscription(its_service, its_instance,
         its_eventgroup, its_major, its_ttl, its_counter, its_reserved,
@@ -2684,6 +2688,8 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
         return;
     }
 
+    VSOMEIP_DEBUG << __func__ << " REQUIREMENTS ARE FULFILLED";
+
     bool subscription_ack_validated = false;
     subscription_ack_validated = service_svcbcache_entry.service_ ==  eventgroup_subscriptionackcache_entry.service_
                                  && service_svcbcache_entry.instance_ == eventgroup_subscriptionackcache_entry.instance_
@@ -2694,6 +2700,8 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
     if (!subscription_ack_validated) {
         return;
     }
+
+    VSOMEIP_DEBUG << __func__ << " SUBSCRIPTION ACK VALIDATED";
 
     bool signature_verified = false;
     CryptoPP::RSA::PublicKey public_key;
@@ -2706,12 +2714,10 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
     signature_verified = crypto_operator_->verify(public_key, data_to_be_verified);
 
     if (!signature_verified) {
-        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::" << __func__ << ": Signature could not be verified for service=" << _service
-        << ", instance=" << _instance << ", sender_ip_address=" << _sender_ip_address.to_string() << " (MEHMET MUELLER DEBUG) <<<<<";
         return;
     }
 
-    VSOMEIP_DEBUG << "\n\nSUBSCRIBE ACK VERIFIED\n\n";
+    VSOMEIP_DEBUG << __func__ << " SIGNATURE VERIFIED";
 
     handle_eventgroup_subscription_ack(eventgroup_subscriptionackcache_entry.service_, 
                                         eventgroup_subscriptionackcache_entry.instance_,
