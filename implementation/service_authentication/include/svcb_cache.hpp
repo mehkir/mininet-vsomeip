@@ -37,7 +37,11 @@ namespace vsomeip_v3 {
             static std::mutex mutex_;
             static svcb_cache* instance_;
             std::map<std::tuple<service_t, instance_t, major_version_t, minor_version_t>, service_svcb_cache_entry> service_svcb_cache_map_;
+            std::map<std::tuple<service_t, instance_t, major_version_t>, service_svcb_cache_entry> redundant_service_svcb_cache_map_;
             std::map<std::tuple<client_t, service_t, instance_t, major_version_t>, client_svcb_cache_entry> client_svcb_cache_map_;
+            std::tuple<service_t, instance_t, major_version_t, minor_version_t> make_service_key_tuple(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
+            std::tuple<client_t, service_t, instance_t, major_version_t> make_client_key_tuple(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version);
+            std::tuple<service_t, instance_t, major_version_t> make_service_key_tuple(service_t _service, instance_t _instance, major_version_t _major_version);
         public:
             static svcb_cache* get_instance();
 
@@ -51,9 +55,8 @@ namespace vsomeip_v3 {
             void remove_service_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
             void remove_client_svcb_cache_entry(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version);
             service_svcb_cache_entry get_service_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
+            service_svcb_cache_entry get_service_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version);
             client_svcb_cache_entry get_client_svcb_cache_entry(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version);
-            std::tuple<service_t, instance_t, major_version_t, minor_version_t> make_service_key_tuple(service_t _service, instance_t _instance, major_version_t _major_version, minor_version_t _minor_version);
-            std::tuple<client_t, service_t, instance_t, major_version_t> make_client_key_tuple(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version);
     };
 
 } /* end namespace vsomeip_v3 */

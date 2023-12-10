@@ -486,7 +486,7 @@ public:
     void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache);
     void set_eventgroup_subscription_cache(eventgroup_subscription_cache* _eventgroup_subscription_cache);
     void set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache* _eventgroup_subscription_ack_cache);
-    void verify_service_info(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor);
+    void validate_offer(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor);
     void resume_process_offerservice_serviceentry(
         service_t _service, instance_t _instance, major_version_t _major,
         minor_version_t _minor, ttl_t _ttl,
@@ -496,11 +496,11 @@ public:
         uint16_t _unreliable_port,
         std::vector<std::shared_ptr<message_impl> >& _resubscribes,
         bool _received_via_mcast);
-    void verify_publisher_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance);
+    void validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major);
 
 private:
     // Additional Method for Service Authenticity
-    void verify_client_info_and_signature(client_t _client, boost::asio::ip::address_v4 _subscriber_ip_address, service_t _service, instance_t _instance, major_version_t _major);
+    void validate_subscribe_and_verify_signature(client_t _client, boost::asio::ip::address_v4 _subscriber_ip_address, service_t _service, instance_t _instance, major_version_t _major);
     // Addtional Member for Service Authenticity
     dns_resolver* dns_resolver_;
     std::shared_ptr<svcb_resolver> svcb_resolver_;

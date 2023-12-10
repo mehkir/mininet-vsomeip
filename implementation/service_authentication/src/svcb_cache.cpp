@@ -28,7 +28,10 @@ namespace vsomeip_v3 {
         entry.minor_ = _minor_version;
         entry.l4protocol_ = _l4protocol;
         entry.ipv4_address_ = _ipv4_address;
-        entry.port_ = _port;        
+        entry.port_ = _port;
+
+        auto r_key_tuple = make_service_key_tuple(_service, _instance, _major_version);
+        redundant_service_svcb_cache_map_[r_key_tuple] = entry;
     }
 
     void svcb_cache::add_client_svcb_cache_entry(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version, int _l4protocol, const boost::asio::ip::address_v4 _ipv4_address, std::set<port_t> _ports) {
@@ -48,6 +51,9 @@ namespace vsomeip_v3 {
         std::lock_guard<std::mutex> lockguard(mutex_);
         auto key_tuple = make_service_key_tuple(_service, _instance, _major_version, _minor_version);
         service_svcb_cache_map_.erase(key_tuple);
+
+        auto r_key_tuple = make_service_key_tuple(_service, _instance, _major_version);
+        redundant_service_svcb_cache_map_.erase(r_key_tuple);
     }
 
     void svcb_cache::remove_client_svcb_cache_entry(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version) {
@@ -62,6 +68,12 @@ namespace vsomeip_v3 {
         return service_svcb_cache_map_[key_tuple];
     }
 
+    service_svcb_cache_entry svcb_cache::get_service_svcb_cache_entry(service_t _service, instance_t _instance, major_version_t _major_version) {
+        std::lock_guard<std::mutex> lockguard(mutex_);
+        auto key_tuple = make_service_key_tuple(_service, _instance, _major_version);
+        return redundant_service_svcb_cache_map_[key_tuple];
+    }
+
     client_svcb_cache_entry svcb_cache::get_client_svcb_cache_entry(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version) {
         std::lock_guard<std::mutex> lockguard(mutex_);
         auto key_tuple = make_client_key_tuple(_client, _service, _instance, _major_version);
@@ -74,5 +86,9 @@ namespace vsomeip_v3 {
 
     std::tuple<client_t, service_t, instance_t, major_version_t> svcb_cache::make_client_key_tuple(client_t _client, service_t _service, instance_t _instance, major_version_t _major_version) {
         return std::make_tuple(_client, _service, _instance, _major_version);
+    }
+
+    std::tuple<service_t, instance_t, major_version_t> svcb_cache::make_service_key_tuple(service_t _service, instance_t _instance, major_version_t _major_version) {
+        return std::make_tuple(_service, _instance, _major_version);
     }
 } /* end namespace vsomeip_v3*/

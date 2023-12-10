@@ -606,7 +606,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_5,
                                             std::placeholders::_6,
                                             std::placeholders::_7);
-    service_data_and_cbs_->verify_service_info_callback_ = std::bind(&sd::service_discovery::verify_service_info, discovery_,
+    service_data_and_cbs_->validate_offer_callback_ = std::bind(&sd::service_discovery::validate_offer, discovery_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
@@ -618,10 +618,11 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_4);
     service_data_and_cbs_->request_service_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_service_tlsa_record, tlsa_resolver_,
                                             std::placeholders::_1);
-    service_data_and_cbs_->verify_publisher_signature_callback_ = std::bind(&sd::service_discovery::verify_publisher_signature, discovery_,
+    service_data_and_cbs_->validate_subscribe_ack_and_verify_signature_callback_ = std::bind(&sd::service_discovery::validate_subscribe_ack_and_verify_signature, discovery_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
-                                            std::placeholders::_3);
+                                            std::placeholders::_3,
+                                            std::placeholders::_4);
     service_data_and_cbs_->record_timestamp_callback_ = std::bind(&timestamp_collector::record_timestamp, timestamp_collector_,
                                             std::placeholders::_1);
     service_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, crypto_operator::get_instance(),

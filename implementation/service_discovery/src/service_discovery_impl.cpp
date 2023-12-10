@@ -1730,12 +1730,12 @@ service_discovery_impl::process_offerservice_serviceentry(
     resume_process_offerservice_cache_->add_offerservice_entry(_service, _instance, _major, _minor, _ttl, boost::asio::ip::address_v4::from_string(_reliable_address.to_string()), _reliable_port, boost::asio::ip::address_v4::from_string(_unreliable_address.to_string()), _unreliable_port, _resubscribes, _received_via_mcast);
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_offerservice_serviceentry: Add offerservice entry service=" << _service
     << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << ", tcp=(" << _reliable_address.to_string() << "," << _reliable_port << ")" << ", udp=(" << _unreliable_address.to_string() << "," << _unreliable_port << ")" << " (MEHMET MUELLER DEBUG) <<<<<";
-    verify_service_info(_service, _instance, _major, _minor);
+    validate_offer(_service, _instance, _major, _minor);
     // Service Authentication End ############################################################################
 }
 
 void
-service_discovery_impl::verify_service_info(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) {
+service_discovery_impl::validate_offer(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) {
     resume_process_offerservice_entry resume_processofferservice_entry = resume_process_offerservice_cache_->get_offerservice_entry(_service, _instance, _major, _minor);
     service_svcb_cache_entry service_svcbcache_entry = svcb_cache_->get_service_svcb_cache_entry(_service, _instance, _major, _minor);
     if (resume_processofferservice_entry.service_ == service_svcbcache_entry.service_
@@ -1748,12 +1748,12 @@ service_discovery_impl::verify_service_info(service_t _service, instance_t _inst
                 && resume_processofferservice_entry.reliable_port_ == service_svcbcache_entry.port_)
            )
         ) {
-        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::verify_service_info: Found SVCB record for service=" << _service
+        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::validate_offer: Found SVCB record for service=" << _service
         << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
         resume_process_offerservice_serviceentry(resume_processofferservice_entry.service_, resume_processofferservice_entry.instance_, resume_processofferservice_entry.major_, resume_processofferservice_entry.minor_, resume_processofferservice_entry.ttl_, resume_processofferservice_entry.reliable_address_, resume_processofferservice_entry.reliable_port_, resume_processofferservice_entry.unreliable_address_, resume_processofferservice_entry.unreliable_port_, resume_processofferservice_entry.resubscribes_, resume_processofferservice_entry.received_via_mcast_);
         resume_process_offerservice_cache_->remove_offerservice_entry(_service, _instance, _major, _minor);
     } else {
-        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::verify_service_info: No offer or SVCB record for service=" << _service
+        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::validate_offer: No offer or SVCB record for service=" << _service
         << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
     }
 }
@@ -2506,7 +2506,7 @@ service_discovery_impl::process_eventgroupentry(
                                                             std::placeholders::_3,
                                                             std::placeholders::_4,
                                                             std::placeholders::_5);
-                    client_data_and_cbs_->verify_client_info_and_signature_callback_ = std::bind(&sd::service_discovery_impl::verify_client_info_and_signature, this,
+                    client_data_and_cbs_->validate_subscribe_and_verify_signature_callback_ = std::bind(&sd::service_discovery_impl::validate_subscribe_and_verify_signature, this,
                                                             std::placeholders::_1,
                                                             std::placeholders::_2,
                                                             std::placeholders::_3,
@@ -2559,12 +2559,12 @@ service_discovery_impl::process_eventgroupentry(
             its_second_address.to_v4(), its_second_port, is_second_reliable,
             _acknowledgement, _is_stop_subscribe_subscribe,
             _force_initial_events, its_clients, _sd_ac_state.expired_ports_, _sd_ac_state.sd_acceptance_required_, _sd_ac_state.accept_entries_, its_info, signed_nonce, nonce_signature);
-        verify_client_info_and_signature(client, _sender.to_v4(), its_service, its_instance, its_major);
+        validate_subscribe_and_verify_signature(client, _sender.to_v4(), its_service, its_instance, its_major);
     } else {
         if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type) { //this type is used for ACK and NACK messages
             if (its_ttl > 0) {
                 eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance, its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port, signed_nonce, nonce_signature);
-                verify_publisher_signature(_sender.to_v4(), its_service, its_instance); // Service Authentication
+                validate_subscribe_ack_and_verify_signature(_sender.to_v4(), its_service, its_instance, its_major); // Service Authentication
             } else {
                 handle_eventgroup_subscription_nack(its_service, its_instance, its_eventgroup,
                         0, its_clients);
@@ -2574,91 +2574,148 @@ service_discovery_impl::process_eventgroupentry(
 }
 
 void
-service_discovery_impl::verify_client_info_and_signature(client_t _client, boost::asio::ip::address_v4 _subscriber_ip_address, service_t _service, instance_t _instance, major_version_t _major) {
+service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client, boost::asio::ip::address_v4 _subscriber_ip_address, service_t _service, instance_t _instance, major_version_t _major) {
+    // Check if required subscription, signature and certificate are available/cached
     bool requirements_are_fulfilled = false;
-    //bool service_authenticated = false;
+    client_svcb_cache_entry client_svcbcache_entry = svcb_cache_->get_client_svcb_cache_entry(_client, _service, _instance, _major);
     std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_subscriber_certificate(_client, _subscriber_ip_address, _service, _instance);
-    requirements_are_fulfilled = !certificate_data.empty();
+    std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_publisher_challenge_nonce(_client, _subscriber_ip_address, _service, _instance);
+    eventgroup_subscription_cache_entry eventgroup_subscriptioncache_entry = eventgroup_subscription_cache_->get_eventgroup_subscription_cache_entry(_client, _service, _instance, _major);
+    std::vector<unsigned char> signature = eventgroup_subscriptioncache_entry.signature_;
+    requirements_are_fulfilled = client_svcbcache_entry.client_ == eventgroup_subscriptioncache_entry.client_
+                                && !certificate_data.empty()
+                                && !signed_nonce.empty()
+                                && !signature.empty();
 
     if (!requirements_are_fulfilled) {
-        VSOMEIP_DEBUG << "REQUIREMENTS ARE NOT FULFILLED";
         return;
     }
-    VSOMEIP_DEBUG << "REQUIREMENTS ARE FULFILLED";
-    eventgroup_subscription_cache_entry _eventgroup_subscription_cache_entry = eventgroup_subscription_cache_->get_eventgroup_subscription_cache_entry(_client, _service, _instance, _major);
-    service_t its_service = _eventgroup_subscription_cache_entry.service_;
-    instance_t its_instance = _eventgroup_subscription_cache_entry.instance_;
-    eventgroup_t its_eventgroup = _eventgroup_subscription_cache_entry.eventgroup_;
-    major_version_t its_major = _eventgroup_subscription_cache_entry.major_;
-    ttl_t its_ttl = _eventgroup_subscription_cache_entry.ttl_;
-    uint8_t its_counter = _eventgroup_subscription_cache_entry.counter_;
-    uint16_t its_reserved = _eventgroup_subscription_cache_entry.reserved_;
-    boost::asio::ip::address its_first_address = _eventgroup_subscription_cache_entry.first_address_;
-    uint16_t its_first_port = _eventgroup_subscription_cache_entry.first_port_;
-    bool is_first_reliable = _eventgroup_subscription_cache_entry.is_first_reliable_;
-    boost::asio::ip::address its_second_address = _eventgroup_subscription_cache_entry.second_address_;
-    uint16_t its_second_port = _eventgroup_subscription_cache_entry.second_port_;
-    bool is_second_reliable = _eventgroup_subscription_cache_entry.is_second_reliable_;
-    std::shared_ptr<vsomeip_v3::sd::remote_subscription_ack> _acknowledgement = _eventgroup_subscription_cache_entry.acknowledgement_;
-    bool _is_stop_subscribe_subscribe = _eventgroup_subscription_cache_entry.is_stop_subscribe_subscribe_;
-    bool _force_initial_events = _eventgroup_subscription_cache_entry.force_initial_events_;
-    std::set<client_t> its_clients = _eventgroup_subscription_cache_entry.clients_;
-    sd_acceptance_state_t _sd_ac_state(_eventgroup_subscription_cache_entry.expired_ports_);
-    _sd_ac_state.sd_acceptance_required_ = _eventgroup_subscription_cache_entry.sd_acceptance_required_;
-    _sd_ac_state.accept_entries_ = _eventgroup_subscription_cache_entry.accept_entries_;
-    std::shared_ptr<vsomeip_v3::eventgroupinfo> its_info = _eventgroup_subscription_cache_entry.info_;
+
+    service_t its_service = eventgroup_subscriptioncache_entry.service_;
+    instance_t its_instance = eventgroup_subscriptioncache_entry.instance_;
+    eventgroup_t its_eventgroup = eventgroup_subscriptioncache_entry.eventgroup_;
+    major_version_t its_major = eventgroup_subscriptioncache_entry.major_;
+    ttl_t its_ttl = eventgroup_subscriptioncache_entry.ttl_;
+    uint8_t its_counter = eventgroup_subscriptioncache_entry.counter_;
+    uint16_t its_reserved = eventgroup_subscriptioncache_entry.reserved_;
+    boost::asio::ip::address its_first_address = eventgroup_subscriptioncache_entry.first_address_;
+    uint16_t its_first_port = eventgroup_subscriptioncache_entry.first_port_;
+    bool is_first_reliable = eventgroup_subscriptioncache_entry.is_first_reliable_;
+    boost::asio::ip::address its_second_address = eventgroup_subscriptioncache_entry.second_address_;
+    uint16_t its_second_port = eventgroup_subscriptioncache_entry.second_port_;
+    bool is_second_reliable = eventgroup_subscriptioncache_entry.is_second_reliable_;
+    std::shared_ptr<vsomeip_v3::sd::remote_subscription_ack> acknowledgement = eventgroup_subscriptioncache_entry.acknowledgement_;
+    bool is_stop_subscribe_subscribe = eventgroup_subscriptioncache_entry.is_stop_subscribe_subscribe_;
+    bool force_initial_events = eventgroup_subscriptioncache_entry.force_initial_events_;
+    std::set<client_t> its_clients = eventgroup_subscriptioncache_entry.clients_;
+    sd_acceptance_state_t sd_ac_state(eventgroup_subscriptioncache_entry.expired_ports_);
+    sd_ac_state.sd_acceptance_required_ = eventgroup_subscriptioncache_entry.sd_acceptance_required_;
+    sd_ac_state.accept_entries_ = eventgroup_subscriptioncache_entry.accept_entries_;
+    std::shared_ptr<vsomeip_v3::eventgroupinfo> its_info = eventgroup_subscriptioncache_entry.info_;
+
+    bool subscription_validated = false;
+    subscription_validated = client_svcbcache_entry.client_ == eventgroup_subscriptioncache_entry.client_
+                    && (
+                        (client_svcbcache_entry.ipv4_address_ == its_first_address
+                        && client_svcbcache_entry.ports_.count(its_first_port)
+                        && ((client_svcbcache_entry.l4protocol_ == IPPROTO_UDP && !is_first_reliable)
+                            || (client_svcbcache_entry.l4protocol_ == IPPROTO_TCP && is_first_reliable))
+                        )
+                        ||
+                        (client_svcbcache_entry.ipv4_address_ == its_second_address
+                        && client_svcbcache_entry.ports_.count(its_second_port)
+                        && ((client_svcbcache_entry.l4protocol_ == IPPROTO_UDP && !is_second_reliable)
+                            || (client_svcbcache_entry.l4protocol_ == IPPROTO_TCP && is_second_reliable))
+                        )
+                    )
+                    && client_svcbcache_entry.service_ == its_service
+                    && client_svcbcache_entry.instance_ == its_instance
+                    && client_svcbcache_entry.major_ == its_major
+                    && challenge_nonce_cache_->has_publisher_challenge_nonce_and_remove(_client, _subscriber_ip_address, _service, _instance, challenge_nonce_cache_->get_offered_nonce(_service, _instance))
+                    && challenge_nonce_cache_->get_offered_nonce(_service, _instance) == eventgroup_subscriptioncache_entry.nonce_;
+
+    if (!subscription_validated) {
+        return;
+    }
+
+    bool signature_verified = false;
+    CryptoPP::RSA::PublicKey public_key;
+    if (!crypto_operator_->extract_public_key_from_certificate(certificate_data, public_key)) {
+        return;
+    }
+    std::vector<byte_t> data_to_be_verified;
+    data_to_be_verified.insert(data_to_be_verified.end(), signed_nonce.begin(), signed_nonce.end());
+    data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
+    signature_verified = crypto_operator_->verify(public_key, data_to_be_verified);
+
+    if (!signature_verified) {
+        return;
+    }
 
     handle_eventgroup_subscription(its_service, its_instance,
         its_eventgroup, its_major, its_ttl, its_counter, its_reserved,
         its_first_address, its_first_port, is_first_reliable,
         its_second_address, its_second_port, is_second_reliable,
-        _acknowledgement, _is_stop_subscribe_subscribe,
-        _force_initial_events, its_clients, _sd_ac_state, its_info);
+        acknowledgement, is_stop_subscribe_subscribe,
+        force_initial_events, its_clients, sd_ac_state, its_info);
 }
 
 void
-service_discovery_impl::verify_publisher_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance) {
+service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major) {
+    // Check if required subscription ack, signature and certificate are available/cached
     bool requirements_are_fulfilled = false;
-    bool service_authenticated = false;
-    // Check if the certificate has already been received
+    service_svcb_cache_entry service_svcbcache_entry = svcb_cache_->get_service_svcb_cache_entry(_service, _instance, _major);
     std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_publisher_certificate(_sender_ip_address, _service, _instance);
-    requirements_are_fulfilled = !certificate_data.empty();
-    // Check if there is already a subscription ack entry
-    eventgroup_subscription_ack_cache_entry _eventgroup_subscription_ack_cache_entry = eventgroup_subscription_ack_cache_->get_eventgroup_subscription_ack_cache_entry(_sender_ip_address, _service, _instance);
-    requirements_are_fulfilled = requirements_are_fulfilled
-                                 && _eventgroup_subscription_ack_cache_entry.service_ == _service // sanity check
-                                 && _eventgroup_subscription_ack_cache_entry.instance_ == _instance // sanity check
-                                 && _eventgroup_subscription_ack_cache_entry.sender_ip_address_ == _sender_ip_address; // sanity check
-    // Check if nonce is valid
-    std::vector<unsigned char> nonce = _eventgroup_subscription_ack_cache_entry.nonce_;
-    std::vector<byte_t> signature = _eventgroup_subscription_ack_cache_entry.signature_;
-    if (!(requirements_are_fulfilled && challenge_nonce_cache_->has_subscriber_challenge_nonce_and_remove(_sender_ip_address, _service, _instance, nonce))) {
+    std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(_sender_ip_address, _service, _instance);
+    eventgroup_subscription_ack_cache_entry eventgroup_subscriptionackcache_entry = eventgroup_subscription_ack_cache_->get_eventgroup_subscription_ack_cache_entry(_sender_ip_address, _service, _instance);
+    std::vector<unsigned char> signature = eventgroup_subscriptionackcache_entry.signature_;
+    requirements_are_fulfilled = service_svcbcache_entry.service_ == _service
+                                && !certificate_data.empty()
+                                && !signed_nonce.empty()
+                                && !signature.empty();
+
+
+    if (!requirements_are_fulfilled) {
         return;
     }
+
+    bool subscription_ack_validated = false;
+    subscription_ack_validated = service_svcbcache_entry.service_ ==  eventgroup_subscriptionackcache_entry.service_
+                                 && service_svcbcache_entry.instance_ == eventgroup_subscriptionackcache_entry.instance_
+                                 && service_svcbcache_entry.major_ == eventgroup_subscriptionackcache_entry.major_version_
+                                 && service_svcbcache_entry.ipv4_address_ == eventgroup_subscriptionackcache_entry.sender_ip_address_
+                                 && challenge_nonce_cache_->has_subscriber_challenge_nonce_and_remove(_sender_ip_address, _service, _instance, eventgroup_subscriptionackcache_entry.nonce_);
+
+    if (!subscription_ack_validated) {
+        return;
+    }
+
+    bool signature_verified = false;
     CryptoPP::RSA::PublicKey public_key;
-    // Verify service authenticity
-    if (crypto_operator_->extract_public_key_from_certificate(certificate_data, public_key)
-        && !_eventgroup_subscription_ack_cache_entry.signature_.empty()) {
-        std::vector<byte_t> data_to_be_verified;
-        data_to_be_verified.insert(data_to_be_verified.end(), nonce.begin(), nonce.end());
-        data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
-        service_authenticated = crypto_operator_->verify(public_key, data_to_be_verified);
+    if (!crypto_operator_->extract_public_key_from_certificate(certificate_data, public_key)) {
+        return;
     }
-    if (service_authenticated) {
-        handle_eventgroup_subscription_ack(_service, 
-                                           _instance,
-                                           _eventgroup_subscription_ack_cache_entry.eventgroup_,
-                                           _eventgroup_subscription_ack_cache_entry.major_version_,
-                                           _eventgroup_subscription_ack_cache_entry.ttl_,
-                                           0,
-                                           _eventgroup_subscription_ack_cache_entry.clients_,
-                                           _eventgroup_subscription_ack_cache_entry.sender_ip_address_,
-                                           _eventgroup_subscription_ack_cache_entry.first_ip_address_,
-                                           _eventgroup_subscription_ack_cache_entry.port_);
-    } else {
-        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::verify_publisher_signature: Signature could not be verified for service=" << _service
+    std::vector<byte_t> data_to_be_verified;
+    data_to_be_verified.insert(data_to_be_verified.end(), signed_nonce.begin(), signed_nonce.end());
+    data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
+    signature_verified = crypto_operator_->verify(public_key, data_to_be_verified);
+
+    if (!signature_verified) {
+        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::" << __func__ << ": Signature could not be verified for service=" << _service
         << ", instance=" << _instance << ", sender_ip_address=" << _sender_ip_address.to_string() << " (MEHMET MUELLER DEBUG) <<<<<";
+        return;
     }
+
+    handle_eventgroup_subscription_ack(eventgroup_subscriptionackcache_entry.service_, 
+                                        eventgroup_subscriptionackcache_entry.instance_,
+                                        eventgroup_subscriptionackcache_entry.eventgroup_,
+                                        eventgroup_subscriptionackcache_entry.major_version_,
+                                        eventgroup_subscriptionackcache_entry.ttl_,
+                                        0,
+                                        eventgroup_subscriptionackcache_entry.clients_,
+                                        eventgroup_subscriptionackcache_entry.sender_ip_address_,
+                                        eventgroup_subscriptionackcache_entry.first_ip_address_,
+                                        eventgroup_subscriptionackcache_entry.port_);
 }
 
 void
