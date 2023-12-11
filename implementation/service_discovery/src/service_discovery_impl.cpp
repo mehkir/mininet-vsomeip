@@ -1050,9 +1050,9 @@ service_discovery_impl::create_eventgroup_entry(
         data_partitioner().partition_data<std::vector<unsigned char>>(CLIENT_ID_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(client_id.begin(), client_id.end()));
         its_data.options_.push_back(configuration_option);
         VSOMEIP_DEBUG << "Generated Nonce by Subscriber" << " for Publisher Endpoint(" << publisher_address.to_v4().to_string() << "," << _service << "," << _instance << ")" << std::endl
-        << "Generated nonce=" << std::hex << std::string(generated_nonce.begin(), generated_nonce.end()) << std::endl
-        << "Signed nonce=" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << std::endl
-        << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end()) << std::endl
+        << "Generated nonce=" << generated_nonce_string_cs << std::endl
+        << "Signed nonce=" << signed_nonce_string_cs << std::endl
+        << "Nonce signature=" << nonce_signature_string_cs << std::endl
         << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end());
     }
     // Service Authentication End ########################################################################################
@@ -1169,8 +1169,8 @@ service_discovery_impl::insert_subscription_ack(
     data_partitioner().partition_data<std::string>(NONCE_SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature_string_cs);
     its_data.options_.push_back(configuration_option);
     VSOMEIP_DEBUG << "Signed nonce (SUBSCRIBE_ACK_SENDING)" << "(" << subscriber_address.to_string() << "," << its_service << "," << its_instance << ")" << std::endl
-    << "Signed nonce" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << std::endl
-    << "Nonce signature" << std::hex << std::string(signature.begin(), signature.end());
+    << "Signed nonce" << signed_nonce_string_cs << std::endl
+    << "Nonce signature" << signature_string_cs;
     // Service Authentication End ########################################################################################
 
     // Selective
@@ -2493,9 +2493,9 @@ service_discovery_impl::process_eventgroupentry(
                     VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << _sender.to_v4().to_string() << std::endl;
                     VSOMEIP_DEBUG << "Received Nonce from Subscriber (SUBSCRIBE_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl
-                    << "Generated nonce=" << std::hex << std::string(generated_nonce.begin(), generated_nonce.end()) << std::endl
-                    << "Signed nonce=" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << std::endl
-                    << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end()) << std::endl
+                    << "Generated nonce=" << generated_nonce_string_cs << std::endl
+                    << "Signed nonce=" << signed_nonce_string_cs << std::endl
+                    << "Nonce signature=" << nonce_signature_string_cs << std::endl
                     << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end());
                     // Request client svcb record
                     client_data_and_cbs* client_data_and_cbs_ = new client_data_and_cbs();
@@ -2535,8 +2535,8 @@ service_discovery_impl::process_eventgroupentry(
                     nonce_signature = data_partitioner().convert_comma_separated_string_to_unsigned_char_vector(nonce_signature_string_cs);
                     VSOMEIP_DEBUG << "Received Signed Nonce from Publisher (SUBSCRIBE_ACK_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl
-                    << "Signed nonce=" << std::hex << std::string(signed_nonce.begin(), signed_nonce.end()) << std::endl
-                    << "Nonce signature=" << std::hex << std::string(nonce_signature.begin(), nonce_signature.end());
+                    << "Signed nonce=" << signed_nonce_string_cs << std::endl
+                    << "Nonce signature=" << nonce_signature_string_cs;
                 }
                 // Service Authentication End ############################################################################
                 break;
