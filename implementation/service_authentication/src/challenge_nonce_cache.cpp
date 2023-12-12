@@ -63,7 +63,7 @@ namespace vsomeip_v3 {
     bool challenge_nonce_cache::has_publisher_challenge_nonce_and_remove(client_t _client, boost::asio::ip::address_v4 _ipv4_address, vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance, std::vector<unsigned char> _nonce) {
         std::lock_guard<std::mutex> guard(mutex_);
         auto key_tuple = make_key_tuple(_client, _ipv4_address, _service, _instance);
-        bool has_nonce = publisher_challenge_nonce_map_.count(key_tuple) && publisher_challenge_nonce_map_[key_tuple].nonce_.empty() && publisher_challenge_nonce_map_[key_tuple].nonce_ == _nonce;
+        bool has_nonce = publisher_challenge_nonce_map_.count(key_tuple) && !publisher_challenge_nonce_map_[key_tuple].nonce_.empty() && publisher_challenge_nonce_map_[key_tuple].nonce_ == _nonce;
         if (has_nonce) { publisher_challenge_nonce_map_[key_tuple].nonce_.clear(); }
         return has_nonce;
     }
