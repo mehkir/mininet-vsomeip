@@ -2644,25 +2644,20 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
 
     bool subscription_validated = false;
     subscription_validated = client_svcbcache_entry.client_ == eventgroup_subscriptioncache_entry.client_
-                    && (
-                        (client_svcbcache_entry.ipv4_address_ == its_first_address
-                        && client_svcbcache_entry.ports_.count(its_first_port)
-                        && ((client_svcbcache_entry.l4protocol_ == IPPROTO_UDP && !is_first_reliable)
-                            || (client_svcbcache_entry.l4protocol_ == IPPROTO_TCP && is_first_reliable))
-                        )
-                        ||
-                        (client_svcbcache_entry.ipv4_address_ == its_second_address
-                        && client_svcbcache_entry.ports_.count(its_second_port)
-                        && ((client_svcbcache_entry.l4protocol_ == IPPROTO_UDP && !is_second_reliable)
-                            || (client_svcbcache_entry.l4protocol_ == IPPROTO_TCP && is_second_reliable))
-                        )
-                    )
-                    && client_svcbcache_entry.service_ == its_service
-                    && client_svcbcache_entry.instance_ == its_instance
-                    && client_svcbcache_entry.major_ == its_major
-                    && challenge_nonce_cache_->has_publisher_challenge_nonce_and_remove(_client, _subscriber_ip_address, _service, _instance, challenge_nonce_cache_->get_offered_nonce(_service, _instance))
-                    && challenge_nonce_cache_->get_offered_nonce(_service, _instance) == eventgroup_subscriptioncache_entry.nonce_;
-
+                            && client_svcbcache_entry.service_ == its_service
+                            && client_svcbcache_entry.instance_ == its_instance
+                            && client_svcbcache_entry.major_ == its_major;
+                            // && challenge_nonce_cache_->has_publisher_challenge_nonce_and_remove(_client, _subscriber_ip_address, _service, _instance, challenge_nonce_cache_->get_offered_nonce(_service, _instance))
+                            // && challenge_nonce_cache_->get_offered_nonce(_service, _instance) == eventgroup_subscriptioncache_entry.nonce_;
+    bool first_endpoint_validated = client_svcbcache_entry.ipv4_address_ == its_first_address
+                                    && client_svcbcache_entry.ports_.count(its_first_port)
+                                    && ((client_svcbcache_entry.l4protocol_ == IPPROTO_UDP && !is_first_reliable)
+                                    || (client_svcbcache_entry.l4protocol_ == IPPROTO_TCP && is_first_reliable));
+    bool second_endpoint_validated = client_svcbcache_entry.ipv4_address_ == its_second_address
+                                    && client_svcbcache_entry.ports_.count(its_second_port)
+                                    && ((client_svcbcache_entry.l4protocol_ == IPPROTO_UDP && !is_second_reliable)
+                                    || (client_svcbcache_entry.l4protocol_ == IPPROTO_TCP && is_second_reliable));
+    subscription_validated = subscription_validated && (first_endpoint_validated || second_endpoint_validated);
     if (!subscription_validated) {
         return;
     }
