@@ -2498,36 +2498,40 @@ service_discovery_impl::process_eventgroupentry(
                     << "Nonce signature=" << nonce_signature_string_cs << std::endl
                     << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end());
                     // Request client svcb record
-                    client_data_and_cbs* client_data_and_cbs_ = new client_data_and_cbs();
-                    client_data_and_cbs_->client_ = client;
-                    client_data_and_cbs_->service_ = its_service;
-                    client_data_and_cbs_->instance_ = its_instance;
-                    client_data_and_cbs_->major_ = its_major;
-                    client_data_and_cbs_->add_client_svcb_entry_cache_callback_ = std::bind(&svcb_cache::add_client_svcb_cache_entry, svcb_cache_,
-                                                            std::placeholders::_1,
-                                                            std::placeholders::_2,
-                                                            std::placeholders::_3,
-                                                            std::placeholders::_4,
-                                                            std::placeholders::_5,
-                                                            std::placeholders::_6,
-                                                            std::placeholders::_7);
-                    client_data_and_cbs_->request_client_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_client_tlsa_record, tlsa_resolver_,
-                                                            std::placeholders::_1);
-                    client_data_and_cbs_->add_subscriber_certificate_callback_ = std::bind(&challenge_nonce_cache::add_subscriber_certificate, challenge_nonce_cache_,
-                                                            std::placeholders::_1,
-                                                            std::placeholders::_2,
-                                                            std::placeholders::_3,
-                                                            std::placeholders::_4,
-                                                            std::placeholders::_5);
-                    client_data_and_cbs_->validate_subscribe_and_verify_signature_callback_ = std::bind(&sd::service_discovery_impl::validate_subscribe_and_verify_signature, this,
-                                                            std::placeholders::_1,
-                                                            std::placeholders::_2,
-                                                            std::placeholders::_3,
-                                                            std::placeholders::_4,
-                                                            std::placeholders::_5);
-                    client_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, crypto_operator::get_instance(),
-                                                            std::placeholders::_1);
-                    svcb_resolver_->request_client_svcb_record(client_data_and_cbs_);
+                    client_svcb_cache_entry client_svcbcache_entry = svcb_cache_->get_client_svcb_cache_entry(client, its_service, its_instance, its_major);
+                    std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_subscriber_certificate(client, _sender.to_v4(), its_service, its_instance);
+                    if (client_svcbcache_entry.client_ != client || certificate_data.empty()) {
+                        client_data_and_cbs* client_data_and_cbs_ = new client_data_and_cbs();
+                        client_data_and_cbs_->client_ = client;
+                        client_data_and_cbs_->service_ = its_service;
+                        client_data_and_cbs_->instance_ = its_instance;
+                        client_data_and_cbs_->major_ = its_major;
+                        client_data_and_cbs_->add_client_svcb_entry_cache_callback_ = std::bind(&svcb_cache::add_client_svcb_cache_entry, svcb_cache_,
+                                                                std::placeholders::_1,
+                                                                std::placeholders::_2,
+                                                                std::placeholders::_3,
+                                                                std::placeholders::_4,
+                                                                std::placeholders::_5,
+                                                                std::placeholders::_6,
+                                                                std::placeholders::_7);
+                        client_data_and_cbs_->request_client_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_client_tlsa_record, tlsa_resolver_,
+                                                                std::placeholders::_1);
+                        client_data_and_cbs_->add_subscriber_certificate_callback_ = std::bind(&challenge_nonce_cache::add_subscriber_certificate, challenge_nonce_cache_,
+                                                                std::placeholders::_1,
+                                                                std::placeholders::_2,
+                                                                std::placeholders::_3,
+                                                                std::placeholders::_4,
+                                                                std::placeholders::_5);
+                        client_data_and_cbs_->validate_subscribe_and_verify_signature_callback_ = std::bind(&sd::service_discovery_impl::validate_subscribe_and_verify_signature, this,
+                                                                std::placeholders::_1,
+                                                                std::placeholders::_2,
+                                                                std::placeholders::_3,
+                                                                std::placeholders::_4,
+                                                                std::placeholders::_5);
+                        client_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, crypto_operator::get_instance(),
+                                                                std::placeholders::_1);
+                        svcb_resolver_->request_client_svcb_record(client_data_and_cbs_);
+                    }
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
                     std::string signed_nonce_string_cs = data_partitioner().reassemble_data<std::string>(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     signed_nonce = data_partitioner().convert_comma_separated_string_to_unsigned_char_vector(signed_nonce_string_cs);
