@@ -1510,8 +1510,12 @@ service_discovery_impl::process_serviceentry(
     challenge_nonce_cache_->add_publisher_challenge_nonce(configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME))), publisher_address.to_v4(), its_service, its_instance, generated_nonce);
     VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string() << std::endl;
     VSOMEIP_DEBUG << "Received Nonce from Publisher (OFFER_ARRIVED)"
-    << "(" << publisher_address.to_v4().to_string() << "," << its_service << "," << its_instance << ") "
-    << std::hex << std::string(generated_nonce.begin(), generated_nonce.end());
+    << "(" << publisher_address.to_v4().to_string() << "," << its_service << "," << its_instance << ")";
+    std::cout << "Generated Nonce=";
+    for (auto it = generated_nonce.begin(); it != generated_nonce.end(); it++) {
+        std::cout << (uint32_t) *it;
+    }
+    std::cout << std::endl;
     // Service Authentication End ############################################################################
 
     if (0 < its_ttl) {
@@ -2043,8 +2047,12 @@ service_discovery_impl::insert_offer_service(
         // Service Authentication Start ################################
         CryptoPP::SecByteBlock generated_nonce = crypto_operator_->get_random_byte_block();
         VSOMEIP_DEBUG << "Generated Nonce by Publisher"
-        << " at Endpoint(" << unicast_.to_v4().to_string() << "," << _info->get_service() << "," << _info->get_instance() << ") "
-        << std::hex << std::string(generated_nonce.begin(), generated_nonce.end());
+        << " at Endpoint(" << unicast_.to_v4().to_string() << "," << _info->get_service() << "," << _info->get_instance() << ")";
+        std::cout << "Generated Nonce=";
+        for (auto it = generated_nonce.begin(); it != generated_nonce.end(); it++) {
+            std::cout << (uint32_t) *it;
+        }
+        std::cout << std::endl;
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
         std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
         challenge_nonce_cache_->set_offered_nonce(_info->get_service(), _info->get_instance(), generated_nonce_vector);
