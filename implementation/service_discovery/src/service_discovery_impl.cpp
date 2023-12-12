@@ -1169,8 +1169,8 @@ service_discovery_impl::insert_subscription_ack(
     data_partitioner().partition_data<std::string>(NONCE_SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature_string_cs);
     its_data.options_.push_back(configuration_option);
     VSOMEIP_DEBUG << "Signed nonce (SUBSCRIBE_ACK_SENDING)" << "(" << subscriber_address.to_string() << "," << its_service << "," << its_instance << ")" << std::endl
-    << "Signed nonce" << signed_nonce_string_cs << std::endl
-    << "Nonce signature" << signature_string_cs;
+    << "Signed nonce=" << signed_nonce_string_cs << std::endl
+    << "Nonce signature=" << signature_string_cs;
     // Service Authentication End ########################################################################################
 
     // Selective
