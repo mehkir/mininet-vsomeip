@@ -1029,7 +1029,7 @@ service_discovery_impl::create_eventgroup_entry(
         // Generate challenge nonce for publisher and add to configuration option
         CryptoPP::SecByteBlock generated_nonce = crypto_operator_->get_random_byte_block();
         challenge_nonce_cache_->add_subscriber_challenge_nonce(publisher_address.to_v4(), _service, _instance, std::vector<unsigned char>(generated_nonce.begin(), generated_nonce.end()));
-        VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string() << std::endl;
+        VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string();
         std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
         // std::string generated_nonce_string_cs = data_partitioner().convert_to_comma_separated_int_string(generated_nonce_vector);
         // data_partitioner().partition_data<std::string>(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, generated_nonce_string_cs);
@@ -1052,7 +1052,7 @@ service_discovery_impl::create_eventgroup_entry(
         std::string client_id(std::to_string(configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME)))));
         data_partitioner().partition_data<std::vector<unsigned char>>(CLIENT_ID_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(client_id.begin(), client_id.end()));
         its_data.options_.push_back(configuration_option);
-        VSOMEIP_DEBUG << "Generated Nonce by Subscriber" << " for Publisher Endpoint(" << publisher_address.to_v4().to_string() << "," << _service << "," << _instance << ")" << std::endl;
+        VSOMEIP_DEBUG << "Generated Nonce by Subscriber" << " for Publisher Endpoint(" << publisher_address.to_v4().to_string() << "," << _service << "," << _instance << ")";
         print_numerical_representation(generated_nonce_vector, "Generated nonce");
         print_numerical_representation(signed_nonce_vector, "Signed nonce");
         print_numerical_representation(nonce_signature, "Nonce signature");
@@ -1159,7 +1159,7 @@ service_discovery_impl::insert_subscription_ack(
     boost::asio::ip::address_v4 subscriber_address = _target->get_address().to_v4();
     // Signing nonce from subscriber and add signature
     std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(subscriber_address, its_service, its_instance);
-    VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << subscriber_address.to_string() << std::endl;
+    VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << subscriber_address.to_string();
     if (signed_nonce.empty()) {
         throw std::runtime_error("Nonce is empty!");
     }
@@ -1173,7 +1173,7 @@ service_discovery_impl::insert_subscription_ack(
     // data_partitioner().partition_data<std::string>(NONCE_SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature_string_cs);
     data_partitioner().partition_data<std::vector<unsigned char>>(NONCE_SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
     its_data.options_.push_back(configuration_option);
-    VSOMEIP_DEBUG << "Signed nonce (SUBSCRIBE_ACK_SENDING)" << "(" << subscriber_address.to_string() << "," << its_service << "," << its_instance << ")" << std::endl;
+    VSOMEIP_DEBUG << "Signed nonce (SUBSCRIBE_ACK_SENDING)" << "(" << subscriber_address.to_string() << "," << its_service << "," << its_instance << ")";
     print_numerical_representation(signed_nonce, "Signed nonce");
     print_numerical_representation(signature, "Nonce signature");
     // Service Authentication End ########################################################################################
@@ -1514,7 +1514,7 @@ service_discovery_impl::process_serviceentry(
         publisher_address = its_reliable_address;
     }
     challenge_nonce_cache_->add_publisher_challenge_nonce(configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME))), publisher_address.to_v4(), its_service, its_instance, generated_nonce);
-    VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string() << std::endl;
+    VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string();
     VSOMEIP_DEBUG << "Received Nonce from Publisher (OFFER_ARRIVED)"
     << "(" << publisher_address.to_v4().to_string() << "," << its_service << "," << its_instance << ")";
     print_numerical_representation(generated_nonce, "Generated nonce");
@@ -2510,7 +2510,7 @@ service_discovery_impl::process_eventgroupentry(
                     client = (client_t) std::stoi(std::string(client_id.begin(), client_id.end()));
                     challenge_nonce_cache_->add_subscriber_challenge_nonce(_sender.to_v4(), its_service, its_instance, generated_nonce);
                     challenge_nonce_cache_->add_publisher_challenge_nonce(client, _sender.to_v4(), its_service, its_instance, signed_nonce);
-                    VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << _sender.to_v4().to_string() << std::endl;
+                    VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << _sender.to_v4().to_string();
                     VSOMEIP_DEBUG << "Received Nonce from Subscriber (SUBSCRIBE_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl;
                     print_numerical_representation(generated_nonce, "Generated nonce");
