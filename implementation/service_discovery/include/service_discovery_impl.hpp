@@ -499,9 +499,10 @@ public:
     void validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major);
 
 private:
-    // Additional Method for Service Authenticity
+    // Additional Method for Service Authenticity Start ######################################################################
     void validate_subscribe_and_verify_signature(client_t _client, boost::asio::ip::address_v4 _subscriber_ip_address, service_t _service, instance_t _instance, major_version_t _major);
-    // Addtional Member for Service Authenticity
+    // Additional Method for Service Authenticity End ########################################################################
+    // Addtional Member for Service Authentication Start #####################################################################
     dns_resolver* dns_resolver_;
     std::shared_ptr<svcb_resolver> svcb_resolver_;
     std::shared_ptr<tlsa_resolver> tlsa_resolver_;
@@ -514,7 +515,15 @@ private:
     crypto_operator* crypto_operator_;
     std::vector<CryptoPP::byte> certificate_data_;
     CryptoPP::RSA::PrivateKey private_key_;
-// Addition for Service Authentication End ###############################################################################
+    // Addition for Service Authentication End ###############################################################################
+    // Additional members for payload encryption key agreement Start #########################################################
+    std::shared_ptr<dh_ecc> dh_ecc_;
+    std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> group_secrets_;
+    // Additional members for payload encryption key agreement End ###########################################################
+    // Additional methods for payload encryption key agreement Start #########################################################
+    void set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc);
+    void set_group_secret_map(std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> _group_secrets);
+    // Additional methods for payload encryption key agreement End ###########################################################
 };
 
 }  // namespace sd

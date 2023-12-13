@@ -5111,4 +5111,13 @@ void routing_manager_impl::set_timestamp_collector(timestamp_collector* _timesta
     timestamp_collector_ = _timestamp_collector;
 }
 
+// Aditional methods for payload encryption
+void routing_manager_impl::set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) {
+    dh_ecc_ = _dh_ecc;
+}
+
+void routing_manager_impl::set_group_secret_map(std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> _group_secrets) {
+    group_secrets_ = _group_secrets;
+}
+
 } // namespace vsomeip_v3

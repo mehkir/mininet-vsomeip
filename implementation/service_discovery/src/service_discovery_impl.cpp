@@ -1602,6 +1602,16 @@ service_discovery_impl::set_timestamp_collector(timestamp_collector* _timestamp_
 }
 
 void
+service_discovery_impl::set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) {
+    dh_ecc_ = _dh_ecc;
+}
+
+void
+service_discovery_impl::set_group_secret_map(std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> _group_secrets) {
+    group_secrets_ = _group_secrets;
+}
+
+void
 service_discovery_impl::process_offerservice_serviceentry(
         service_t _service, instance_t _instance, major_version_t _major,
         minor_version_t _minor, ttl_t _ttl,

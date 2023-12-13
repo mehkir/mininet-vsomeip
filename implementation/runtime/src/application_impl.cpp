@@ -78,7 +78,9 @@ application_impl::application_impl(const std::string &_name, const std::string &
           watchdog_timer_(io_),
           client_side_logging_(false),
           has_session_handling_(true),
-          timestamp_collector_(timestamp_collector::get_instance())
+          timestamp_collector_(timestamp_collector::get_instance()),
+          dh_ecc_(std::make_shared<dh_ecc>()),
+          group_secrets_(std::make_shared<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>>())
 {
 }
 
@@ -304,6 +306,8 @@ bool application_impl::init() {
             }
             routing_ = std::make_shared<routing_manager_impl>(this);
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_timestamp_collector(timestamp_collector_);
+            dynamic_cast<routing_manager_impl*>(routing_.get())->set_dh_ecc(dh_ecc_);
+            dynamic_cast<routing_manager_impl*>(routing_.get())->set_group_secret_map(group_secrets_);
         } else {
             VSOMEIP_INFO << "Instantiating routing manager [Proxy].";
             routing_ = std::make_shared<routing_manager_client>(this, client_side_logging_, client_side_logging_filter_);

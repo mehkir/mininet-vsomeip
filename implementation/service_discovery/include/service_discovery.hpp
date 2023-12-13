@@ -26,6 +26,8 @@
 #include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
 //Additional include for time measurement
 #include "../../timestamps/include/timestamp_collector.hpp"
+//Additional include for payload encryption key agreement
+#include "../../dh_ecc/include/dh_ecc.hpp"
 
 namespace vsomeip_v3 {
 
@@ -100,6 +102,10 @@ public:
     // Addition for Time Measurement Start ###############################################################################
     virtual void set_timestamp_collector(timestamp_collector* _timestamp_collector) = 0;
     // Addition for Time Measurement End #################################################################################
+    // Aditional methods for payload encryption Start ####################################################################
+    virtual void set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) = 0;
+    virtual void set_group_secret_map(std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> _group_secrets) = 0;
+    // Aditional methods for payload encryption End ######################################################################
 };
 
 } // namespace sd

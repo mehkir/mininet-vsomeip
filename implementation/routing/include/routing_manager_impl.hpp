@@ -40,6 +40,9 @@
 //Additional include for time measurement
 #include "../../timestamps/include/timestamp_collector.hpp"
 
+// Additional include for payload encryption
+#include "../../dh_ecc/include/dh_ecc.hpp"
+
 namespace vsomeip_v3 {
 
 class configuration;
@@ -321,9 +324,6 @@ public:
     void remove_subscriptions(port_t _local_port,
             const boost::asio::ip::address &_remote_address,
             port_t _remote_port);
-
-    // Additional method for time measurement
-    void set_timestamp_collector(timestamp_collector* _timestamp_collector);
 private:
     bool offer_service(client_t _client,
             service_t _service, instance_t _instance,
@@ -582,6 +582,16 @@ private:
     eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
     //Addition for time measurement
     timestamp_collector* timestamp_collector_;
+    // Additional members for payload encryption
+    std::shared_ptr<dh_ecc> dh_ecc_;
+    std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> group_secrets_;
+
+public:
+    // Additional method for time measurement
+    void set_timestamp_collector(timestamp_collector* _timestamp_collector);
+    // Aditional methods for payload encryption
+    void set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc);
+    void set_group_secret_map(std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> _group_secrets);
 };
 
 }  // namespace vsomeip_v3

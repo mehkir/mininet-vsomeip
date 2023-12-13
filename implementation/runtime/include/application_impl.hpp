@@ -37,6 +37,9 @@
 // Additional include for time measurement
 #include "../../timestamps/include/timestamp_collector.hpp"
 
+// Additional include for payload encryption
+#include "../../dh_ecc/include/dh_ecc.hpp"
+
 namespace vsomeip_v3 {
 
 class runtime;
@@ -500,6 +503,9 @@ private:
 
     // Additional Member for Time measurement
     timestamp_collector* timestamp_collector_;
+    // Additional Members for Payload encryption
+    std::shared_ptr<dh_ecc> dh_ecc_;
+    std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> group_secrets_;
 };
 
 } // namespace vsomeip_v3
