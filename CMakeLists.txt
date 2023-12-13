@@ -294,6 +294,7 @@ file(GLOB ${VSOMEIP_NAME}_SRC
     "implementation/dnssec/src/*.cpp"
     "implementation/service_authentication/src/*.cpp"
     "implementation/timestamps/src/*.cpp"
+    "implementation/dh_ecc/src/*.cpp"
     "implementation/service_discovery/src/*.cpp"
 )
 if (VSOMEIP_ENABLE_MULTIPLE_ROUTING_MANAGERS EQUAL 1)
@@ -336,6 +337,7 @@ file(GLOB ${VSOMEIP_NAME}-sd_SRC
     "implementation/service_authentication/src/*.cpp"
     "implementation/dnssec/src/*.cpp"
     "implementation/timestamps/src/*.cpp"
+    "implementation/dh_ecc/src/*.cpp"
 )
 list(SORT ${VSOMEIP_NAME}-sd_SRC)
 
