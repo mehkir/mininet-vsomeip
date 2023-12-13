@@ -524,6 +524,9 @@ private:
     void set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc);
     void set_group_secret_map(std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> _group_secrets);
     // Additional methods for payload encryption key agreement End ###########################################################
+    // Additional util methods Start #########################################################################################
+    void service_discovery_impl::print_numerical_representation(std::vector<unsigned char> _vector, std::string _title="");
+    // Additional util methods End ###########################################################################################
 };
 
 }  // namespace sd
