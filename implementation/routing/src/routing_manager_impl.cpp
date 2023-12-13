@@ -191,6 +191,8 @@ void routing_manager_impl::init() {
             discovery_->set_eventgroup_subscription_cache(eventgroup_subscription_cache_);
             discovery_->set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache_);
             discovery_->set_timestamp_collector(timestamp_collector_);
+            discovery_->set_dh_ecc(dh_ecc_);
+            discovery_->set_group_secret_map(group_secrets_);
         } else {
             VSOMEIP_ERROR << "Service Discovery module could not be loaded!";
             std::exit(EXIT_FAILURE);

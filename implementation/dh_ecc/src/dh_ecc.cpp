@@ -5,6 +5,7 @@
 #include <cryptopp/asn.h>
 
 dh_ecc::dh_ecc() {
+    diffie_hellman_.AccessGroupParameters().Initialize(CryptoPP::ASN1::secp256r1());
     // Generate handshake secrets
     secret_.New(diffie_hellman_.PrivateKeyLength());
     blinded_secret_.New(diffie_hellman_.PublicKeyLength());
