@@ -102,7 +102,6 @@ namespace vsomeip_v3 {
         request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << (int) servicedata_and_cbs->service_;
         request << ".";
         request << SERVICE_PARENTDOMAIN;
-        std::cout << "SERVICE TLSA QUERY NAME=" << request.str().c_str() << std::endl;
         dns_resolver_->resolve(request.str().c_str(), C_IN, T_TLSA, service_tlsa_resolve_callback, _service_data);
     }
 
