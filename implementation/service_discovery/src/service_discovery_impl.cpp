@@ -1165,14 +1165,10 @@ service_discovery_impl::insert_subscription_ack(
     if (signed_nonce.empty()) {
         throw std::runtime_error("Nonce is empty!");
     }
-    // std::string signed_nonce_string_cs = data_partitioner().convert_to_comma_separated_int_string(signed_nonce);
-    // data_partitioner().partition_data<std::string>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce_string_cs);
     data_partitioner().partition_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce);
     std::vector<CryptoPP::byte> nonce_data;
     nonce_data.insert(nonce_data.end(), signed_nonce.begin(), signed_nonce.end());
     std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
-    // std::string signature_string_cs = data_partitioner().convert_to_comma_separated_int_string(signature);
-    // data_partitioner().partition_data<std::string>(NONCE_SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature_string_cs);
     data_partitioner().partition_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
     its_data.options_.push_back(configuration_option);
     VSOMEIP_DEBUG << "Created subscribe ack by Publisher (SUBSCRIBE_ACK_SEND)" << "(" << subscriber_address.to_string() << "," << its_service << "," << its_instance << ")";
@@ -1492,8 +1488,6 @@ service_discovery_impl::process_serviceentry(
                 case option_type_e::CONFIGURATION: {
                         VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry CONFIGURATION (MEHMET MUELLER DEBUG) <<<<<";
                         std::shared_ptr < configuration_option_impl > its_configuration_option = std::dynamic_pointer_cast < configuration_option_impl > (its_option);
-                        // std::string generated_nonce_string_cs = data_partitioner().reassemble_data<std::string>(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
-                        // generated_nonce = data_partitioner().convert_comma_separated_string_to_unsigned_char_vector(generated_nonce_string_cs);
                         generated_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     }
                     break;
@@ -2063,8 +2057,6 @@ service_discovery_impl::insert_offer_service(
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
         std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
         challenge_nonce_cache_->set_offered_nonce(_info->get_service(), _info->get_instance(), generated_nonce_vector);
-        // std::string generated_nonce_string_cs = data_partitioner().convert_to_comma_separated_int_string(generated_nonce_vector);
-        // data_partitioner().partition_data<std::string>(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, generated_nonce_string_cs);
         data_partitioner().partition_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, generated_nonce_vector);
         its_data.options_.push_back(configuration_option);
         VSOMEIP_DEBUG << "Created offer by Publisher (OFFER_SEND)"
@@ -2502,14 +2494,8 @@ service_discovery_impl::process_eventgroupentry(
 
                 // Service Authentication Start ##########################################################################
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type && its_ttl > 0) {
-                    // std::string generated_nonce_string_cs = data_partitioner().reassemble_data<std::string>(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
-                    // std::vector<unsigned char> generated_nonce = data_partitioner().convert_comma_separated_string_to_unsigned_char_vector(generated_nonce_string_cs);
                     std::vector<unsigned char> generated_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
-                    // std::string signed_nonce_string_cs = data_partitioner().reassemble_data<std::string>(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
-                    // signed_nonce = data_partitioner().convert_comma_separated_string_to_unsigned_char_vector(signed_nonce_string_cs);
                     signed_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
-                    // std::string nonce_signature_string_cs = data_partitioner().reassemble_data<std::string>(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
-                    // nonce_signature = data_partitioner().convert_comma_separated_string_to_unsigned_char_vector(nonce_signature_string_cs);
                     signature = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
                     blinded_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, its_configuration_option);
                     std::vector<unsigned char> client_id = data_partitioner().reassemble_data<std::vector<unsigned char>>(CLIENT_ID_CONFIG_OPTION_KEY, its_configuration_option);
@@ -2560,11 +2546,7 @@ service_discovery_impl::process_eventgroupentry(
                         svcb_resolver_->request_client_svcb_record(client_data_and_cbs_);
                     }
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
-                    // std::string signed_nonce_string_cs = data_partitioner().reassemble_data<std::string>(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
-                    // signed_nonce = data_partitioner().convert_comma_separated_string_to_unsigned_char_vector(signed_nonce_string_cs);
                     signed_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
-                    // std::string nonce_signature_string_cs = data_partitioner().reassemble_data<std::string>(NONCE_SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
-                    // nonce_signature = data_partitioner().convert_comma_separated_string_to_unsigned_char_vector(nonce_signature_string_cs);
                     signature = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
                     VSOMEIP_DEBUG << "Received subscribe ack from Publisher (SUBSCRIBE_ACK_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl;
