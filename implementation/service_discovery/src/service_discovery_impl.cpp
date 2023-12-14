@@ -3440,6 +3440,7 @@ service_discovery_impl::on_offer_debounce_timer_expired(
         return;
     }
 
+    VSOMEIP_DEBUG << "INITIAL OFFER SENDING";
     // Sent out offers for the first time as initial wait phase ended
     std::vector<std::shared_ptr<message_impl>> its_messages;
     std::shared_ptr<message_impl> its_message(std::make_shared<message_impl>());
@@ -3506,6 +3507,7 @@ service_discovery_impl::on_repetition_phase_timer_expired(
             std::uint8_t repetition(0);
             bool move_to_main(false);
             if (_repetition <= repetitions_max_) {
+                VSOMEIP_DEBUG << "REPETITION OFFER SENDING";
                 // Sent offers, double time to wait and start timer again.
 
                 new_delay = std::chrono::milliseconds(_last_delay * 2);
@@ -3737,6 +3739,7 @@ service_discovery_impl::on_main_phase_timer_expired(
     if (_error) {
         return;
     }
+    VSOMEIP_DEBUG << "CYCLIC OFFER SENDING";
     send(true);
     start_main_phase_timer();
 }
