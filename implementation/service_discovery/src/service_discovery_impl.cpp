@@ -1053,12 +1053,12 @@ service_discovery_impl::create_eventgroup_entry(
         std::string client_id(std::to_string(client));
         data_partitioner().partition_data<std::vector<unsigned char>>(CLIENT_ID_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(client_id.begin(), client_id.end()));
         its_data.options_.push_back(configuration_option);
-        VSOMEIP_DEBUG << "Created subscription by Subscriber (SUBSCRIBE_SEND)" << " for Publisher Endpoint(" << publisher_address.to_v4().to_string() << "," << _service << "," << _instance << ")";
-        print_numerical_representation(generated_nonce_vector, "Generated nonce");
-        print_numerical_representation(signed_nonce_vector, "Signed nonce");
-        print_numerical_representation(blinded_secret_vector, "Blinded secret");
-        print_numerical_representation(signature, "Signature");
-        std::cout << "Client id=" << std::hex << client << std::endl;
+        // VSOMEIP_DEBUG << "Created subscription by Subscriber (SUBSCRIBE_SEND)" << " for Publisher Endpoint(" << publisher_address.to_v4().to_string() << "," << _service << "," << _instance << ")";
+        // print_numerical_representation(generated_nonce_vector, "Generated nonce");
+        // print_numerical_representation(signed_nonce_vector, "Signed nonce");
+        // print_numerical_representation(blinded_secret_vector, "Blinded secret");
+        // print_numerical_representation(signature, "Signature");
+        // std::cout << "Client id=" << std::hex << client << std::endl;
     }
     // Service Authentication End ########################################################################################
 
@@ -1182,12 +1182,12 @@ service_discovery_impl::insert_subscription_ack(
     data_partitioner().partition_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
     its_data.options_.push_back(configuration_option);
     encrypted_group_secret_result_cache_->remove_encrypted_group_secret_result(subscriber_address, its_service, its_instance, its_major);
-    VSOMEIP_DEBUG << "Created subscribe ack by Publisher (SUBSCRIBE_ACK_SEND)" << "(" << subscriber_address.to_string() << "," << its_service << "," << its_instance << ")";
-    print_numerical_representation(signed_nonce, "Signed nonce");
-    print_numerical_representation(std::vector<unsigned char>(blinded_secret.begin(), blinded_secret.end()), "Blinded secret");
-    print_numerical_representation(std::vector<unsigned char>(encrypted_group_secret.begin(), encrypted_group_secret.end()), "Encrypted group secret");
-    print_numerical_representation(initialization_vector, "Initialization vector");
-    print_numerical_representation(signature, "Signature");
+    // VSOMEIP_DEBUG << "Created subscribe ack by Publisher (SUBSCRIBE_ACK_SEND)" << "(" << subscriber_address.to_string() << "," << its_service << "," << its_instance << ")";
+    // print_numerical_representation(signed_nonce, "Signed nonce");
+    // print_numerical_representation(std::vector<unsigned char>(blinded_secret.begin(), blinded_secret.end()), "Blinded secret");
+    // print_numerical_representation(std::vector<unsigned char>(encrypted_group_secret.begin(), encrypted_group_secret.end()), "Encrypted group secret");
+    // print_numerical_representation(initialization_vector, "Initialization vector");
+    // print_numerical_representation(signature, "Signature");
     // Service Authentication End ########################################################################################
 
     // Selective
@@ -1524,10 +1524,10 @@ service_discovery_impl::process_serviceentry(
         publisher_address = its_reliable_address;
     }
     challenge_nonce_cache_->add_publisher_challenge_nonce(configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME))), publisher_address.to_v4(), its_service, its_instance, generated_nonce);
-    VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string();
-    VSOMEIP_DEBUG << "Received offer from Publisher (OFFER_ARRIVED)"
-    << "(" << publisher_address.to_v4().to_string() << "," << its_service << "," << its_instance << ")";
-    print_numerical_representation(generated_nonce, "Generated nonce");
+    // VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string();
+    // VSOMEIP_DEBUG << "Received offer from Publisher (OFFER_ARRIVED)"
+    // << "(" << publisher_address.to_v4().to_string() << "," << its_service << "," << its_instance << ")";
+    // print_numerical_representation(generated_nonce, "Generated nonce");
     // Service Authentication End ############################################################################
 
     if (0 < its_ttl) {
@@ -2078,9 +2078,9 @@ service_discovery_impl::insert_offer_service(
         challenge_nonce_cache_->set_offered_nonce(_info->get_service(), _info->get_instance(), generated_nonce_vector);
         data_partitioner().partition_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, generated_nonce_vector);
         its_data.options_.push_back(configuration_option);
-        VSOMEIP_DEBUG << "Created offer by Publisher (OFFER_SEND)"
-        << " at Endpoint(" << unicast_.to_v4().to_string() << "," << _info->get_service() << "," << _info->get_instance() << ")";
-        print_numerical_representation(generated_nonce_vector, "Generated nonce");
+        // VSOMEIP_DEBUG << "Created offer by Publisher (OFFER_SEND)"
+        // << " at Endpoint(" << unicast_.to_v4().to_string() << "," << _info->get_service() << "," << _info->get_instance() << ")";
+        // print_numerical_representation(generated_nonce_vector, "Generated nonce");
         // Service Authentication End ##################################
 
         add_entry_data(_messages, its_data);
@@ -2521,14 +2521,14 @@ service_discovery_impl::process_eventgroupentry(
                     client = (client_t) std::stoi(std::string(client_id.begin(), client_id.end()));
                     challenge_nonce_cache_->add_subscriber_challenge_nonce(_sender.to_v4(), its_service, its_instance, generated_nonce);
                     challenge_nonce_cache_->add_publisher_challenge_nonce(client, _sender.to_v4(), its_service, its_instance, signed_nonce);
-                    VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << _sender.to_v4().to_string();
-                    VSOMEIP_DEBUG << "Received subscription from Subscriber (SUBSCRIBE_ARRIVED)"
-                    << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl;
-                    print_numerical_representation(generated_nonce, "Generated nonce");
-                    print_numerical_representation(signed_nonce, "Signed nonce");
-                    print_numerical_representation(blinded_secret, "Blinded secret");
-                    print_numerical_representation(signature, "Signature");
-                    std::cout << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end()) << std::endl;
+                    // VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << _sender.to_v4().to_string();
+                    // VSOMEIP_DEBUG << "Received subscription from Subscriber (SUBSCRIBE_ARRIVED)"
+                    // << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl;
+                    // print_numerical_representation(generated_nonce, "Generated nonce");
+                    // print_numerical_representation(signed_nonce, "Signed nonce");
+                    // print_numerical_representation(blinded_secret, "Blinded secret");
+                    // print_numerical_representation(signature, "Signature");
+                    // std::cout << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end()) << std::endl;
                     // Request client svcb record
                     client_svcb_cache_entry client_svcbcache_entry = svcb_cache_->get_client_svcb_cache_entry(client, its_service, its_instance, its_major);
                     std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_subscriber_certificate(client, _sender.to_v4(), its_service, its_instance);
@@ -2570,13 +2570,13 @@ service_discovery_impl::process_eventgroupentry(
                     blinded_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, its_configuration_option);
                     encrypted_group_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY, its_configuration_option);
                     initialization_vector = data_partitioner().reassemble_data<std::vector<unsigned char>>(INITIALIZATION_VECTOR_CONFIG_OPTION_KEY, its_configuration_option);
-                    VSOMEIP_DEBUG << "Received subscribe ack from Publisher (SUBSCRIBE_ACK_ARRIVED)"
-                    << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl;
-                    print_numerical_representation(signed_nonce, "Signed nonce");
-                    print_numerical_representation(blinded_secret, "Blinded secret");
-                    print_numerical_representation(encrypted_group_secret, "Encrypted group secret");
-                    print_numerical_representation(initialization_vector, "Initialization vector");
-                    print_numerical_representation(signature, "Signature");
+                    // VSOMEIP_DEBUG << "Received subscribe ack from Publisher (SUBSCRIBE_ACK_ARRIVED)"
+                    // << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl;
+                    // print_numerical_representation(signed_nonce, "Signed nonce");
+                    // print_numerical_representation(blinded_secret, "Blinded secret");
+                    // print_numerical_representation(encrypted_group_secret, "Encrypted group secret");
+                    // print_numerical_representation(initialization_vector, "Initialization vector");
+                    // print_numerical_representation(signature, "Signature");
                 }
                 // Service Authentication End ############################################################################
                 break;
