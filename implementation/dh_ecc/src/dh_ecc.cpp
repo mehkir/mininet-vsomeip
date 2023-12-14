@@ -57,3 +57,7 @@ CryptoPP::SecByteBlock dh_ecc::decrypt_group_secret(encrypted_group_secret_resul
     cfbDecryption.ProcessData(decrypted_group_key.BytePtr(), encrypted_group_secret_.BytePtr(), encrypted_group_secret_.SizeInBytes());
     return decrypted_group_key;
 }
+
+CryptoPP::SecByteBlock dh_ecc::get_blinded_secret() {
+    return blinded_secret_;
+}
