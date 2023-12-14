@@ -1166,13 +1166,27 @@ service_discovery_impl::insert_subscription_ack(
         throw std::runtime_error("Nonce is empty!");
     }
     data_partitioner().partition_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce);
-    std::vector<CryptoPP::byte> nonce_data;
-    nonce_data.insert(nonce_data.end(), signed_nonce.begin(), signed_nonce.end());
-    std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, nonce_data);
+    encrypted_group_secret_result encrypted_groupsecret_result = encrypted_group_secret_result_cache_->get_encrypted_group_secret_result(subscriber_address, its_service, its_instance, its_major);
+    CryptoPP::SecByteBlock blinded_secret = encrypted_groupsecret_result.blinded_publisher_secret_;
+    CryptoPP::SecByteBlock encrypted_group_secret = encrypted_groupsecret_result.encrypted_group_secret_;
+    std::vector<unsigned char> initialization_vector = encrypted_groupsecret_result.initialization_vector_;
+    data_partitioner().partition_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(blinded_secret.begin(), blinded_secret.end()));
+    data_partitioner().partition_data<std::vector<unsigned char>>(ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(encrypted_group_secret.begin(), encrypted_group_secret.end()));
+    data_partitioner().partition_data<std::vector<unsigned char>>(INITIALIZATION_VECTOR_CONFIG_OPTION_KEY, configuration_option, initialization_vector);
+    std::vector<CryptoPP::byte> data_to_be_signed;
+    data_to_be_signed.insert(data_to_be_signed.end(), signed_nonce.begin(), signed_nonce.end());
+    data_to_be_signed.insert(data_to_be_signed.end(), blinded_secret.begin(), blinded_secret.end());
+    data_to_be_signed.insert(data_to_be_signed.end(), encrypted_group_secret.begin(), encrypted_group_secret.end());
+    data_to_be_signed.insert(data_to_be_signed.end(), initialization_vector.begin(), initialization_vector.end());
+    std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, data_to_be_signed);
     data_partitioner().partition_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
     its_data.options_.push_back(configuration_option);
+    encrypted_group_secret_result_cache_->remove_encrypted_group_secret_result(subscriber_address, its_service, its_instance, its_major);
     VSOMEIP_DEBUG << "Created subscribe ack by Publisher (SUBSCRIBE_ACK_SEND)" << "(" << subscriber_address.to_string() << "," << its_service << "," << its_instance << ")";
     print_numerical_representation(signed_nonce, "Signed nonce");
+    print_numerical_representation(std::vector<unsigned char>(blinded_secret.begin(), blinded_secret.end()), "Blinded secret");
+    print_numerical_representation(std::vector<unsigned char>(encrypted_group_secret.begin(), encrypted_group_secret.end()), "Encrypted group secret");
+    print_numerical_representation(initialization_vector, "Initialization vector");
     print_numerical_representation(signature, "Signature");
     // Service Authentication End ########################################################################################
 
@@ -2553,9 +2567,15 @@ service_discovery_impl::process_eventgroupentry(
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
                     signed_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     signature = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
+                    blinded_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, its_configuration_option);
+                    encrypted_group_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY, its_configuration_option);
+                    initialization_vector = data_partitioner().reassemble_data<std::vector<unsigned char>>(INITIALIZATION_VECTOR_CONFIG_OPTION_KEY, its_configuration_option);
                     VSOMEIP_DEBUG << "Received subscribe ack from Publisher (SUBSCRIBE_ACK_ARRIVED)"
                     << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl;
                     print_numerical_representation(signed_nonce, "Signed nonce");
+                    print_numerical_representation(blinded_secret, "Blinded secret");
+                    print_numerical_representation(encrypted_group_secret, "Encrypted group secret");
+                    print_numerical_representation(initialization_vector, "Initialization vector");
                     print_numerical_representation(signature, "Signature");
                 }
                 // Service Authentication End ############################################################################
@@ -2598,7 +2618,7 @@ service_discovery_impl::process_eventgroupentry(
     } else {
         if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type) { //this type is used for ACK and NACK messages
             if (its_ttl > 0) {
-                eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance, its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port, signed_nonce, signature);
+                eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance, its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port, signed_nonce, blinded_secret, encrypted_group_secret, initialization_vector, signature);
                 validate_subscribe_ack_and_verify_signature(_sender.to_v4(), its_service, its_instance, its_major); // Service Authentication
             } else {
                 handle_eventgroup_subscription_nack(its_service, its_instance, its_eventgroup,
@@ -2742,7 +2762,13 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
         return;
     }
     std::vector<byte_t> data_to_be_verified;
+    std::vector<unsigned char> blinded_secret = eventgroup_subscriptionackcache_entry.blinded_secret_;
+    std::vector<unsigned char> encrypted_group_secret = eventgroup_subscriptionackcache_entry.encrypted_group_secret_;
+    std::vector<unsigned char> initialization_vector = eventgroup_subscriptionackcache_entry.initialization_vector_;
     data_to_be_verified.insert(data_to_be_verified.end(), signed_nonce.begin(), signed_nonce.end());
+    data_to_be_verified.insert(data_to_be_verified.end(), blinded_secret.begin(), blinded_secret.end());
+    data_to_be_verified.insert(data_to_be_verified.end(), encrypted_group_secret.begin(), encrypted_group_secret.end());
+    data_to_be_verified.insert(data_to_be_verified.end(), initialization_vector.begin(), initialization_vector.end());
     data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
     signature_verified = crypto_operator_->verify(public_key, data_to_be_verified);
 
@@ -2750,6 +2776,13 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
         return;
     }
     eventgroup_subscription_ack_cache_->remove_eventgroup_subscription_ack_cache_entry(_sender_ip_address, _service, _instance);
+    encrypted_group_secret_result encrypted_groupsecret_result;
+    encrypted_groupsecret_result.blinded_publisher_secret_ = CryptoPP::SecByteBlock(blinded_secret.data(), blinded_secret.size());
+    encrypted_groupsecret_result.encrypted_group_secret_ = CryptoPP::SecByteBlock(encrypted_group_secret.data(), encrypted_group_secret.size());
+    encrypted_groupsecret_result.initialization_vector_ = initialization_vector;
+    CryptoPP::SecByteBlock group_secret = dh_ecc_->decrypt_group_secret(encrypted_groupsecret_result);
+    std::tuple<service_t, instance_t> key_tuple = std::make_tuple(service_svcbcache_entry.service_,service_svcbcache_entry.instance_);
+    group_secrets_.operator*()[key_tuple] = group_secret;
 
     VSOMEIP_DEBUG << __func__ << " SIGNATURE VERIFIED";
 

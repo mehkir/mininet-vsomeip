@@ -22,6 +22,9 @@ namespace vsomeip_v3 {
         boost::asio::ip::address_v4 first_ip_address_ = boost::asio::ip::address_v4::from_string("0.0.0.0");
         uint16_t port_ = -1;
         std::vector<unsigned char> nonce_;
+        std::vector<unsigned char> blinded_secret_;
+        std::vector<unsigned char> encrypted_group_secret_;
+        std::vector<unsigned char> initialization_vector_;
         std::vector<byte_t> signature_;
     };
 
@@ -41,7 +44,7 @@ namespace vsomeip_v3 {
         eventgroup_subscription_ack_cache& operator=(eventgroup_subscription_ack_cache &) = delete;
         eventgroup_subscription_ack_cache& operator=(eventgroup_subscription_ack_cache &&) = delete;
 
-        void add_eventgroup_subscription_ack_cache_entry(service_t _service, instance_t _instance, eventgroup_t _eventgroup, major_version_t _major_version, ttl_t _ttl, uint8_t _counter, std::set<uint16_t> _clients, boost::asio::ip::address_v4 _sender_ip_address, boost::asio::ip::address_v4 _first_ip_address, uint16_t _port, std::vector<unsigned char> _nonce, std::vector<byte_t> _signature);
+        void add_eventgroup_subscription_ack_cache_entry(service_t _service, instance_t _instance, eventgroup_t _eventgroup, major_version_t _major_version, ttl_t _ttl, uint8_t _counter, std::set<uint16_t> _clients, boost::asio::ip::address_v4 _sender_ip_address, boost::asio::ip::address_v4 _first_ip_address, uint16_t _port, std::vector<unsigned char> _nonce, std::vector<unsigned char> _blinded_secret, std::vector<unsigned char> _encrypted_group_secret, std::vector<unsigned char> _initialization_vector, std::vector<byte_t> _signature);
         void remove_eventgroup_subscription_ack_cache_entry(boost::asio::ip::address_v4 _sender_ip_address, vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance);
         eventgroup_subscription_ack_cache_entry get_eventgroup_subscription_ack_cache_entry(boost::asio::ip::address_v4 _sender_ip_address, vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance);
     };
