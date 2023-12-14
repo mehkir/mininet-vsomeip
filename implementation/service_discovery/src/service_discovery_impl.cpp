@@ -2714,7 +2714,6 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
 
     VSOMEIP_DEBUG << __func__ << " SIGNATURE VERIFIED";
     CryptoPP::SecByteBlock group_secret = dh_ecc_->get_group_secret();
-    print_numerical_representation(std::vector<unsigned char>(group_secret.begin(), group_secret.end()), "Group secret");
 
     handle_eventgroup_subscription(its_service, its_instance,
         its_eventgroup, its_major, its_ttl, its_counter, its_reserved,
@@ -2785,7 +2784,6 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
     CryptoPP::SecByteBlock group_secret = dh_ecc_->decrypt_group_secret(encrypted_groupsecret_result);
     std::tuple<service_t, instance_t> key_tuple = std::make_tuple(service_svcbcache_entry.service_,service_svcbcache_entry.instance_);
     group_secrets_.operator*()[key_tuple] = group_secret;
-    print_numerical_representation(std::vector<unsigned char>(group_secret.begin(), group_secret.end()), "Group secret");
 
     VSOMEIP_DEBUG << __func__ << " SIGNATURE VERIFIED";
 
