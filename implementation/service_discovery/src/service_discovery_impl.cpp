@@ -2673,8 +2673,10 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
     if (!crypto_operator_->extract_public_key_from_certificate(certificate_data, public_key)) {
         return;
     }
+    std::vector<unsigned char> blinded_secret = eventgroup_subscriptioncache_entry.blinded_secret_;
     std::vector<byte_t> data_to_be_verified;
     data_to_be_verified.insert(data_to_be_verified.end(), signed_nonce.begin(), signed_nonce.end());
+    data_to_be_verified.insert(data_to_be_verified.end(), blinded_secret.begin(), blinded_secret.end());
     data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
     signature_verified = crypto_operator_->verify(public_key, data_to_be_verified);
 
