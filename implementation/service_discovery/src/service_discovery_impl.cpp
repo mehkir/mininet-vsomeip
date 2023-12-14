@@ -2692,6 +2692,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
     if (!signature_verified) {
         return;
     }
+    eventgroup_subscription_cache_->remove_eventgroup_subscription_cache_entry(_client, _service, _instance, _major);
 
     VSOMEIP_DEBUG << __func__ << " SIGNATURE VERIFIED";
 
@@ -2750,6 +2751,7 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
     if (!signature_verified) {
         return;
     }
+    eventgroup_subscription_ack_cache_->remove_eventgroup_subscription_ack_cache_entry(_sender_ip_address, _service, _instance);
 
     VSOMEIP_DEBUG << __func__ << " SIGNATURE VERIFIED";
 
