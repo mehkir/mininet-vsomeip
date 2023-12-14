@@ -18,6 +18,7 @@ class dh_ecc {
         encrypted_group_secret_result compute_encrypted_group_secret(CryptoPP::SecByteBlock _blinded_subscriber_secret);
         CryptoPP::SecByteBlock decrypt_group_secret(encrypted_group_secret_result _encrypted_group_secret_result);
         CryptoPP::SecByteBlock get_blinded_secret();
+        CryptoPP::SecByteBlock get_group_secret();
     protected:
     private:
         CryptoPP::AutoSeededRandomPool rnd_;

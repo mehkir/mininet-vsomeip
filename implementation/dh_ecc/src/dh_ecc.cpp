@@ -61,3 +61,7 @@ CryptoPP::SecByteBlock dh_ecc::decrypt_group_secret(encrypted_group_secret_resul
 CryptoPP::SecByteBlock dh_ecc::get_blinded_secret() {
     return blinded_secret_;
 }
+
+CryptoPP::SecByteBlock dh_ecc::get_group_secret() {
+    return group_secret_;
+}
