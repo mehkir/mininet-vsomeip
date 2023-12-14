@@ -2714,6 +2714,8 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
 
     VSOMEIP_DEBUG << __func__ << " SIGNATURE VERIFIED";
     CryptoPP::SecByteBlock group_secret = dh_ecc_->get_group_secret();
+    std::tuple<service_t, instance_t> key_tuple = std::make_tuple(client_svcbcache_entry.service_, client_svcbcache_entry.instance_);
+    group_secrets_.operator*()[key_tuple] = group_secret;
 
     handle_eventgroup_subscription(its_service, its_instance,
         its_eventgroup, its_major, its_ttl, its_counter, its_reserved,
