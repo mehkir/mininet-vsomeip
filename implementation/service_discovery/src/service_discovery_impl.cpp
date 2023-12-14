@@ -2689,6 +2689,8 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
         return;
     }
     eventgroup_subscription_cache_->remove_eventgroup_subscription_cache_entry(_client, _service, _instance, _major);
+    encrypted_group_secret_result encrypted_groupsecret_result = dh_ecc_->compute_encrypted_group_secret(CryptoPP::SecByteBlock(blinded_secret.data(), blinded_secret.size()));
+    encrypted_group_secret_result_cache_->add_encrypted_group_secret_result(client_svcbcache_entry.ipv4_address_, client_svcbcache_entry.service_, client_svcbcache_entry.instance_, client_svcbcache_entry.major_, encrypted_groupsecret_result);
 
     VSOMEIP_DEBUG << __func__ << " SIGNATURE VERIFIED";
 
