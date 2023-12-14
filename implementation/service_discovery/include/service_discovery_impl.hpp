@@ -519,10 +519,12 @@ private:
     // Additional members for payload encryption key agreement Start #########################################################
     std::shared_ptr<dh_ecc> dh_ecc_;
     std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> group_secrets_;
+    std::shared_ptr<encrypted_group_secret_result_cache> encrypted_group_secret_result_cache_;
     // Additional members for payload encryption key agreement End ###########################################################
     // Additional methods for payload encryption key agreement Start #########################################################
     void set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc);
     void set_group_secret_map(std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> _group_secrets);
+    void set_encrypted_group_secret_result_cache(std::shared_ptr<encrypted_group_secret_result_cache> _encrypted_group_secret_result_cache);
     // Additional methods for payload encryption key agreement End ###########################################################
     // Additional util methods Start #########################################################################################
     void print_numerical_representation(std::vector<unsigned char> _vector, std::string _title="");

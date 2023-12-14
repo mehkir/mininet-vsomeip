@@ -42,6 +42,7 @@
 
 // Additional include for payload encryption
 #include "../../dh_ecc/include/dh_ecc.hpp"
+#include "../../dh_ecc/include/encrypted_group_secret_result_cache.hpp"
 
 namespace vsomeip_v3 {
 
@@ -585,6 +586,7 @@ private:
     // Additional members for payload encryption
     std::shared_ptr<dh_ecc> dh_ecc_;
     std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> group_secrets_;
+    std::shared_ptr<encrypted_group_secret_result_cache> encrypted_group_secret_result_cache_;
 
 public:
     // Additional method for time measurement

@@ -1610,6 +1610,11 @@ service_discovery_impl::set_group_secret_map(std::shared_ptr<std::map<std::tuple
 }
 
 void
+service_discovery_impl::set_encrypted_group_secret_result_cache(std::shared_ptr<encrypted_group_secret_result_cache> _encrypted_group_secret_result_cache) {
+    encrypted_group_secret_result_cache_ = _encrypted_group_secret_result_cache;
+}
+
+void
 service_discovery_impl::process_offerservice_serviceentry(
         service_t _service, instance_t _instance, major_version_t _major,
         minor_version_t _minor, ttl_t _ttl,

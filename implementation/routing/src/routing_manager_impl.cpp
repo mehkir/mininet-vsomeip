@@ -93,7 +93,8 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         challenge_nonce_cache_(std::make_shared<challenge_nonce_cache>()),
         resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance()),
         eventgroup_subscription_cache_(eventgroup_subscription_cache::get_instance()),
-        eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance())
+        eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance()),
+        encrypted_group_secret_result_cache_(std::make_shared<encrypted_group_secret_result_cache>())
 {
 }
 
@@ -193,6 +194,7 @@ void routing_manager_impl::init() {
             discovery_->set_timestamp_collector(timestamp_collector_);
             discovery_->set_dh_ecc(dh_ecc_);
             discovery_->set_group_secret_map(group_secrets_);
+            discovery_->set_encrypted_group_secret_result_cache(encrypted_group_secret_result_cache_);
         } else {
             VSOMEIP_ERROR << "Service Discovery module could not be loaded!";
             std::exit(EXIT_FAILURE);
