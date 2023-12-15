@@ -639,6 +639,7 @@ else()
                        POST_BUILD
                        COMMAND asciidoc
                                -a version=${VSOMEIP_VERSION}
+                               -a iconsdir=/usr/share/asciidoc/icons
                                -b html
                                -o documentation/vsomeipUserGuide.html
                                ${PROJECT_SOURCE_DIR}/documentation/vsomeipUserGuide)
