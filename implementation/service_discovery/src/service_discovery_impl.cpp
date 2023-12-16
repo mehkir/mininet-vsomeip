@@ -86,14 +86,13 @@ service_discovery_impl::service_discovery_impl(
       is_diagnosis_(false),
       last_msg_received_timer_(_host->get_io()),
       last_msg_received_timer_timeout_(VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY +
-                                           (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10)),
-      crypto_operator_(crypto_operator::get_instance()) // Addition for Service Authentication
+                                           (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10))
        {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
     // Addition for Service Authentication Start ############################################################
-    certificate_data_ = crypto_operator_->load_certificate_from_file(configuration_->get_certificate_path());
-    crypto_operator_->load_pem_private_key(configuration_->get_private_key_path(), private_key_);
+    certificate_data_ = crypto_operator_.load_certificate_from_file(configuration_->get_certificate_path());
+    crypto_operator_.load_pem_private_key(configuration_->get_private_key_path(), private_key_);
     // Addition for Service Authentication End ##############################################################
 }
 
@@ -1029,7 +1028,7 @@ service_discovery_impl::create_eventgroup_entry(
         }
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
         // Generate challenge nonce for publisher and add to configuration option
-        CryptoPP::SecByteBlock generated_nonce = crypto_operator_->get_random_byte_block();
+        CryptoPP::SecByteBlock generated_nonce = crypto_operator_.get_random_byte_block();
         challenge_nonce_cache_->add_subscriber_challenge_nonce(publisher_address.to_v4(), _service, _instance, std::vector<unsigned char>(generated_nonce.begin(), generated_nonce.end()));
         VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string();
         std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
@@ -1047,7 +1046,7 @@ service_discovery_impl::create_eventgroup_entry(
         std::vector<CryptoPP::byte> data_to_be_signed;
         data_to_be_signed.insert(data_to_be_signed.end(), signed_nonce_vector.begin(), signed_nonce_vector.end());
         data_to_be_signed.insert(data_to_be_signed.end(), blinded_secret_vector.begin(), blinded_secret_vector.end());
-        std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, data_to_be_signed);
+        std::vector<CryptoPP::byte> signature = crypto_operator_.sign(private_key_, data_to_be_signed);
         data_partitioner().partition_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
         // Add client id
         std::string client_id(std::to_string(client));
@@ -1178,7 +1177,7 @@ service_discovery_impl::insert_subscription_ack(
     data_to_be_signed.insert(data_to_be_signed.end(), blinded_secret.begin(), blinded_secret.end());
     data_to_be_signed.insert(data_to_be_signed.end(), encrypted_group_secret.begin(), encrypted_group_secret.end());
     data_to_be_signed.insert(data_to_be_signed.end(), initialization_vector.begin(), initialization_vector.end());
-    std::vector<CryptoPP::byte> signature = crypto_operator_->sign(private_key_, data_to_be_signed);
+    std::vector<CryptoPP::byte> signature = crypto_operator_.sign(private_key_, data_to_be_signed);
     data_partitioner().partition_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
     its_data.options_.push_back(configuration_option);
     encrypted_group_secret_result_cache_->remove_encrypted_group_secret_result(subscriber_address, its_service, its_instance, its_major);
@@ -2072,7 +2071,7 @@ service_discovery_impl::insert_offer_service(
         its_entry->set_ttl(its_ttl);
 
         // Service Authentication Start ################################
-        CryptoPP::SecByteBlock generated_nonce = crypto_operator_->get_random_byte_block();
+        CryptoPP::SecByteBlock generated_nonce = crypto_operator_.get_random_byte_block();
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
         std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
         challenge_nonce_cache_->set_offered_nonce(_info->get_service(), _info->get_instance(), generated_nonce_vector);
@@ -2560,7 +2559,7 @@ service_discovery_impl::process_eventgroupentry(
                                                                 std::placeholders::_3,
                                                                 std::placeholders::_4,
                                                                 std::placeholders::_5);
-                        client_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, crypto_operator::get_instance(),
+                        client_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, &crypto_operator_,
                                                                 std::placeholders::_1);
                         svcb_resolver_->request_client_svcb_record(client_data_and_cbs_);
                     }
@@ -2695,7 +2694,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
 
     bool signature_verified = false;
     CryptoPP::RSA::PublicKey public_key;
-    if (!crypto_operator_->extract_public_key_from_certificate(certificate_data, public_key)) {
+    if (!crypto_operator_.extract_public_key_from_certificate(certificate_data, public_key)) {
         return;
     }
     std::vector<unsigned char> blinded_secret = eventgroup_subscriptioncache_entry.blinded_secret_;
@@ -2703,7 +2702,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
     data_to_be_verified.insert(data_to_be_verified.end(), signed_nonce.begin(), signed_nonce.end());
     data_to_be_verified.insert(data_to_be_verified.end(), blinded_secret.begin(), blinded_secret.end());
     data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
-    signature_verified = crypto_operator_->verify(public_key, data_to_be_verified);
+    signature_verified = crypto_operator_.verify(public_key, data_to_be_verified);
 
     if (!signature_verified) {
         return;
@@ -2761,7 +2760,7 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
 
     bool signature_verified = false;
     CryptoPP::RSA::PublicKey public_key;
-    if (!crypto_operator_->extract_public_key_from_certificate(certificate_data, public_key)) {
+    if (!crypto_operator_.extract_public_key_from_certificate(certificate_data, public_key)) {
         return;
     }
     std::vector<byte_t> data_to_be_verified;
@@ -2773,7 +2772,7 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
     data_to_be_verified.insert(data_to_be_verified.end(), encrypted_group_secret.begin(), encrypted_group_secret.end());
     data_to_be_verified.insert(data_to_be_verified.end(), initialization_vector.begin(), initialization_vector.end());
     data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
-    signature_verified = crypto_operator_->verify(public_key, data_to_be_verified);
+    signature_verified = crypto_operator_.verify(public_key, data_to_be_verified);
 
     if (!signature_verified) {
         return;

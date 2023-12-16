@@ -512,7 +512,7 @@ private:
     eventgroup_subscription_cache* eventgroup_subscription_cache_;
     eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
     timestamp_collector* timestamp_collector_;
-    crypto_operator* crypto_operator_;
+    crypto_operator crypto_operator_;
     std::vector<CryptoPP::byte> certificate_data_;
     CryptoPP::RSA::PrivateKey private_key_;
     // Addition for Service Authentication End ###############################################################################
