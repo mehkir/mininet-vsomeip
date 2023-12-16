@@ -8,6 +8,11 @@
 #include <cryptopp/x509cert.h>
 #include <cryptopp/rsa.h>
 
+struct cfb_encrypted_data {
+    CryptoPP::SecByteBlock encrypted_data_;
+    std::vector<CryptoPP::byte> initialization_vector_;
+};
+
 class crypto_operator
 {
 private:
@@ -21,6 +26,8 @@ public:
     static crypto_operator* get_instance();
     std::vector<CryptoPP::byte> encrypt(CryptoPP::PublicKey& _public_key, std::vector<CryptoPP::byte> _data);
     std::vector<CryptoPP::byte> decrypt(CryptoPP::PrivateKey& _private_key, std::vector<CryptoPP::byte> _data);
+    cfb_encrypted_data encrypt(CryptoPP::SecByteBlock _symmetric_key, CryptoPP::SecByteBlock _data);
+    CryptoPP::SecByteBlock decrypt(CryptoPP::SecByteBlock _symmetric_key, cfb_encrypted_data _cfb_encrypted_data);
     std::vector<CryptoPP::byte> sign(CryptoPP::PrivateKey& _private_key, std::vector<CryptoPP::byte> _data);
     bool verify(CryptoPP::PublicKey& _public_key, std::vector<CryptoPP::byte> _data);
     std::string convert_hex_byte_vector_to_hex_string(std::vector<CryptoPP::byte> _data);

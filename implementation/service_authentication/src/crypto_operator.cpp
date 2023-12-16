@@ -4,6 +4,7 @@
 #include <cryptopp/files.h>
 #include <cryptopp/pem.h>
 #include <cryptopp/hex.h>
+#include <cryptopp/modes.h>
 #include <openssl/x509.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
@@ -45,6 +46,35 @@ std::vector<CryptoPP::byte> crypto_operator::decrypt(CryptoPP::PrivateKey& _priv
     std::vector<CryptoPP::byte> decrypted_data;
     CryptoPP::RSAES_OAEP_SHA_Decryptor decryptor(_private_key);
     CryptoPP::VectorSource vectorSource(_data, true, new CryptoPP::PK_DecryptorFilter(rng_, decryptor, new CryptoPP::VectorSink(decrypted_data)));
+    return decrypted_data;
+}
+
+cfb_encrypted_data crypto_operator::encrypt(CryptoPP::SecByteBlock _symmetric_key, CryptoPP::SecByteBlock _data) {
+    // Calculate a SHA-256 hash over the Diffie-Hellman session key
+    CryptoPP::SecByteBlock key(CryptoPP::SHA256::DIGESTSIZE);
+    CryptoPP::SHA256().CalculateDigest(key, _symmetric_key, _symmetric_key.SizeInBytes());
+    // Generate a random IV
+    CryptoPP::byte iv[CryptoPP::AES::BLOCKSIZE];
+    rng_.GenerateBlock(iv, CryptoPP::AES::BLOCKSIZE);
+    std::vector<CryptoPP::byte> iv_vector(iv, iv + CryptoPP::AES::BLOCKSIZE);
+    // Encrypt
+    CryptoPP::SecByteBlock encrypted_data(_data.SizeInBytes());
+    CryptoPP::CFB_Mode<CryptoPP::AES>::Encryption cfbEncryption(key, CryptoPP::SHA256::DIGESTSIZE, iv);
+    cfbEncryption.ProcessData(encrypted_data.BytePtr(), _data.BytePtr(), _data.SizeInBytes());
+    cfb_encrypted_data cfbencrypted_data;
+    cfbencrypted_data.encrypted_data_ = encrypted_data;
+    cfbencrypted_data.initialization_vector_ = iv_vector;
+    return cfbencrypted_data;
+}
+
+CryptoPP::SecByteBlock crypto_operator::decrypt(CryptoPP::SecByteBlock _symmetric_key, cfb_encrypted_data _cfb_encrypted_data) {
+    // Calculate a SHA-256 hash over the Diffie-Hellman session key
+    CryptoPP::SecByteBlock key(CryptoPP::SHA256::DIGESTSIZE);
+    CryptoPP::SHA256().CalculateDigest(key, _symmetric_key, _symmetric_key.SizeInBytes());
+    // Decrypt
+    CryptoPP::SecByteBlock decrypted_data(_cfb_encrypted_data.encrypted_data_.SizeInBytes());
+    CryptoPP::CFB_Mode<CryptoPP::AES>::Decryption cfbDecryption(key, CryptoPP::SHA256::DIGESTSIZE, _cfb_encrypted_data.initialization_vector_.data());
+    cfbDecryption.ProcessData(decrypted_data.BytePtr(), _cfb_encrypted_data.encrypted_data_.BytePtr(), _cfb_encrypted_data.encrypted_data_.SizeInBytes());
     return decrypted_data;
 }
 
