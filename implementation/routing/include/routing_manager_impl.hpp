@@ -589,6 +589,8 @@ private:
     std::shared_ptr<encrypted_group_secret_result_cache> encrypted_group_secret_result_cache_;
 
 public:
+    // Addtional member for service authentication
+    crypto_operator crypto_operator_;
     // Additional method for time measurement
     void set_timestamp_collector(timestamp_collector* _timestamp_collector);
     // Aditional methods for payload encryption
