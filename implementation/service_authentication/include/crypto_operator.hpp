@@ -16,14 +16,11 @@ struct cfb_encrypted_data {
 class crypto_operator
 {
 private:
-    crypto_operator();
-    ~crypto_operator();
-    static std::mutex mutex_;
-    static crypto_operator* instance_;
     CryptoPP::AutoSeededRandomPool rng_;
     void load(const std::string& _filename, CryptoPP::BufferedTransformation& _bt);
 public:
-    static crypto_operator* get_instance();
+    crypto_operator();
+    ~crypto_operator();
     std::vector<CryptoPP::byte> encrypt(CryptoPP::PublicKey& _public_key, std::vector<CryptoPP::byte> _data);
     std::vector<CryptoPP::byte> decrypt(CryptoPP::PrivateKey& _private_key, std::vector<CryptoPP::byte> _data);
     cfb_encrypted_data encrypt(CryptoPP::SecByteBlock _symmetric_key, CryptoPP::SecByteBlock _data);

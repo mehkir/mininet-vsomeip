@@ -12,22 +12,11 @@
 #define DOUBLE_DIGIT 2
 #define ZERO_FILL '0'
 
-std::mutex crypto_operator::mutex_;
-crypto_operator* crypto_operator::instance_;
-
 crypto_operator::crypto_operator() {
     rng_.Reseed();
 }
 
 crypto_operator::~crypto_operator() {
-}
-
-crypto_operator* crypto_operator::get_instance() {
-    std::lock_guard<std::mutex> lockguard(mutex_);
-    if(instance_ == nullptr) {
-        instance_ = new crypto_operator();
-    }
-    return instance_;
 }
 
 std::vector<CryptoPP::byte> crypto_operator::encrypt(CryptoPP::PublicKey& _public_key, std::vector<CryptoPP::byte> _data) {
