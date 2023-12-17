@@ -105,7 +105,7 @@ public:
                 _response->get_payload();
         its_message << "(" << std::dec << its_payload->get_length() << ") ";
         for (uint32_t i = 0; i < its_payload->get_length(); ++i)
-            its_message << (uint8_t) (its_payload->get_data()[i]) << " ";
+            its_message << (int) its_payload->get_data()[i] << " ";
         std::cout << its_message.str() << std::endl;
     }
 
