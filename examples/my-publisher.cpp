@@ -151,8 +151,12 @@ public:
                 if (its_size == sizeof(its_data))
                     its_size = 1;
 
-                for (uint32_t i = 0; i < its_size; ++i)
+                std::cout << "Generating payload: ";
+                for (uint32_t i = 0; i < its_size; ++i) {
                     its_data[i] = static_cast<uint8_t>(i);
+                    std::cout << i << " ";
+                }
+                std::cout << std::endl;
 
                 {
                     std::lock_guard<std::mutex> its_lock(payload_mutex_);
