@@ -295,6 +295,7 @@ file(GLOB ${VSOMEIP_NAME}_SRC
     "implementation/service_authentication/src/*.cpp"
     "implementation/timestamps/src/*.cpp"
     "implementation/dh_ecc/src/*.cpp"
+    "implementation/payload_encoding/src/*.cpp"
     "implementation/service_discovery/src/*.cpp"
 )
 if (VSOMEIP_ENABLE_MULTIPLE_ROUTING_MANAGERS EQUAL 1)
