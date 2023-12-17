@@ -23,5 +23,10 @@ void payload_key_value_decoder::decode(std::string& _encoded_payload_data) {
 }
 
 std::string payload_key_value_decoder::get_item(const std::string& _key_name) {
-    return decoded_key_value_map_[_key_name];
+    std::string reassembled_data;
+    std::string partial_data;
+    for(int partial_data_idx = 0; !(partial_data = decoded_key_value_map_[_key_name+std::to_string(partial_data_idx)]).empty(); partial_data_idx++) {
+        reassembled_data.insert(reassembled_data.end(), partial_data.begin(), partial_data.end());
+    }
+    return reassembled_data;
 }
