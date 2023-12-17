@@ -917,14 +917,15 @@ void application_impl::notify(service_t _service, instance_t _instance,
     cfb_encrypted_data cfb_encrypteddata = crypto_operator_.encrypt(symmetric_key, plain_payload);
     std::string encrypted_payload_data(cfb_encrypteddata.encrypted_data_.begin(),cfb_encrypteddata.encrypted_data_.end());
     std::string initialization_vector(cfb_encrypteddata.initialization_vector_.begin(),cfb_encrypteddata.initialization_vector_.end());
-    std::string modified_payload;
-    payload_key_value_encoder_.add_item(INITIALIZATION_VECTOR_PAYLOAD_KEY_NAME, initialization_vector, modified_payload);
-    payload_key_value_encoder_.add_item(ENCRYPTED_DATA_PAYLOAD_KEY_NAME, encrypted_payload_data, modified_payload);
-    std::vector<unsigned char> modified_payload_vector(modified_payload.begin(), modified_payload.end());
-    _payload->set_data(modified_payload_vector);
+    std::string modified_payload_str;
+    payload_key_value_encoder_.add_item(INITIALIZATION_VECTOR_PAYLOAD_KEY_NAME, initialization_vector, modified_payload_str);
+    payload_key_value_encoder_.add_item(ENCRYPTED_DATA_PAYLOAD_KEY_NAME, encrypted_payload_data, modified_payload_str);
+    std::vector<unsigned char> modified_payload_vector(modified_payload_str.begin(), modified_payload_str.end());
+    std::shared_ptr<payload> modified_payload = runtime::get()->create_payload();
+    modified_payload->set_data(modified_payload_vector);
     // Payload encryption End #################################################
     if (routing_)
-        routing_->notify(_service, _instance, _event, _payload, _force);
+        routing_->notify(_service, _instance, _event, modified_payload, _force);
 }
 
 void application_impl::notify_one(service_t _service, instance_t _instance,
