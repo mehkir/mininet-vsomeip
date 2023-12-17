@@ -1784,7 +1784,7 @@ void application_impl::on_message(std::shared_ptr<message> &&_message) {
                 CryptoPP::SecByteBlock decrypted_payload_data = crypto_operator_.decrypt(symmetric_key, cfb_encrypteddata);
                 std::vector<unsigned char> decrypted_payload_vector(decrypted_payload_data.begin(), decrypted_payload_data.end());
                 std::shared_ptr<payload> decoded_payload = runtime::get()->create_payload();
-                decoded_payload->set_data(decrypted_payload_data.BytePtr(), decrypted_payload_data.SizeInBytes());
+                decoded_payload->set_data(decrypted_payload_data.BytePtr(), (int) decrypted_payload_data.SizeInBytes());
                 _message->set_payload(decoded_payload);
                 // Payload encryption End #################################################
                 std::shared_ptr<sync_handler> its_sync_handler =
