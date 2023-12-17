@@ -49,10 +49,13 @@ target_link_libraries(mininet-publisher ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boost_
 add_executable(mininet-subscriber mininet-subscriber.cpp ${EXAMPLE_CONFIG_FILES})
 target_link_libraries(mininet-subscriber ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boost_LIBRARIES} ${DL_LIBRARY})
 
-add_dependencies(examples request-sample response-sample subscribe-sample notify-sample multiple-subscriptions multiple-notifications mininet-publisher mininet-subscriber)
+add_executable(my-publisher my-publisher.cpp ${EXAMPLE_CONFIG_FILES})
+target_link_libraries(my-publisher ${VSOMEIP_NAME} ${VSOMEIP_LIBS} ${Boost_LIBRARIES} ${DL_LIBRARY})
+
+add_dependencies(examples request-sample response-sample subscribe-sample notify-sample multiple-subscriptions multiple-notifications mininet-publisher mininet-subscriber my-publisher)
 
 install (
-    TARGETS request-sample response-sample subscribe-sample notify-sample multiple-subscriptions multiple-notifications mininet-publisher mininet-subscriber
+    TARGETS request-sample response-sample subscribe-sample notify-sample multiple-subscriptions multiple-notifications mininet-publisher mininet-subscriber my-publisher
     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
 )
 
