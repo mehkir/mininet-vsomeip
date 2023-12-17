@@ -1769,9 +1769,26 @@ void application_impl::on_message(std::shared_ptr<message> &&_message) {
         if (its_handlers.size()) {
             std::lock_guard<std::mutex> its_lock(handlers_mutex_);
             for (const auto &handler : its_handlers) {
+                // Payload encryption Start ###############################################
+                const char* payload_ptr = reinterpret_cast<const char*>(_message->get_payload()->get_data());
+                length_t payload_length = _message->get_payload()->get_length();
+                std::string encoded_payload_str(payload_ptr, payload_length);
+                payload_key_value_decoder_.decode(encoded_payload_str);
+                std::string initialization_vector = payload_key_value_decoder_.get_item(INITIALIZATION_VECTOR_PAYLOAD_KEY_NAME);
+                std::string encrypted_payload_data = payload_key_value_decoder_.get_item(ENCRYPTED_DATA_PAYLOAD_KEY_NAME);
+                auto key_tuple = std::tuple<service_t, instance_t>(its_service, its_instance);
+                CryptoPP::SecByteBlock symmetric_key(group_secrets_.operator*()[key_tuple]);
+                cfb_encrypted_data cfb_encrypteddata;
+                cfb_encrypteddata.initialization_vector_ = std::vector<unsigned char>(initialization_vector.begin(), initialization_vector.end());
+                cfb_encrypteddata.encrypted_data_ = CryptoPP::SecByteBlock(reinterpret_cast<const unsigned char*>(encrypted_payload_data.data()), encrypted_payload_data.size());
+                CryptoPP::SecByteBlock decrypted_payload_data = crypto_operator_.decrypt(symmetric_key, cfb_encrypteddata);
+                std::vector<unsigned char> decrypted_payload_vector(decrypted_payload_data.begin(), decrypted_payload_data.end());
+                std::shared_ptr<payload> decoded_payload = runtime::get()->create_payload();
+                decoded_payload->set_data(decrypted_payload_data.BytePtr(), decrypted_payload_data.SizeInBytes());
+                _message->set_payload(decoded_payload);
+                // Payload encryption End #################################################
                 std::shared_ptr<sync_handler> its_sync_handler =
                         std::make_shared<sync_handler>([handler, _message]() {
-                            //TODO decrypt payload here / Mehmet Mueller
                             handler(_message);
                         });
                 its_sync_handler->handler_type_ = handler_type_e::MESSAGE;
