@@ -16,15 +16,15 @@ struct cfb_encrypted_data {
 class crypto_operator
 {
 private:
-    CryptoPP::AutoSeededRandomPool rng_;
+    mutable CryptoPP::AutoSeededRandomPool rng_;
     void load(const std::string& _filename, CryptoPP::BufferedTransformation& _bt);
 public:
     crypto_operator();
     ~crypto_operator();
     std::vector<CryptoPP::byte> encrypt(CryptoPP::PublicKey& _public_key, std::vector<CryptoPP::byte> _data);
     std::vector<CryptoPP::byte> decrypt(CryptoPP::PrivateKey& _private_key, std::vector<CryptoPP::byte> _data);
-    cfb_encrypted_data encrypt(CryptoPP::SecByteBlock _symmetric_key, CryptoPP::SecByteBlock _data);
-    CryptoPP::SecByteBlock decrypt(CryptoPP::SecByteBlock _symmetric_key, cfb_encrypted_data _cfb_encrypted_data);
+    cfb_encrypted_data encrypt(const CryptoPP::SecByteBlock& _symmetric_key, const CryptoPP::SecByteBlock& _data) const;
+    CryptoPP::SecByteBlock decrypt(const CryptoPP::SecByteBlock& _symmetric_key, const cfb_encrypted_data& _cfb_encrypted_data);
     std::vector<CryptoPP::byte> sign(CryptoPP::PrivateKey& _private_key, std::vector<CryptoPP::byte> _data);
     bool verify(CryptoPP::PublicKey& _public_key, std::vector<CryptoPP::byte> _data);
     std::string convert_hex_byte_vector_to_hex_string(std::vector<CryptoPP::byte> _data);

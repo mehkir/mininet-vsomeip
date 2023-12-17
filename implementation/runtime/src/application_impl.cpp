@@ -39,6 +39,11 @@
 #include "../../tracing/include/connector_impl.hpp"
 #include "../../utility/include/utility.hpp"
 
+// Additional defines for payload encryption
+#define INITIALIZATION_VECTOR_PAYLOAD_KEY_NAME "iv"
+#define ENCRYPTED_DATA_PAYLOAD_KEY_NAME "ed"
+
+
 namespace vsomeip_v3 {
 
 #ifdef ANDROID
@@ -905,7 +910,19 @@ void application_impl::send(std::shared_ptr<message> _message) {
 
 void application_impl::notify(service_t _service, instance_t _instance,
         event_t _event, std::shared_ptr<payload> _payload, bool _force) const {
-
+    // Payload encryption Start ###############################################
+    CryptoPP::SecByteBlock plain_payload(_payload->get_data(), _payload->get_length());
+    auto key_tuple = std::tuple<service_t, instance_t>(_service, _instance);
+    CryptoPP::SecByteBlock symmetric_key(group_secrets_.operator*()[key_tuple]);
+    cfb_encrypted_data cfb_encrypteddata = crypto_operator_.encrypt(symmetric_key, plain_payload);
+    std::string encrypted_payload_data(cfb_encrypteddata.encrypted_data_.begin(),cfb_encrypteddata.encrypted_data_.end());
+    std::string initialization_vector(cfb_encrypteddata.initialization_vector_.begin(),cfb_encrypteddata.initialization_vector_.end());
+    std::string modified_payload;
+    payload_key_value_encoder_.add_item(INITIALIZATION_VECTOR_PAYLOAD_KEY_NAME, initialization_vector, modified_payload);
+    payload_key_value_encoder_.add_item(ENCRYPTED_DATA_PAYLOAD_KEY_NAME, encrypted_payload_data, modified_payload);
+    std::vector<unsigned char> modified_payload_vector(modified_payload.begin(), modified_payload.end());
+    _payload->set_data(modified_payload_vector);
+    // Payload encryption End #################################################
     if (routing_)
         routing_->notify(_service, _instance, _event, _payload, _force);
 }

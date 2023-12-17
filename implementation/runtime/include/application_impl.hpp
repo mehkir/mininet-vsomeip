@@ -40,6 +40,8 @@
 // Additional include for payload encryption
 #include "../../dh_ecc/include/dh_ecc.hpp"
 #include "../../service_authentication/include/crypto_operator.hpp"
+#include "../../payload_encoding/include/payload_key_value_encoder.hpp"
+#include "../../payload_encoding/include/payload_key_value_decoder.hpp"
 
 namespace vsomeip_v3 {
 
@@ -508,6 +510,8 @@ private:
     std::shared_ptr<dh_ecc> dh_ecc_;
     std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> group_secrets_;
     crypto_operator crypto_operator_;
+    payload_key_value_encoder payload_key_value_encoder_;
+    payload_key_value_decoder payload_key_value_decoder_;
 };
 
 } // namespace vsomeip_v3
