@@ -31,7 +31,7 @@ std::vector<CryptoPP::byte> crypto_operator::encrypt(CryptoPP::PublicKey& _publi
     return encypted_data;
 }
 
-std::vector<CryptoPP::byte> crypto_operator::decrypt(CryptoPP::PrivateKey& _private_key, std::vector<unsigned char> _data) const {
+std::vector<CryptoPP::byte> crypto_operator::decrypt(CryptoPP::PrivateKey& _private_key, std::vector<unsigned char> _data) {
     std::vector<CryptoPP::byte> decrypted_data;
     CryptoPP::RSAES_OAEP_SHA_Decryptor decryptor(_private_key);
     CryptoPP::VectorSource vectorSource(_data, true, new CryptoPP::PK_DecryptorFilter(rng_, decryptor, new CryptoPP::VectorSink(decrypted_data)));
@@ -56,7 +56,7 @@ cfb_encrypted_data crypto_operator::encrypt(const CryptoPP::SecByteBlock& _symme
     return cfbencrypted_data;
 }
 
-CryptoPP::SecByteBlock crypto_operator::decrypt(const CryptoPP::SecByteBlock& _symmetric_key, const cfb_encrypted_data& _cfb_encrypted_data) {
+CryptoPP::SecByteBlock crypto_operator::decrypt(const CryptoPP::SecByteBlock& _symmetric_key, const cfb_encrypted_data& _cfb_encrypted_data) const {
     // Calculate a SHA-256 hash over the Diffie-Hellman session key
     CryptoPP::SecByteBlock key(CryptoPP::SHA256::DIGESTSIZE);
     CryptoPP::SHA256().CalculateDigest(key, _symmetric_key, _symmetric_key.SizeInBytes());
