@@ -8,7 +8,7 @@ payload_key_value_decoder::~payload_key_value_decoder() {
 
 }
 
-void payload_key_value_decoder::decode(std::string& _encoded_payload_data) {
+void payload_key_value_decoder::decode(std::string& _encoded_payload_data) const {
     decoded_key_value_map_.clear();
     for (auto it = _encoded_payload_data.begin(); it != _encoded_payload_data.end(); it++ ) {
         size_t item_length = (std::uint8_t) *it;
@@ -22,7 +22,7 @@ void payload_key_value_decoder::decode(std::string& _encoded_payload_data) {
     }
 }
 
-std::string payload_key_value_decoder::get_item(const std::string& _key_name) {
+std::string payload_key_value_decoder::get_item(const std::string& _key_name) const {
     std::string reassembled_data;
     std::string partial_data;
     for(int partial_data_idx = 0; !(partial_data = decoded_key_value_map_[_key_name+std::to_string(partial_data_idx)]).empty(); partial_data_idx++) {

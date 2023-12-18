@@ -911,21 +911,10 @@ void application_impl::send(std::shared_ptr<message> _message) {
 void application_impl::notify(service_t _service, instance_t _instance,
         event_t _event, std::shared_ptr<payload> _payload, bool _force) const {
     // Payload encryption Start ###############################################
-    CryptoPP::SecByteBlock plain_payload(_payload->get_data(), _payload->get_length());
-    auto key_tuple = std::tuple<service_t, instance_t>(_service, _instance);
-    CryptoPP::SecByteBlock symmetric_key(group_secrets_.operator*()[key_tuple]);
-    cfb_encrypted_data cfb_encrypteddata = crypto_operator_.encrypt(symmetric_key, plain_payload);
-    std::string encrypted_payload_data(cfb_encrypteddata.encrypted_data_.begin(),cfb_encrypteddata.encrypted_data_.end());
-    std::string initialization_vector(cfb_encrypteddata.initialization_vector_.begin(),cfb_encrypteddata.initialization_vector_.end());
-    std::string encoded_payload_str;
-    payload_key_value_encoder_.add_item(INITIALIZATION_VECTOR_PAYLOAD_KEY_NAME, initialization_vector, encoded_payload_str);
-    payload_key_value_encoder_.add_item(ENCRYPTED_DATA_PAYLOAD_KEY_NAME, encrypted_payload_data, encoded_payload_str);
-    std::vector<unsigned char> encoded_payload_vector(encoded_payload_str.begin(), encoded_payload_str.end());
-    std::shared_ptr<payload> encoded_payload = runtime::get()->create_payload();
-    encoded_payload->set_data(encoded_payload_vector);
+    // std::shared_ptr<payload> enrypted_and_encoded_payload = encrypt_and_encode_payload(_service, _instance, _payload);
     // Payload encryption End #################################################
     if (routing_)
-        routing_->notify(_service, _instance, _event, encoded_payload, _force);
+        routing_->notify(_service, _instance, _event, _payload, _force);
 }
 
 void application_impl::notify_one(service_t _service, instance_t _instance,
@@ -1770,22 +1759,8 @@ void application_impl::on_message(std::shared_ptr<message> &&_message) {
             std::lock_guard<std::mutex> its_lock(handlers_mutex_);
             for (const auto &handler : its_handlers) {
                 // Payload encryption Start ###############################################
-                const char* payload_ptr = reinterpret_cast<const char*>(_message->get_payload()->get_data());
-                length_t payload_length = _message->get_payload()->get_length();
-                std::string encoded_payload_str(payload_ptr, payload_length);
-                payload_key_value_decoder_.decode(encoded_payload_str);
-                std::string initialization_vector = payload_key_value_decoder_.get_item(INITIALIZATION_VECTOR_PAYLOAD_KEY_NAME);
-                std::string encrypted_payload_data = payload_key_value_decoder_.get_item(ENCRYPTED_DATA_PAYLOAD_KEY_NAME);
-                auto key_tuple = std::tuple<service_t, instance_t>(its_service, its_instance);
-                CryptoPP::SecByteBlock symmetric_key(group_secrets_.operator*()[key_tuple]);
-                cfb_encrypted_data cfb_encrypteddata;
-                cfb_encrypteddata.initialization_vector_ = std::vector<unsigned char>(initialization_vector.begin(), initialization_vector.end());
-                cfb_encrypteddata.encrypted_data_ = CryptoPP::SecByteBlock(reinterpret_cast<const unsigned char*>(encrypted_payload_data.data()), encrypted_payload_data.size());
-                CryptoPP::SecByteBlock decrypted_payload_data = crypto_operator_.decrypt(symmetric_key, cfb_encrypteddata);
-                std::vector<unsigned char> decrypted_payload_vector(decrypted_payload_data.begin(), decrypted_payload_data.end());
-                std::shared_ptr<payload> decoded_payload = runtime::get()->create_payload();
-                decoded_payload->set_data(decrypted_payload_data.BytePtr(), (int) decrypted_payload_data.SizeInBytes());
-                _message->set_payload(decoded_payload);
+                // std::shared_ptr<payload> decoded_payload = decode_and_decrypt_payload(its_service, its_instance, _message->get_payload());
+                // _message->set_payload(decoded_payload);
                 // Payload encryption End #################################################
                 std::shared_ptr<sync_handler> its_sync_handler =
                         std::make_shared<sync_handler>([handler, _message]() {
@@ -3012,6 +2987,42 @@ void application_impl::register_message_handler_ext(
     default:
         ;
     }
+}
+
+// Additional methods for payload encryption
+std::shared_ptr<payload> application_impl::encrypt_and_encode_payload(service_t _service, instance_t _instance, std::shared_ptr<payload> _payload) const {
+    CryptoPP::SecByteBlock plain_payload(_payload->get_data(), _payload->get_length());
+    auto key_tuple = std::tuple<service_t, instance_t>(_service, _instance);
+    CryptoPP::SecByteBlock symmetric_key(group_secrets_.operator*()[key_tuple]);
+    cfb_encrypted_data cfb_encrypteddata = crypto_operator_.encrypt(symmetric_key, plain_payload);
+    std::string encrypted_payload_data(cfb_encrypteddata.encrypted_data_.begin(),cfb_encrypteddata.encrypted_data_.end());
+    std::string initialization_vector(cfb_encrypteddata.initialization_vector_.begin(),cfb_encrypteddata.initialization_vector_.end());
+    std::string encoded_payload_str;
+    payload_key_value_encoder_.add_item(INITIALIZATION_VECTOR_PAYLOAD_KEY_NAME, initialization_vector, encoded_payload_str);
+    payload_key_value_encoder_.add_item(ENCRYPTED_DATA_PAYLOAD_KEY_NAME, encrypted_payload_data, encoded_payload_str);
+    std::vector<unsigned char> encoded_payload_vector(encoded_payload_str.begin(), encoded_payload_str.end());
+    std::shared_ptr<payload> encoded_payload = runtime::get()->create_payload();
+    encoded_payload->set_data(encoded_payload_vector);
+    return encoded_payload;
+}
+
+std::shared_ptr<payload> application_impl::decode_and_decrypt_payload(service_t _service, instance_t _instance, std::shared_ptr<payload> _payload) const {
+    const char* payload_ptr = reinterpret_cast<const char*>(_payload->get_data());
+    length_t payload_length = _payload->get_length();
+    std::string encoded_payload_str(payload_ptr, payload_length);
+    payload_key_value_decoder_.decode(encoded_payload_str);
+    std::string initialization_vector = payload_key_value_decoder_.get_item(INITIALIZATION_VECTOR_PAYLOAD_KEY_NAME);
+    std::string encrypted_payload_data = payload_key_value_decoder_.get_item(ENCRYPTED_DATA_PAYLOAD_KEY_NAME);
+    auto key_tuple = std::tuple<service_t, instance_t>(_service, _instance);
+    CryptoPP::SecByteBlock symmetric_key(group_secrets_.operator*()[key_tuple]);
+    cfb_encrypted_data cfb_encrypteddata;
+    cfb_encrypteddata.initialization_vector_ = std::vector<unsigned char>(initialization_vector.begin(), initialization_vector.end());
+    cfb_encrypteddata.encrypted_data_ = CryptoPP::SecByteBlock(reinterpret_cast<const unsigned char*>(encrypted_payload_data.data()), encrypted_payload_data.size());
+    CryptoPP::SecByteBlock decrypted_payload_data = crypto_operator_.decrypt(symmetric_key, cfb_encrypteddata);
+    std::vector<unsigned char> decrypted_payload_vector(decrypted_payload_data.begin(), decrypted_payload_data.end());
+    std::shared_ptr<payload> decoded_payload = runtime::get()->create_payload();
+    decoded_payload->set_data(decrypted_payload_data.BytePtr(), (length_t) decrypted_payload_data.SizeInBytes());
+    return decoded_payload;
 }
 
 } // namespace vsomeip_v3

@@ -31,7 +31,7 @@ std::vector<CryptoPP::byte> crypto_operator::encrypt(CryptoPP::PublicKey& _publi
     return encypted_data;
 }
 
-std::vector<CryptoPP::byte> crypto_operator::decrypt(CryptoPP::PrivateKey& _private_key, std::vector<unsigned char> _data) {
+std::vector<CryptoPP::byte> crypto_operator::decrypt(CryptoPP::PrivateKey& _private_key, std::vector<unsigned char> _data) const {
     std::vector<CryptoPP::byte> decrypted_data;
     CryptoPP::RSAES_OAEP_SHA_Decryptor decryptor(_private_key);
     CryptoPP::VectorSource vectorSource(_data, true, new CryptoPP::PK_DecryptorFilter(rng_, decryptor, new CryptoPP::VectorSink(decrypted_data)));
