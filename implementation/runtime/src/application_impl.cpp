@@ -916,11 +916,6 @@ void application_impl::notify(service_t _service, instance_t _instance,
     //     std::cout << (uint32_t) encrypted_and_encoded_payload->get_data()[i] << " ";
     // }
     // std::cout << std::endl;
-    // std::shared_ptr<payload> decoded_and_decrypted_payload = decode_and_decrypt_payload(_service, _instance, encrypted_and_encoded_payload);
-    // for (uint32_t i = 0; i < decoded_and_decrypted_payload->get_length(); i++) {
-    //     std::cout << (int) decoded_and_decrypted_payload->get_data()[i] << " ";
-    // }
-    // std::cout << std::endl;
     // Payload encryption End #################################################
     if (routing_)
         routing_->notify(_service, _instance, _event, encrypted_and_encoded_payload, _force);
