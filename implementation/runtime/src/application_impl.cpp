@@ -911,12 +911,10 @@ void application_impl::send(std::shared_ptr<message> _message) {
 void application_impl::notify(service_t _service, instance_t _instance,
         event_t _event, std::shared_ptr<payload> _payload, bool _force) const {
     // Payload encryption Start ###############################################
+    if (!group_secrets_->count({_service, _instance}))
+        return;
     cfb_encrypted_data cfb_encrypteddata = encrypt_payload(_service, _instance, _payload);
     std::shared_ptr<payload> encrypted_and_encoded_payload = encode_payload(cfb_encrypteddata);
-    // for (uint32_t i = 0; i < encrypted_and_encoded_payload->get_length(); i++) {
-    //     std::cout << (uint32_t) encrypted_and_encoded_payload->get_data()[i] << " ";
-    // }
-    // std::cout << std::endl;
     // Payload encryption End #################################################
     if (routing_)
         routing_->notify(_service, _instance, _event, encrypted_and_encoded_payload, _force);
