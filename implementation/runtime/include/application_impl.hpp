@@ -513,8 +513,10 @@ private:
     payload_key_value_encoder payload_key_value_encoder_;
     payload_key_value_decoder payload_key_value_decoder_;
     // Additional methods for payload encryption
-    std::shared_ptr<payload> encrypt_and_encode_payload(service_t _service, instance_t _instance, std::shared_ptr<payload> _payload) const;
-    std::shared_ptr<payload> decode_and_decrypt_payload(service_t _service, instance_t _instance, std::shared_ptr<payload> _payload) const;
+    cfb_encrypted_data encrypt_payload(service_t _service, instance_t _instance, std::shared_ptr<payload> _payload) const;
+    std::shared_ptr<payload> decrypt_payload(service_t _service, instance_t _instance, cfb_encrypted_data _cfb_encrypteddata) const;
+    std::shared_ptr<payload> encode_payload(cfb_encrypted_data _cfb_encrypteddata) const;
+    cfb_encrypted_data decode_payload(std::shared_ptr<payload> _payload) const;
 };
 
 } // namespace vsomeip_v3
