@@ -151,7 +151,7 @@ public:
                 if (its_size == sizeof(its_data))
                     its_size = 1;
 
-                std::cout << "Generating payload: ";
+                std::cout << "Generating payload = (" << its_size << ") ";
                 for (uint32_t i = 0; i < its_size; ++i) {
                     its_data[i] = static_cast<uint8_t>(i);
                     std::cout << i << " ";
@@ -162,7 +162,6 @@ public:
                     std::lock_guard<std::mutex> its_lock(payload_mutex_);
                     payload_->set_data(its_data, its_size);
 
-                    std::cout << "Setting event (Length=" << std::dec << its_size << ")." << std::endl;
                     app_->notify(SAMPLE_SERVICE_ID, SAMPLE_INSTANCE_ID, SAMPLE_EVENT_ID, payload_);
                 }
 
