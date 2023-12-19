@@ -16,7 +16,7 @@ void payload_key_value_decoder::decode(std::vector<unsigned char>& _encoded_payl
         std::string item(it,it+item_length);
         size_t equal_char_idx = item.find('=');
         std::string key_name = item.substr(0, equal_char_idx);
-        std::vector<unsigned char> value(it+equal_char_idx,it+item_length);
+        std::vector<unsigned char> value(it+equal_char_idx+1,it+item_length);
         decoded_key_value_map_[key_name] = value;
         it+=item_length-1; // -1 since loop increments by one already
     }
