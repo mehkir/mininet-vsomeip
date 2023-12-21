@@ -1774,6 +1774,8 @@ void application_impl::on_message(std::shared_ptr<message> &&_message) {
             for (const auto &handler : its_handlers) {
 #ifdef WITH_ENCRYPTION
                 // Payload decryption Start ###############################################
+                if (!group_secrets_->count({its_service, its_instance}))
+                    return;
                 cfb_encrypted_data cfb_encrypteddata = decode_payload(_message->get_payload());
                 std::shared_ptr<payload> decrypted_payload = decrypt_payload(its_service, its_instance, cfb_encrypteddata);
                 _message->set_payload(decrypted_payload);
