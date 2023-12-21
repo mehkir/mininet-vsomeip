@@ -1,9 +1,10 @@
 {
-    "unicast" : "172.17.0.3",
+    "network" : "publisher",
+    "unicast" : "172.18.0.2",
     "netmask" : "255.255.0.0",
     "logging" :
     {
-        "level" : "debug",
+        "level" : "error",
         "console" : "true",
         "file" : { "enable" : "false", "path" : "/tmp/vsomeip.log" },
         "dlt" : "true"
@@ -87,6 +88,6 @@
         "request_response_delay" : "1500"
     },
 
-    "certificate-path" : "certificate-and-privatekey/service4660.cert.pem",
-    "private-key-path" : "certificate-and-privatekey/service4660.key.pem"
+    "certificate-path" : "/home/vsomeip/certificate/minor=0x00000000-major=0x00-instance=0x5678-id=0x1234.service.cert.pem",
+    "private-key-path" : "/home/vsomeip/certificate/minor=0x00000000-major=0x00-instance=0x5678-id=0x1234.service.key.pem"
 }
