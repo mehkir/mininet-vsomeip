@@ -2084,11 +2084,13 @@ service_discovery_impl::insert_offer_service(
         its_entry->set_ttl(its_ttl);
 
         // Service Authentication Start ################################
-        CryptoPP::SecByteBlock generated_nonce = crypto_operator_.get_random_byte_block();
+        if (challenge_nonce_cache_->get_offered_nonce(_info->get_service(), _info->get_instance()).empty()) {
+            CryptoPP::SecByteBlock generated_nonce = crypto_operator_.get_random_byte_block();
+            std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
+            challenge_nonce_cache_->set_offered_nonce(_info->get_service(), _info->get_instance(), generated_nonce_vector);
+        }
         std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-        std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
-        challenge_nonce_cache_->set_offered_nonce(_info->get_service(), _info->get_instance(), generated_nonce_vector);
-        data_partitioner().partition_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, generated_nonce_vector);
+        data_partitioner().partition_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, challenge_nonce_cache_->get_offered_nonce(_info->get_service(), _info->get_instance()));
         its_data.options_.push_back(configuration_option);
         // VSOMEIP_DEBUG << "Created offer by Publisher (OFFER_SEND)"
         // << " at Endpoint(" << unicast_.to_v4().to_string() << "," << _info->get_service() << "," << _info->get_instance() << ")";
