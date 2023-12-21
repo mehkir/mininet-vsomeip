@@ -184,7 +184,6 @@ void routing_manager_impl::init() {
         if (its_plugin) {
             VSOMEIP_INFO << "Service Discovery module loaded.";
             discovery_ = std::dynamic_pointer_cast<sd::runtime>(its_plugin)->create_service_discovery(this, configuration_);
-            discovery_->init();
             discovery_->set_dns_resolver(dns_resolver_);
             discovery_->set_svcb_resolver(svcb_resolver_);
             discovery_->set_tlsa_resolver(tlsa_resolver_);
@@ -199,6 +198,7 @@ void routing_manager_impl::init() {
             discovery_->set_group_secret_map(group_secrets_);
             discovery_->set_encrypted_group_secret_result_cache(encrypted_group_secret_result_cache_);
 #endif
+            discovery_->init();
         } else {
             VSOMEIP_ERROR << "Service Discovery module could not be loaded!";
             std::exit(EXIT_FAILURE);
