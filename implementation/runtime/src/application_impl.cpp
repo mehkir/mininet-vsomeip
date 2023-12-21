@@ -39,10 +39,11 @@
 #include "../../tracing/include/connector_impl.hpp"
 #include "../../utility/include/utility.hpp"
 
+#ifdef WITH_ENCRYPTION
 // Additional defines for payload encryption
 #define INITIALIZATION_VECTOR_PAYLOAD_KEY_NAME "iv"
 #define ENCRYPTED_DATA_PAYLOAD_KEY_NAME "ed"
-
+#endif
 
 namespace vsomeip_v3 {
 
@@ -83,9 +84,11 @@ application_impl::application_impl(const std::string &_name, const std::string &
           watchdog_timer_(io_),
           client_side_logging_(false),
           has_session_handling_(true),
-          timestamp_collector_(timestamp_collector::get_instance()),
-          dh_ecc_(std::make_shared<dh_ecc>()),
+          timestamp_collector_(timestamp_collector::get_instance())
+#ifdef WITH_ENCRYPTION
+          ,dh_ecc_(std::make_shared<dh_ecc>()),
           group_secrets_(std::make_shared<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>>())
+#endif
 {
 }
 
@@ -311,8 +314,10 @@ bool application_impl::init() {
             }
             routing_ = std::make_shared<routing_manager_impl>(this);
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_timestamp_collector(timestamp_collector_);
+#ifdef WITH_ENCRYPTION
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_dh_ecc(dh_ecc_);
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_group_secret_map(group_secrets_);
+#endif
         } else {
             VSOMEIP_INFO << "Instantiating routing manager [Proxy].";
             routing_ = std::make_shared<routing_manager_client>(this, client_side_logging_, client_side_logging_filter_);
@@ -910,14 +915,20 @@ void application_impl::send(std::shared_ptr<message> _message) {
 
 void application_impl::notify(service_t _service, instance_t _instance,
         event_t _event, std::shared_ptr<payload> _payload, bool _force) const {
+#ifdef WITH_ENCRYPTION
     // Payload encryption Start ###############################################
     if (!group_secrets_->count({_service, _instance}))
         return;
     cfb_encrypted_data cfb_encrypteddata = encrypt_payload(_service, _instance, _payload);
     std::shared_ptr<payload> encrypted_and_encoded_payload = encode_payload(cfb_encrypteddata);
     // Payload encryption End #################################################
+#endif
     if (routing_)
+#ifdef WITH_ENCRYPTION
         routing_->notify(_service, _instance, _event, encrypted_and_encoded_payload, _force);
+#else
+        routing_->notify(_service, _instance, _event, _payload, _force);
+#endif
 }
 
 void application_impl::notify_one(service_t _service, instance_t _instance,
@@ -1761,11 +1772,13 @@ void application_impl::on_message(std::shared_ptr<message> &&_message) {
         if (its_handlers.size()) {
             std::lock_guard<std::mutex> its_lock(handlers_mutex_);
             for (const auto &handler : its_handlers) {
+#ifdef WITH_ENCRYPTION
                 // Payload decryption Start ###############################################
                 cfb_encrypted_data cfb_encrypteddata = decode_payload(_message->get_payload());
                 std::shared_ptr<payload> decrypted_payload = decrypt_payload(its_service, its_instance, cfb_encrypteddata);
                 _message->set_payload(decrypted_payload);
                 // Payload decryption End #################################################
+#endif
                 std::shared_ptr<sync_handler> its_sync_handler =
                         std::make_shared<sync_handler>([handler, _message]() {
                             handler(_message);
@@ -2993,6 +3006,7 @@ void application_impl::register_message_handler_ext(
     }
 }
 
+#ifdef WITH_ENCRYPTION
 // Additional methods for payload encryption
 cfb_encrypted_data application_impl::encrypt_payload(service_t _service, instance_t _instance, std::shared_ptr<payload> _payload) const {
     CryptoPP::SecByteBlock plain_payload(_payload->get_data(), _payload->get_length());
@@ -3033,5 +3047,6 @@ cfb_encrypted_data application_impl::decode_payload(std::shared_ptr<payload> _pa
     cfb_encrypteddata.encrypted_data_ = CryptoPP::SecByteBlock(encrypted_payload_data.data(), encrypted_payload_data.size());
     return cfb_encrypteddata;
 }
+#endif
 
 } // namespace vsomeip_v3

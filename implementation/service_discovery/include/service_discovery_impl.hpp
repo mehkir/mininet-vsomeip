@@ -516,6 +516,7 @@ private:
     std::vector<CryptoPP::byte> certificate_data_;
     CryptoPP::RSA::PrivateKey private_key_;
     // Addition for Service Authentication End ###############################################################################
+#ifdef WITH_ENCRYPTION
     // Additional members for payload encryption key agreement Start #########################################################
     std::shared_ptr<dh_ecc> dh_ecc_;
     std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> group_secrets_;
@@ -526,6 +527,7 @@ private:
     void set_group_secret_map(std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> _group_secrets);
     void set_encrypted_group_secret_result_cache(std::shared_ptr<encrypted_group_secret_result_cache> _encrypted_group_secret_result_cache);
     // Additional methods for payload encryption key agreement End ###########################################################
+#endif
     // Additional util methods Start #########################################################################################
     void print_numerical_representation(std::vector<unsigned char> _vector, std::string _title="");
     // Additional util methods End ###########################################################################################

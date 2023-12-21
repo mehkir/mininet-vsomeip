@@ -40,9 +40,11 @@
 //Additional include for time measurement
 #include "../../timestamps/include/timestamp_collector.hpp"
 
+#ifdef WITH_ENCRYPTION
 // Additional include for payload encryption
 #include "../../dh_ecc/include/dh_ecc.hpp"
 #include "../../dh_ecc/include/encrypted_group_secret_result_cache.hpp"
+#endif
 
 namespace vsomeip_v3 {
 
@@ -583,19 +585,25 @@ private:
     eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
     //Addition for time measurement
     timestamp_collector* timestamp_collector_;
+
+#ifdef WITH_ENCRYPTION
     // Additional members for payload encryption
     std::shared_ptr<dh_ecc> dh_ecc_;
     std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> group_secrets_;
     std::shared_ptr<encrypted_group_secret_result_cache> encrypted_group_secret_result_cache_;
+#endif
 
 public:
     // Addtional member for service authentication
     crypto_operator crypto_operator_;
     // Additional method for time measurement
     void set_timestamp_collector(timestamp_collector* _timestamp_collector);
+    
+#ifdef WITH_ENCRYPTION    
     // Aditional methods for payload encryption
     void set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc);
     void set_group_secret_map(std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> _group_secrets);
+#endif
 };
 
 }  // namespace vsomeip_v3

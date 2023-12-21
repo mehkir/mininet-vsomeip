@@ -20,6 +20,8 @@ set (VSOMEIP_VERSION ${VSOMEIP_MAJOR_VERSION}.${VSOMEIP_MINOR_VERSION}.${VSOMEIP
 set (PACKAGE_VERSION ${VSOMEIP_VERSION}) # Used in documentation/doxygen.in
 set (CMAKE_VERBOSE_MAKEFILE off)
 
+add_compile_definitions()
+
 if (NOT GTEST_ROOT)
     if (DEFINED ENV{GTEST_ROOT})
         set(GTEST_ROOT $ENV{GTEST_ROOT})

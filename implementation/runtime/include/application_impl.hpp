@@ -37,11 +37,13 @@
 // Additional include for time measurement
 #include "../../timestamps/include/timestamp_collector.hpp"
 
+#ifdef WITH_ENCRYPTION
 // Additional include for payload encryption
 #include "../../dh_ecc/include/dh_ecc.hpp"
 #include "../../service_authentication/include/crypto_operator.hpp"
 #include "../../payload_encoding/include/payload_key_value_encoder.hpp"
 #include "../../payload_encoding/include/payload_key_value_decoder.hpp"
+#endif
 
 namespace vsomeip_v3 {
 
@@ -506,6 +508,7 @@ private:
 
     // Additional Member for Time measurement
     timestamp_collector* timestamp_collector_;
+#ifdef WITH_ENCRYPTION    
     // Additional Members for Payload encryption
     std::shared_ptr<dh_ecc> dh_ecc_;
     std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> group_secrets_;
@@ -517,6 +520,7 @@ private:
     std::shared_ptr<payload> decrypt_payload(service_t _service, instance_t _instance, cfb_encrypted_data _cfb_encrypteddata) const;
     std::shared_ptr<payload> encode_payload(cfb_encrypted_data _cfb_encrypteddata) const;
     cfb_encrypted_data decode_payload(std::shared_ptr<payload> _payload) const;
+#endif
 };
 
 } // namespace vsomeip_v3
