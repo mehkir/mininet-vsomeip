@@ -1,6 +1,7 @@
 {
-    "unicast" : "192.168.56.101",
-    "netmask" : "255.255.255.0",
+    "network" : "subscriber",
+    "unicast" : "172.18.0.3",
+    "netmask" : "255.255.0.0",
     "logging" :
     {
         "level" : "error",
@@ -51,6 +52,6 @@
         "request_response_delay" : "1500"
     },
 
-    "certificate-path" : "certificate-and-privatekey/client4931.cert.pem",
-    "private-key-path" : "certificate-and-privatekey/client4931.key.pem"
+    "certificate-path" : "/home/vsomeip/certificate/minor=0x00000000-major=0x00-instance=0x5678-service=0x1234-id=0x1343.client.cert.pem",
+    "private-key-path" : "/home/vsomeip/certificate/minor=0x00000000-major=0x00-instance=0x5678-service=0x1234-id=0x1343.client.key.pem"
 }
