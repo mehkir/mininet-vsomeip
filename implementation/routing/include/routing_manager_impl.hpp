@@ -34,13 +34,17 @@
 #include "../../service_authentication/include/challenge_nonce_cache.hpp"
 #include "../../service_authentication/include/svcb_cache.hpp"
 #include "../../service_discovery/include/resume_process_offerservice_cache.hpp"
+
+#ifdef WITH_CLIENT_AUTHENTICATION
 #include "../../service_authentication/include/eventgroup_subscription_cache.hpp"
+#endif
+
 #include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
 
 //Additional include for time measurement
 #include "../../timestamps/include/timestamp_collector.hpp"
 
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
 // Additional include for payload encryption
 #include "../../dh_ecc/include/dh_ecc.hpp"
 #include "../../dh_ecc/include/encrypted_group_secret_result_cache.hpp"
@@ -581,12 +585,14 @@ private:
     svcb_cache* svcb_cache_;
     std::shared_ptr<challenge_nonce_cache> challenge_nonce_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
+#ifdef WITH_CLIENT_AUTHENTICATION
     eventgroup_subscription_cache* eventgroup_subscription_cache_;
+#endif
     eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
     //Addition for time measurement
     timestamp_collector* timestamp_collector_;
 
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     // Additional members for payload encryption
     std::shared_ptr<dh_ecc> dh_ecc_;
     std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> group_secrets_;
@@ -599,7 +605,7 @@ public:
     // Additional method for time measurement
     void set_timestamp_collector(timestamp_collector* _timestamp_collector);
     
-#ifdef WITH_ENCRYPTION    
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     // Aditional methods for payload encryption
     void set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc);
     void set_group_secret_map(std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> _group_secrets);

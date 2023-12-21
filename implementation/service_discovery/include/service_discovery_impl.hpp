@@ -516,7 +516,7 @@ private:
     std::vector<CryptoPP::byte> certificate_data_;
     CryptoPP::RSA::PrivateKey private_key_;
     // Addition for Service Authentication End ###############################################################################
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     // Additional members for payload encryption key agreement Start #########################################################
     std::shared_ptr<dh_ecc> dh_ecc_;
     std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> group_secrets_;

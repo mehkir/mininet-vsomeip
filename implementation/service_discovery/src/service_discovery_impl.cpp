@@ -50,7 +50,7 @@
 #define SIGNATURE_CONFIG_OPTION_KEY "sig"
 #define CLIENT_ID_CONFIG_OPTION_KEY "cid"
 
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
 #define BLINDED_SECRET_CONFIG_OPTION_KEY "bs"
 #define ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY "egs"
 #define INITIALIZATION_VECTOR_CONFIG_OPTION_KEY "iv"
@@ -1043,14 +1043,14 @@ service_discovery_impl::create_eventgroup_entry(
             throw std::runtime_error("Nonce is empty!");
         }
         data_partitioner().partition_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce_vector);
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
         CryptoPP::SecByteBlock blinded_secret = dh_ecc_->get_blinded_secret();
         std::vector<unsigned char> blinded_secret_vector(blinded_secret.begin(), blinded_secret.end());
         data_partitioner().partition_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, configuration_option, blinded_secret_vector);
 #endif
         std::vector<CryptoPP::byte> data_to_be_signed;
         data_to_be_signed.insert(data_to_be_signed.end(), signed_nonce_vector.begin(), signed_nonce_vector.end());
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
         data_to_be_signed.insert(data_to_be_signed.end(), blinded_secret_vector.begin(), blinded_secret_vector.end());
 #endif
         std::vector<CryptoPP::byte> signature = crypto_operator_.sign(private_key_, data_to_be_signed);
@@ -1172,7 +1172,7 @@ service_discovery_impl::insert_subscription_ack(
         throw std::runtime_error("Nonce is empty!");
     }
     data_partitioner().partition_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce);
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     encrypted_group_secret_result encrypted_groupsecret_result = encrypted_group_secret_result_cache_->get_encrypted_group_secret_result(subscriber_address, its_service, its_instance, its_major);
     CryptoPP::SecByteBlock blinded_secret = encrypted_groupsecret_result.blinded_publisher_secret_;
     CryptoPP::SecByteBlock encrypted_group_secret = encrypted_groupsecret_result.encrypted_group_secret_;
@@ -1184,7 +1184,7 @@ service_discovery_impl::insert_subscription_ack(
 #endif
     std::vector<CryptoPP::byte> data_to_be_signed;
     data_to_be_signed.insert(data_to_be_signed.end(), signed_nonce.begin(), signed_nonce.end());
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     data_to_be_signed.insert(data_to_be_signed.end(), blinded_secret.begin(), blinded_secret.end());
     data_to_be_signed.insert(data_to_be_signed.end(), encrypted_group_secret.begin(), encrypted_group_secret.end());
     data_to_be_signed.insert(data_to_be_signed.end(), initialization_vector.begin(), initialization_vector.end());
@@ -1623,7 +1623,7 @@ service_discovery_impl::set_timestamp_collector(timestamp_collector* _timestamp_
     this->timestamp_collector_ = _timestamp_collector;
 }
 
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
 void
 service_discovery_impl::set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) {
     dh_ecc_ = _dh_ecc;
@@ -2119,7 +2119,7 @@ service_discovery_impl::process_eventgroupentry(
     std::vector<unsigned char> signature;
     // Additional variables for service Authentication End ################
 
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     // Additional variables for payload encryption Start ##############
     std::vector<unsigned char> blinded_secret;
     std::vector<unsigned char> encrypted_group_secret;
@@ -2535,7 +2535,7 @@ service_discovery_impl::process_eventgroupentry(
                     std::vector<unsigned char> generated_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     signed_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     signature = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
                     blinded_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, its_configuration_option);
 #endif
                     std::vector<unsigned char> client_id = data_partitioner().reassemble_data<std::vector<unsigned char>>(CLIENT_ID_CONFIG_OPTION_KEY, its_configuration_option);
@@ -2588,7 +2588,7 @@ service_discovery_impl::process_eventgroupentry(
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
                     signed_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     signature = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
                     blinded_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, its_configuration_option);
                     encrypted_group_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY, its_configuration_option);
                     initialization_vector = data_partitioner().reassemble_data<std::vector<unsigned char>>(INITIALIZATION_VECTOR_CONFIG_OPTION_KEY, its_configuration_option);
@@ -2637,7 +2637,7 @@ service_discovery_impl::process_eventgroupentry(
             its_second_address.to_v4(), its_second_port, is_second_reliable,
             _acknowledgement, _is_stop_subscribe_subscribe,
             _force_initial_events, its_clients, _sd_ac_state.expired_ports_, _sd_ac_state.sd_acceptance_required_, _sd_ac_state.accept_entries_, its_info,
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
             signed_nonce, blinded_secret, signature);
 #else
             signed_nonce, std::vector<unsigned char>(), signature);
@@ -2648,7 +2648,7 @@ service_discovery_impl::process_eventgroupentry(
             if (its_ttl > 0) {
                 eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance,
                     its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port,
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
                     signed_nonce, blinded_secret, encrypted_group_secret, initialization_vector, signature);
 #else
                     signed_nonce, std::vector<unsigned char>(), std::vector<unsigned char>(), std::vector<unsigned char>(), signature);
@@ -2733,12 +2733,12 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
         return;
     }
 
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     std::vector<unsigned char> blinded_secret = eventgroup_subscriptioncache_entry.blinded_secret_;
 #endif
     std::vector<byte_t> data_to_be_verified;
     data_to_be_verified.insert(data_to_be_verified.end(), signed_nonce.begin(), signed_nonce.end());
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     data_to_be_verified.insert(data_to_be_verified.end(), blinded_secret.begin(), blinded_secret.end());
 #endif
     data_to_be_verified.insert(data_to_be_verified.end(), signature.begin(), signature.end());
@@ -2748,13 +2748,13 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
         return;
     }
     eventgroup_subscription_cache_->remove_eventgroup_subscription_cache_entry(_client, _service, _instance, _major);
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     encrypted_group_secret_result encrypted_groupsecret_result = dh_ecc_->compute_encrypted_group_secret(CryptoPP::SecByteBlock(blinded_secret.data(), blinded_secret.size()));
     encrypted_group_secret_result_cache_->add_encrypted_group_secret_result(client_svcbcache_entry.ipv4_address_, client_svcbcache_entry.service_, client_svcbcache_entry.instance_, client_svcbcache_entry.major_, encrypted_groupsecret_result);
 #endif
 
     VSOMEIP_DEBUG << __func__ << " SIGNATURE VERIFIED";
-#ifdef WITH_ENCRYPTION    
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)    
     CryptoPP::SecByteBlock group_secret = dh_ecc_->get_group_secret();
     std::tuple<service_t, instance_t> key_tuple = std::make_tuple(client_svcbcache_entry.service_, client_svcbcache_entry.instance_);
     group_secrets_.operator*()[key_tuple] = group_secret;
@@ -2808,13 +2808,13 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
         return;
     }
     std::vector<byte_t> data_to_be_verified;
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     std::vector<unsigned char> blinded_secret = eventgroup_subscriptionackcache_entry.blinded_secret_;
     std::vector<unsigned char> encrypted_group_secret = eventgroup_subscriptionackcache_entry.encrypted_group_secret_;
     std::vector<unsigned char> initialization_vector = eventgroup_subscriptionackcache_entry.initialization_vector_;
 #endif
     data_to_be_verified.insert(data_to_be_verified.end(), signed_nonce.begin(), signed_nonce.end());
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     data_to_be_verified.insert(data_to_be_verified.end(), blinded_secret.begin(), blinded_secret.end());
     data_to_be_verified.insert(data_to_be_verified.end(), encrypted_group_secret.begin(), encrypted_group_secret.end());
     data_to_be_verified.insert(data_to_be_verified.end(), initialization_vector.begin(), initialization_vector.end());
@@ -2826,7 +2826,7 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
         return;
     }
     eventgroup_subscription_ack_cache_->remove_eventgroup_subscription_ack_cache_entry(_sender_ip_address, _service, _instance);
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     encrypted_group_secret_result encrypted_groupsecret_result;
     encrypted_groupsecret_result.blinded_publisher_secret_ = CryptoPP::SecByteBlock(blinded_secret.data(), blinded_secret.size());
     encrypted_groupsecret_result.encrypted_group_secret_ = CryptoPP::SecByteBlock(encrypted_group_secret.data(), encrypted_group_secret.size());

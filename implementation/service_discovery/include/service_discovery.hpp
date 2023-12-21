@@ -27,7 +27,7 @@
 //Additional include for time measurement
 #include "../../timestamps/include/timestamp_collector.hpp"
 
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
 //Additional include for payload encryption key agreement
 #include "../../dh_ecc/include/dh_ecc.hpp"
 #include "../../dh_ecc/include/encrypted_group_secret_result_cache.hpp"
@@ -106,7 +106,7 @@ public:
     // Addition for Time Measurement Start ###############################################################################
     virtual void set_timestamp_collector(timestamp_collector* _timestamp_collector) = 0;
     // Addition for Time Measurement End #################################################################################
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     // Aditional methods for payload encryption Start ####################################################################
     virtual void set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) = 0;
     virtual void set_group_secret_map(std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> _group_secrets) = 0;

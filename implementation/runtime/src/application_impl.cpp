@@ -39,7 +39,7 @@
 #include "../../tracing/include/connector_impl.hpp"
 #include "../../utility/include/utility.hpp"
 
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
 // Additional defines for payload encryption
 #define INITIALIZATION_VECTOR_PAYLOAD_KEY_NAME "iv"
 #define ENCRYPTED_DATA_PAYLOAD_KEY_NAME "ed"
@@ -85,7 +85,7 @@ application_impl::application_impl(const std::string &_name, const std::string &
           client_side_logging_(false),
           has_session_handling_(true),
           timestamp_collector_(timestamp_collector::get_instance())
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
           ,dh_ecc_(std::make_shared<dh_ecc>()),
           group_secrets_(std::make_shared<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>>())
 #endif
@@ -314,7 +314,7 @@ bool application_impl::init() {
             }
             routing_ = std::make_shared<routing_manager_impl>(this);
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_timestamp_collector(timestamp_collector_);
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_dh_ecc(dh_ecc_);
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_group_secret_map(group_secrets_);
 #endif
@@ -915,7 +915,7 @@ void application_impl::send(std::shared_ptr<message> _message) {
 
 void application_impl::notify(service_t _service, instance_t _instance,
         event_t _event, std::shared_ptr<payload> _payload, bool _force) const {
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     // Payload encryption Start ###############################################
     if (!group_secrets_->count({_service, _instance}))
         return;
@@ -924,7 +924,7 @@ void application_impl::notify(service_t _service, instance_t _instance,
     // Payload encryption End #################################################
 #endif
     if (routing_)
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
         routing_->notify(_service, _instance, _event, encrypted_and_encoded_payload, _force);
 #else
         routing_->notify(_service, _instance, _event, _payload, _force);
@@ -1772,7 +1772,7 @@ void application_impl::on_message(std::shared_ptr<message> &&_message) {
         if (its_handlers.size()) {
             std::lock_guard<std::mutex> its_lock(handlers_mutex_);
             for (const auto &handler : its_handlers) {
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
                 // Payload decryption Start ###############################################
                 if (!group_secrets_->count({its_service, its_instance}))
                     return;
@@ -3008,7 +3008,7 @@ void application_impl::register_message_handler_ext(
     }
 }
 
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
 // Additional methods for payload encryption
 cfb_encrypted_data application_impl::encrypt_payload(service_t _service, instance_t _instance, std::shared_ptr<payload> _payload) const {
     CryptoPP::SecByteBlock plain_payload(_payload->get_data(), _payload->get_length());

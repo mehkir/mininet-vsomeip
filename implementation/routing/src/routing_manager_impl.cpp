@@ -94,7 +94,7 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance()),
         eventgroup_subscription_cache_(eventgroup_subscription_cache::get_instance()),
         eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance())
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
         ,encrypted_group_secret_result_cache_(std::make_shared<encrypted_group_secret_result_cache>())
 #endif
 {
@@ -193,7 +193,7 @@ void routing_manager_impl::init() {
             discovery_->set_eventgroup_subscription_cache(eventgroup_subscription_cache_);
             discovery_->set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache_);
             discovery_->set_timestamp_collector(timestamp_collector_);
-#ifdef WITH_ENCRYPTION            
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)            
             discovery_->set_dh_ecc(dh_ecc_);
             discovery_->set_group_secret_map(group_secrets_);
             discovery_->set_encrypted_group_secret_result_cache(encrypted_group_secret_result_cache_);
@@ -5119,7 +5119,7 @@ void routing_manager_impl::set_timestamp_collector(timestamp_collector* _timesta
     timestamp_collector_ = _timestamp_collector;
 }
 
-#ifdef WITH_ENCRYPTION
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
 // Aditional methods for payload encryption
 void routing_manager_impl::set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) {
     dh_ecc_ = _dh_ecc;
