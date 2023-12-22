@@ -1516,11 +1516,13 @@ service_discovery_impl::process_serviceentry(
                     break;
                 case option_type_e::CONFIGURATION: {
 #ifdef WITH_CLIENT_AUTHENTICATION
-                        // Addition for Service Authentication Start ###########
+                    // Addition for Service Authentication Start ###########
+                    if (its_type == entry_type_e::OFFER_SERVICE) {
                         VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry CONFIGURATION (MEHMET MUELLER DEBUG) <<<<<";
                         std::shared_ptr < configuration_option_impl > its_configuration_option = std::dynamic_pointer_cast < configuration_option_impl > (its_option);
                         generated_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
-                        // Addition for Service Authentication End #############
+                    }
+                    // Addition for Service Authentication End #############
 #endif
                     }
                     break;
@@ -1534,21 +1536,6 @@ service_discovery_impl::process_serviceentry(
             }
         }
     }
-#ifdef WITH_CLIENT_AUTHENTICATION
-    // Service Authentication Start ##########################################################################
-    boost::asio::ip::address publisher_address;
-    if (its_unreliable_address.to_v4().to_string().compare("0.0.0.0")) {
-        publisher_address = its_unreliable_address;
-    } else {
-        publisher_address = its_reliable_address;
-    }
-    challenge_nonce_cache_->add_publisher_challenge_nonce(configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME))), publisher_address.to_v4(), its_service, its_instance, generated_nonce);
-    // VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string();
-    // VSOMEIP_DEBUG << "Received offer from Publisher (OFFER_ARRIVED)"
-    // << "(" << publisher_address.to_v4().to_string() << "," << its_service << "," << its_instance << ")";
-    // print_numerical_representation(generated_nonce, "Generated nonce");
-    // Service Authentication End ############################################################################
-#endif
 
     if (0 < its_ttl) {
         switch(its_type) {
@@ -1559,6 +1546,21 @@ service_discovery_impl::process_serviceentry(
                 break;
             case entry_type_e::OFFER_SERVICE:
                 VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry OFFER_SERVICE (MEHMET MUELLER DEBUG) <<<<<";
+#ifdef WITH_CLIENT_AUTHENTICATION
+                // Service Authentication Start ##########################################################################
+                boost::asio::ip::address publisher_address;
+                if (its_unreliable_address.to_v4().to_string().compare("0.0.0.0")) {
+                    publisher_address = its_unreliable_address;
+                } else {
+                    publisher_address = its_reliable_address;
+                }
+                challenge_nonce_cache_->add_publisher_challenge_nonce(configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME))), publisher_address.to_v4(), its_service, its_instance, generated_nonce);
+                // VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string();
+                // VSOMEIP_DEBUG << "Received offer from Publisher (OFFER_ARRIVED)"
+                // << "(" << publisher_address.to_v4().to_string() << "," << its_service << "," << its_instance << ")";
+                // print_numerical_representation(generated_nonce, "Generated nonce");
+                // Service Authentication End ############################################################################
+#endif
                 process_offerservice_serviceentry(its_service, its_instance,
                         its_major, its_minor, its_ttl,
                         its_reliable_address, its_reliable_port,
