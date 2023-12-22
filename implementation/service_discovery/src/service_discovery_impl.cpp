@@ -1524,7 +1524,7 @@ service_discovery_impl::process_serviceentry(
                     }
                     // Addition for Service Authentication End #############
 #endif
-                    }
+                }
                     break;
                 case option_type_e::UNKNOWN:
                     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry UNKNOWN (MEHMET MUELLER DEBUG) <<<<<";
@@ -1544,7 +1544,7 @@ service_discovery_impl::process_serviceentry(
                 process_findservice_serviceentry(its_service, its_instance,
                                                  its_major, its_minor, _unicast_flag);
                 break;
-            case entry_type_e::OFFER_SERVICE:
+            case entry_type_e::OFFER_SERVICE: {
                 VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry OFFER_SERVICE (MEHMET MUELLER DEBUG) <<<<<";
 #ifdef WITH_CLIENT_AUTHENTICATION
                 // Service Authentication Start ##########################################################################
@@ -1566,6 +1566,7 @@ service_discovery_impl::process_serviceentry(
                         its_reliable_address, its_reliable_port,
                         its_unreliable_address, its_unreliable_port, _resubscribes,
                         _received_via_mcast, _sd_ac_state);
+            }
                 break;
             case entry_type_e::UNKNOWN:
                 VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry UNKNOWN (MEHMET MUELLER DEBUG) <<<<<";
