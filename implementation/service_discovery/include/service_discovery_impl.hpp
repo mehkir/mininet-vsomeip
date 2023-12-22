@@ -484,7 +484,9 @@ public:
     void set_svcb_cache(svcb_cache* _svcb_cache);
     void set_timestamp_collector(timestamp_collector* _timestamp_collector);
     void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache);
+#ifdef WITH_CLIENT_AUTHENTICATION
     void set_eventgroup_subscription_cache(eventgroup_subscription_cache* _eventgroup_subscription_cache);
+#endif
     void set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache* _eventgroup_subscription_ack_cache);
     void validate_offer(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor);
     void resume_process_offerservice_serviceentry(
@@ -499,9 +501,11 @@ public:
     void validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major);
 
 private:
+#ifdef WITH_CLIENT_AUTHENTICATION
     // Additional Method for Service Authenticity Start ######################################################################
     void validate_subscribe_and_verify_signature(client_t _client, boost::asio::ip::address_v4 _subscriber_ip_address, service_t _service, instance_t _instance, major_version_t _major);
     // Additional Method for Service Authenticity End ########################################################################
+#endif
     // Addtional Member for Service Authentication Start #####################################################################
     dns_resolver* dns_resolver_;
     std::shared_ptr<svcb_resolver> svcb_resolver_;
@@ -509,7 +513,9 @@ private:
     std::shared_ptr<challenge_nonce_cache> challenge_nonce_cache_;
     svcb_cache* svcb_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
+#ifdef WITH_CLIENT_AUTHENTICATION
     eventgroup_subscription_cache* eventgroup_subscription_cache_;
+#endif
     eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
     timestamp_collector* timestamp_collector_;
     crypto_operator crypto_operator_;

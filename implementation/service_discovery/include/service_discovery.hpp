@@ -22,7 +22,11 @@
 #include "../../service_authentication/include/svcb_cache.hpp"
 #include "../../service_authentication/include/challenge_nonce_cache.hpp"
 #include "../../service_discovery/include/resume_process_offerservice_cache.hpp"
+
+#ifdef WITH_CLIENT_AUTHENTICATION
 #include "../../service_authentication/include/eventgroup_subscription_cache.hpp"
+#endif
+
 #include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
 //Additional include for time measurement
 #include "../../timestamps/include/timestamp_collector.hpp"
@@ -98,7 +102,11 @@ public:
     virtual void set_challenge_nonce_cache(std::shared_ptr<challenge_nonce_cache> _challenge_nonce_cache) = 0;
     virtual void set_svcb_cache(svcb_cache* _svcb_cache) = 0;
     virtual void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache) = 0;
+
+#ifdef WITH_CLIENT_AUTHENTICATION
     virtual void set_eventgroup_subscription_cache(eventgroup_subscription_cache* _eventgroup_subscription_cache) = 0;
+#endif
+
     virtual void set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache* _eventgroup_subscription_ack_cache) = 0;
     virtual void validate_offer(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) = 0;
     virtual void validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major) = 0;
@@ -106,6 +114,7 @@ public:
     // Addition for Time Measurement Start ###############################################################################
     virtual void set_timestamp_collector(timestamp_collector* _timestamp_collector) = 0;
     // Addition for Time Measurement End #################################################################################
+    
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     // Aditional methods for payload encryption Start ####################################################################
     virtual void set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) = 0;

@@ -92,7 +92,9 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         svcb_cache_(svcb_cache::get_instance()),
         challenge_nonce_cache_(std::make_shared<challenge_nonce_cache>()),
         resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance()),
+#ifdef WITH_CLIENT_AUTHENTICATION
         eventgroup_subscription_cache_(eventgroup_subscription_cache::get_instance()),
+#endif
         eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance())
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
         ,encrypted_group_secret_result_cache_(std::make_shared<encrypted_group_secret_result_cache>())
@@ -190,7 +192,9 @@ void routing_manager_impl::init() {
             discovery_->set_challenge_nonce_cache(challenge_nonce_cache_);
             discovery_->set_svcb_cache(svcb_cache_);
             discovery_->set_resume_process_offerservice_cache(resume_process_offerservice_cache_);
+#ifdef WITH_CLIENT_AUTHENTICATION
             discovery_->set_eventgroup_subscription_cache(eventgroup_subscription_cache_);
+#endif
             discovery_->set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache_);
             discovery_->set_timestamp_collector(timestamp_collector_);
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)            
