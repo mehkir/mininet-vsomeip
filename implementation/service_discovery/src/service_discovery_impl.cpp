@@ -1666,7 +1666,7 @@ service_discovery_impl::mimic_offerservice_serviceentry(
             service_t _service, instance_t _instance, major_version_t _major,
             minor_version_t _minor, const boost::asio::ip::address &_address,
             port_t _port, uint8_t l4protocol) {
-    ttl_t ttl = 3;
+    ttl_t ttl = 0xffffffff;
     boost::asio::ip::address reliable_address;
     port_t reliable_port = ILLEGAL_PORT;
     boost::asio::ip::address unreliable_address;
