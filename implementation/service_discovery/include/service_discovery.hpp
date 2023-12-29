@@ -122,6 +122,15 @@ public:
     virtual void set_encrypted_group_secret_result_cache(std::shared_ptr<encrypted_group_secret_result_cache> _encrypted_group_secret_result_cache) = 0;
     // Aditional methods for payload encryption End ######################################################################
 #endif
+
+#ifndef WITH_SOMEIP_SD
+// Addition for w/o SOME/IP SD Start #######################################################
+    virtual void mimic_offerservice_serviceentry(
+            service_t _service, instance_t _instance, major_version_t _major,
+            minor_version_t _minor, const boost::asio::ip::address &_address,
+            uint16_t _port, uint8_t l4protocol) = 0;
+// Addition for w/o SOME/IP SD End #########################################################
+#endif
 };
 
 } // namespace sd

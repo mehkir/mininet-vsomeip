@@ -618,6 +618,18 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_5,
                                             std::placeholders::_6,
                                             std::placeholders::_7);
+#ifndef WITH_SOMEIP_SD
+    // Addition for w/o SOME/IP SD Start #######################################################
+    service_data_and_cbs_->mimic_offerservice_serviceentry_callback_ = std::bind(&sd::service_discovery::mimic_offerservice_serviceentry, discovery_,
+                                            std::placeholders::_1,
+                                            std::placeholders::_2,
+                                            std::placeholders::_3,
+                                            std::placeholders::_4,
+                                            std::placeholders::_5,
+                                            std::placeholders::_6,
+                                            std::placeholders::_7);
+    // Addition for w/o SOME/IP SD End #########################################################
+#endif
     service_data_and_cbs_->validate_offer_callback_ = std::bind(&sd::service_discovery::validate_offer, discovery_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,

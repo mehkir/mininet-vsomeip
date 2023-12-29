@@ -24,6 +24,7 @@ namespace vsomeip_v3 {
     typedef std::function<std::vector<CryptoPP::byte>(const std::vector<CryptoPP::byte>)> convert_der_to_pem_callback;
     // struct service_data_and_callbacks
     typedef std::function<void(service_t, instance_t, major_version_t, minor_version_t, int, const boost::asio::ip::address_v4, uint16_t)> add_service_svcb_entry_cache_callback;
+    typedef std::function<void(service_t, instance_t, major_version_t, minor_version_t, boost::asio::ip::address_v4, port_t, uint8_t)> mimic_offerservice_serviceentry_callback;
     typedef std::function<void(service_t, instance_t, major_version_t, minor_version_t)> validate_offer_callback;
     typedef std::function<void(void*)> request_service_tlsa_record_callback;
     typedef std::function<void(boost::asio::ip::address_v4, service_t, instance_t, std::vector<unsigned char>)> add_publisher_certificate_callback;
@@ -36,6 +37,7 @@ namespace vsomeip_v3 {
         minor_version_t minor_;
         boost::asio::ip::address_v4 ipv4_address_;
         add_service_svcb_entry_cache_callback add_service_svcb_entry_cache_callback_;
+        mimic_offerservice_serviceentry_callback mimic_offerservice_serviceentry_callback_;
         validate_offer_callback validate_offer_callback_;
         request_service_tlsa_record_callback request_service_tlsa_record_callback_;
         add_publisher_certificate_callback add_publisher_certificate_callback_;

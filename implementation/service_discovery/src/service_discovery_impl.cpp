@@ -215,9 +215,11 @@ service_discovery_impl::start() {
         }
     }
     is_suspended_ = false;
+#ifdef WITH_SOMEIP_SD
     start_main_phase_timer();
     start_offer_debounce_timer(true);
     start_find_debounce_timer(true);
+#endif
     start_ttl_timer();
 }
 
@@ -1639,6 +1641,7 @@ service_discovery_impl::set_timestamp_collector(timestamp_collector* _timestamp_
 }
 
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
+// Aditional methods for payload encryption Start ####################################################################
 void
 service_discovery_impl::set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) {
     dh_ecc_ = _dh_ecc;
@@ -1653,6 +1656,40 @@ void
 service_discovery_impl::set_encrypted_group_secret_result_cache(std::shared_ptr<encrypted_group_secret_result_cache> _encrypted_group_secret_result_cache) {
     encrypted_group_secret_result_cache_ = _encrypted_group_secret_result_cache;
 }
+// Aditional methods for payload encryption End ######################################################################
+#endif
+
+#ifndef WITH_SOMEIP_SD
+// Addition for w/o SOME/IP SD Start #######################################################
+void
+service_discovery_impl::mimic_offerservice_serviceentry(
+            service_t _service, instance_t _instance, major_version_t _major,
+            minor_version_t _minor, const boost::asio::ip::address &_address,
+            port_t _port, uint8_t l4protocol) {
+    ttl_t ttl = 3;
+    boost::asio::ip::address reliable_address;
+    port_t reliable_port = ILLEGAL_PORT;
+    boost::asio::ip::address unreliable_address;
+    port_t unreliable_port = ILLEGAL_PORT;
+    if (l4protocol == IPPROTO_TCP) {
+        reliable_address = _address;
+        reliable_port = _port;
+    } else if (l4protocol == IPPROTO_UDP) {
+        unreliable_address = _address;
+        unreliable_port = _port;
+    }
+    std::vector<std::shared_ptr<message_impl> > resubscribes;
+    resubscribes.push_back(std::make_shared<message_impl>());
+    bool received_via_mcast = true;
+    expired_ports_t expired_ports;
+    sd_acceptance_state_t sd_acceptance_state(expired_ports);
+    sd_acceptance_state.sd_acceptance_required_ = false;
+    sd_acceptance_state.accept_entries_ = true;
+    process_offerservice_serviceentry(_service, _instance, _major, _minor, ttl, reliable_address, reliable_port,
+                                    unreliable_address, unreliable_port, resubscribes, received_via_mcast, sd_acceptance_state);
+                                    
+}
+// Addition for w/o SOME/IP SD End #########################################################
 #endif
 
 void
@@ -1666,6 +1703,29 @@ service_discovery_impl::process_offerservice_serviceentry(
         std::vector<std::shared_ptr<message_impl> > &_resubscribes,
         bool _received_via_mcast, const sd_acceptance_state_t& _sd_ac_state) {
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_offerservice_serviceentry (MEHMET MUELLER DEBUG) <<<<<";
+    // std::cout
+    // << "service=" << _service
+    // << ", instance=" << _instance
+    // << ", major=" << std::atoi(reinterpret_cast<char*>(&_major))
+    // << ", minor=" << _minor
+    // << ", ttl=" << _ttl
+    // << ", TCP IP=" << _reliable_address.to_string()
+    // << ", TCP port=" << _reliable_port
+    // << ", UDP IP=" << _unreliable_address
+    // << ", UDP port=" << _unreliable_port
+    // << ", resubscribes=";
+    // for (auto it = _resubscribes.begin(); it != _resubscribes.end(); it++) {
+    //     std::cout << (*it)->get_length();
+    //     if ((it+1) != _resubscribes.end()) {
+    //         std::cout << ", ";
+    //     }
+    // }
+    // std::cout
+    // << ", received_via_mcast=" << _received_via_mcast
+    // << ", sd ac state acceptance required=" << _sd_ac_state.sd_acceptance_required_
+    // << ", sd ac state accept entries=" << _sd_ac_state.accept_entries_
+    // << ", sd ac state accept ports count=" << _sd_ac_state.expired_ports_.size()
+    // << std::endl;
     std::shared_ptr < runtime > its_runtime = runtime_.lock();
     if (!its_runtime)
         return;
@@ -1794,7 +1854,9 @@ service_discovery_impl::process_offerservice_serviceentry(
     resume_process_offerservice_cache_->add_offerservice_entry(_service, _instance, _major, _minor, _ttl, boost::asio::ip::address_v4::from_string(_reliable_address.to_string()), _reliable_port, boost::asio::ip::address_v4::from_string(_unreliable_address.to_string()), _unreliable_port, _resubscribes, _received_via_mcast);
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_offerservice_serviceentry: Add offerservice entry service=" << _service
     << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << ", tcp=(" << _reliable_address.to_string() << "," << _reliable_port << ")" << ", udp=(" << _unreliable_address.to_string() << "," << _unreliable_port << ")" << " (MEHMET MUELLER DEBUG) <<<<<";
+#ifndef WITH_SOMEIP_SD
     validate_offer(_service, _instance, _major, _minor);
+#endif
     // Service Authentication End ############################################################################
 }
 

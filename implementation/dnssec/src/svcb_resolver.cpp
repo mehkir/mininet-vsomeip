@@ -70,6 +70,11 @@ namespace vsomeip_v3 {
             servicedata_and_cbs->major_ = (vsomeip_v3::major_version_t) std::stoi(svcb_reply_ptr->get_svcb_key(MAJOR_VERSION),0,16);
             servicedata_and_cbs->minor_ = (vsomeip_v3::minor_version_t) std::stoi(svcb_reply_ptr->get_svcb_key(MINOR_VERSION),0,16);
             servicedata_and_cbs->add_service_svcb_entry_cache_callback_(servicedata_and_cbs->service_, servicedata_and_cbs->instance_, servicedata_and_cbs->major_, servicedata_and_cbs->minor_, l4protocol, servicedata_and_cbs->ipv4_address_, svcb_reply_ptr->port_);
+#ifndef WITH_SOMEIP_SD
+            // Addition for w/o SOME/IP SD Start #######################################################
+            servicedata_and_cbs->mimic_offerservice_serviceentry_callback_(servicedata_and_cbs->service_, servicedata_and_cbs->instance_, servicedata_and_cbs->major_, servicedata_and_cbs->minor_, servicedata_and_cbs->ipv4_address_, svcb_reply_ptr->port_, (uint8_t) l4protocol);
+            // Addition for w/o SOME/IP SD End #########################################################
+#endif
             servicedata_and_cbs->validate_offer_callback_(servicedata_and_cbs->service_, servicedata_and_cbs->instance_, servicedata_and_cbs->major_, servicedata_and_cbs->minor_);
             servicedata_and_cbs->request_service_tlsa_record_callback_(servicedata_and_cbs);
 
