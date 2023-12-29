@@ -23,16 +23,12 @@ public:
             app_(vsomeip::runtime::get()->create_application()),
             is_registered_(false),
             cycle_(_cycle),
-            blocked_(false),
             running_(true),
             is_offered_(false),
-            offer_thread_(std::bind(&my_publisher_app::run, this)),
             notify_thread_(std::bind(&my_publisher_app::notify, this)) {
     }
 
     bool init() {
-        std::lock_guard<std::mutex> its_lock(mutex_);
-
         if (!app_->init()) {
             std::cerr << "Couldn't initialize application" << std::endl;
             return false;
@@ -55,8 +51,7 @@ public:
             payload_ = vsomeip::runtime::get()->create_payload();
         }
 
-        blocked_ = true;
-        run_condition_.notify_one();
+        offer();
         return true;
     }
 
@@ -70,18 +65,9 @@ public:
      */
     void stop() {
         running_ = false;
-        blocked_ = true;
-        run_condition_.notify_one();
         notify_condition_.notify_one();
         app_->clear_all_handler();
         stop_offer();
-        if (std::this_thread::get_id() != offer_thread_.get_id()) {
-            if (offer_thread_.joinable()) {
-                offer_thread_.join();
-            }
-        } else {
-            offer_thread_.detach();
-        }
         if (std::this_thread::get_id() != notify_thread_.get_id()) {
             if (notify_thread_.joinable()) {
                 notify_thread_.join();
@@ -119,27 +105,7 @@ public:
         }
     }
 
-    void run() {
-        std::unique_lock<std::mutex> its_lock(mutex_);
-        while (!blocked_)
-            run_condition_.wait(its_lock);
-
-        bool is_offer(true);
-        while (running_) {
-            if (is_offer)
-                offer();
-            else
-                stop_offer();
-
-            for (int i = 0; i < 10 && running_; i++)
-                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-            is_offer = !is_offer;
-        }
-    }
-
     void notify() {
-
         vsomeip::byte_t its_data[10];
         uint32_t its_size = 1;
 
@@ -177,9 +143,6 @@ private:
     bool is_registered_;
     uint32_t cycle_;
 
-    std::mutex mutex_;
-    std::condition_variable run_condition_;
-    bool blocked_;
     bool running_;
 
     std::mutex notify_mutex_;
@@ -189,8 +152,6 @@ private:
     std::mutex payload_mutex_;
     std::shared_ptr<vsomeip::payload> payload_;
 
-    // blocked_ / is_offered_ must be initialized before starting the threads!
-    std::thread offer_thread_;
     std::thread notify_thread_;
 };
 
