@@ -1854,7 +1854,7 @@ service_discovery_impl::process_offerservice_serviceentry(
     resume_process_offerservice_cache_->add_offerservice_entry(_service, _instance, _major, _minor, _ttl, boost::asio::ip::address_v4::from_string(_reliable_address.to_string()), _reliable_port, boost::asio::ip::address_v4::from_string(_unreliable_address.to_string()), _unreliable_port, _resubscribes, _received_via_mcast);
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_offerservice_serviceentry: Add offerservice entry service=" << _service
     << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << ", tcp=(" << _reliable_address.to_string() << "," << _reliable_port << ")" << ", udp=(" << _unreliable_address.to_string() << "," << _unreliable_port << ")" << " (MEHMET MUELLER DEBUG) <<<<<";
-#ifndef WITH_SOMEIP_SD
+#ifdef WITH_SOMEIP_SD
     validate_offer(_service, _instance, _major, _minor);
 #endif
     // Service Authentication End ############################################################################
