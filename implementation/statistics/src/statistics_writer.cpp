@@ -78,13 +78,12 @@ void statistics_writer::write_statistics() {
     boost::interprocess::named_condition condition(boost::interprocess::open_only, STATISTICS_CONDITION);
     boost::interprocess::named_mutex mutex(boost::interprocess::open_only, STATISTICS_MUTEX);
     boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(mutex);
-    int current_host_count = 0;
-    while(current_host_count < host_count_) {
-        std::cout << "[<statistics_writer>] " << current_host_count << "/" << host_count_ << " have added statistics" << std::endl;
+    bool entries_complete = false;
+    while(composite_time_statistics_->size() < host_count_ && !entries_complete) {
+        // TODO check if entries are complete
         condition.notify_one();
         condition.wait(lock);
     }
-    std::cout << "[<statistics_writer>] " << current_host_count << "/" << host_count_ << " have added statistics" << std::endl;
     std::ofstream statistics_file;
     int filecount = 0;
     std::stringstream absolute_result_file_path;
