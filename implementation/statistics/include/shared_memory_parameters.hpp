@@ -75,10 +75,10 @@ class metrics_map_data {
 };
 
 //Definition of the <host,metrics> map holding an uint32_t as key and metrics_map_data as mapped type
-typedef std::uint32_t                                                                                       host_key_t;
-typedef std::pair<const host_key_t, metrics_map_data>                                                       host_map_value_t;
-typedef boost::interprocess::allocator<host_map_value_t, segment_manager_t>                                 host_map_allocator;
-typedef boost::interprocess::map<host_key_t, metrics_map_data, std::less<host_key_t>, host_map_allocator>   host_map;
+typedef std::uint32_t                                                                                                   host_key_t;
+typedef std::pair<const host_key_t, metrics_map_data>                                                                   shared_statistics_map_value_t;
+typedef boost::interprocess::allocator<shared_statistics_map_value_t, segment_manager_t>                                shared_statistics_map_allocator;
+typedef boost::interprocess::map<host_key_t, metrics_map_data, std::less<host_key_t>, shared_statistics_map_allocator>  shared_statistics_map;
 
 enum time_metric {
     PUBLISHER_APP_INITIALIZATION_,
@@ -120,4 +120,4 @@ enum time_metric {
     TIME_METRIC_COUNT_ = VERIFY_SERVICE_SIGNATURE_END_+1
 };
 
-#endif
+#endif /* VSOMEIP_V3_SHARED_MEMORY_PARAMETERS */
