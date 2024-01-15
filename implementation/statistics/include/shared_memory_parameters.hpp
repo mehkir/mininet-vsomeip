@@ -74,6 +74,12 @@ class metrics_map_data {
       {}
 };
 
+//Definition of the <host,metrics> map holding an uint32_t as key and metrics_map_data as mapped type
+typedef std::uint32_t                                                                                       host_key_t;
+typedef std::pair<const host_key_t, metrics_map_data>                                                       host_map_value_t;
+typedef boost::interprocess::allocator<host_map_value_t, segment_manager_t>                                 host_map_allocator;
+typedef boost::interprocess::map<host_key_t, metrics_map_data, std::less<host_key_t>, host_map_allocator>   host_map;
+
 enum time_metric {
     PUBLISHER_APP_INITIALIZATION_,
     SUBSCRIBER_APP_INITIALIZATION_,
