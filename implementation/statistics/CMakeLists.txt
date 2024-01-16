@@ -1,0 +1,6 @@
+file(GLOB MY_SOURCES "./src/*.cpp")
+file(GLOB MY_HEADERS "./include/*.hpp")
+add_library(statistics_lib ${MY_SOURCES} ${MY_HEADERS})
+add_executable(statistics-writer-main statistics-writer-main.cpp)
+target_link_libraries(statistics-writer-main PUBLIC statistics_lib)
+add_dependencies(statistics-writer statistics-writer-main)

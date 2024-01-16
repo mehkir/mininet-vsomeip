@@ -667,6 +667,10 @@ add_subdirectory( tools )
 add_custom_target( examples )
 add_subdirectory( examples EXCLUDE_FROM_ALL )
 
+# build statistics-writer
+add_custom_target( statistics-writer )
+add_subdirectory( implementation/statistics )
+
 ##############################################################################
 # add test directory
 enable_testing()

@@ -54,7 +54,7 @@ void statistics_recorder::contribute_statistics() {
             }
             condition.notify_one();
             shared_objects_initialized = true;
-        } catch (boost::interprocess::interprocess_exception interprocess_exception) {
+        } catch (boost::interprocess::interprocess_exception& interprocess_exception) {
             std::cerr << interprocess_exception.what() << std::endl;
             std::cout << "[<statistics_recorder>] (" << __func__ << ") shared objects not created yet" << std::endl;
             sleep(1);

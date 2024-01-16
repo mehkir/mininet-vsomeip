@@ -7,11 +7,11 @@
 
 std::mutex statistics_writer::mutex_;
 statistics_writer* statistics_writer::instance_;
-int statistics_writer::host_count_;
+size_t statistics_writer::host_count_;
 std::string statistics_writer::absolute_results_directory_path_;
 std::string statistics_writer::result_filename_;
 
-statistics_writer* statistics_writer::get_instance(int _host_count, std::string _absolute_results_directory_path, std::string _result_filename) {
+statistics_writer* statistics_writer::get_instance(size_t _host_count, std::string _absolute_results_directory_path, std::string _result_filename) {
     std::lock_guard<std::mutex> lock_guard(mutex_);
     if(instance_ == nullptr) {
         instance_ = new statistics_writer();
