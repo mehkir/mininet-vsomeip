@@ -293,7 +293,7 @@ file(GLOB ${VSOMEIP_NAME}_SRC
     "implementation/utility/src/*.cpp"
     "implementation/dnssec/src/*.cpp"
     "implementation/service_authentication/src/*.cpp"
-    "implementation/timestamps/src/*.cpp"
+    "implementation/statistics/src/*.cpp"
     "implementation/dh_ecc/src/*.cpp"
     "implementation/payload_encoding/src/*.cpp"
     "implementation/service_discovery/src/*.cpp"
@@ -337,7 +337,7 @@ file(GLOB ${VSOMEIP_NAME}-sd_SRC
     "implementation/service_discovery/src/*.cpp"
     "implementation/service_authentication/src/*.cpp"
     "implementation/dnssec/src/*.cpp"
-    "implementation/timestamps/src/*.cpp"
+    "implementation/statistics/src/*.cpp"
     "implementation/dh_ecc/src/*.cpp"
 )
 list(SORT ${VSOMEIP_NAME}-sd_SRC)

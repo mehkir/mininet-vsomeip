@@ -196,7 +196,7 @@ void routing_manager_impl::init() {
             discovery_->set_eventgroup_subscription_cache(eventgroup_subscription_cache_);
 #endif
             discovery_->set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache_);
-            discovery_->set_timestamp_collector(timestamp_collector_);
+            discovery_->set_statistics_recorder(statistics_recorder_);
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)            
             discovery_->set_dh_ecc(dh_ecc_);
             discovery_->set_group_secret_map(group_secrets_);
@@ -647,8 +647,9 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
                                             std::placeholders::_4);
-    service_data_and_cbs_->record_timestamp_callback_ = std::bind(&timestamp_collector::record_timestamp, timestamp_collector_,
-                                            std::placeholders::_1);
+    service_data_and_cbs_->record_timestamp_callback_ = std::bind(&statistics_recorder::record_timestamp, statistics_recorder_,
+                                            std::placeholders::_1,
+                                            std::placeholders::_2);
     service_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, &crypto_operator_,
                                             std::placeholders::_1);
     svcb_resolver_->request_service_svcb_record(service_data_and_cbs_);
@@ -5130,9 +5131,9 @@ routing_manager_impl::remove_subscriptions(port_t _local_port,
     }
 }
 
-// Additional method for time measurement
-void routing_manager_impl::set_timestamp_collector(timestamp_collector* _timestamp_collector) {
-    timestamp_collector_ = _timestamp_collector;
+// Additional method for statistics recorder
+void routing_manager_impl::set_statistics_recorder(std::shared_ptr<statistics_recorder> _statistics_recorder) {
+    statistics_recorder_ = _statistics_recorder;
 }
 
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)

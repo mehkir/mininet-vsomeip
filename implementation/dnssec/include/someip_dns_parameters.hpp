@@ -3,12 +3,13 @@
 
 #include <vsomeip/constants.hpp>
 #include "../../service_authentication/include/crypto_operator.hpp"
+#include "../../statistics/include/shared_memory_parameters.hpp"
 #include <vector>
 #include <set>
 #include <functional>
 #include <boost/asio/ip/address_v4.hpp>
 
-#define DNS_SERVER_IP 0xAC120004
+#define DNS_SERVER_IP 0x0a000003
 #define INSTANCE 65280
 #define MAJOR_VERSION 65281
 #define MINOR_VERSION 65282
@@ -29,7 +30,7 @@ namespace vsomeip_v3 {
     typedef std::function<void(void*)> request_service_tlsa_record_callback;
     typedef std::function<void(boost::asio::ip::address_v4, service_t, instance_t, std::vector<unsigned char>)> add_publisher_certificate_callback;
     typedef std::function<void(boost::asio::ip::address_v4, service_t, instance_t, major_version_t)> validate_subscribe_ack_and_verify_signature_callback;
-    typedef std::function<void(std::string)> record_timestamp_callback;
+    typedef std::function<void(uint32_t, time_metric)> record_timestamp_callback;
     struct service_data_and_cbs {
         service_t service_;
         instance_t instance_;
@@ -61,6 +62,7 @@ namespace vsomeip_v3 {
         request_client_tlsa_record_callback request_client_tlsa_record_callback_;
         add_subscriber_certificate_callback add_subscriber_certificate_callback_;
         validate_subscribe_and_verify_signature_callback validate_subscribe_and_verify_signature_callback_;
+        record_timestamp_callback record_timestamp_callback_;
         convert_der_to_pem_callback convert_der_to_pem_callback_;
     };
 } /* end namespace vsomeip_v3 */

@@ -1636,8 +1636,8 @@ service_discovery_impl::set_eventgroup_subscription_ack_cache(eventgroup_subscri
 }
 
 void
-service_discovery_impl::set_timestamp_collector(timestamp_collector* _timestamp_collector) {
-    this->timestamp_collector_ = _timestamp_collector;
+service_discovery_impl::set_statistics_recorder(std::shared_ptr<statistics_recorder> _statistics_recorder) {
+    this->statistics_recorder_ = _statistics_recorder;
 }
 
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
@@ -2665,6 +2665,9 @@ service_discovery_impl::process_eventgroupentry(
                                                                 std::placeholders::_3,
                                                                 std::placeholders::_4,
                                                                 std::placeholders::_5);
+                        service_data_and_cbs_->record_timestamp_callback_ = std::bind(&statistics_recorder::record_timestamp, statistics_recorder_,
+                                                                std::placeholders::_1,
+                                                                std::placeholders::_2);
                         clientdata_and_cbs->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, &crypto_operator_,
                                                                 std::placeholders::_1);
                         svcb_resolver_->request_client_svcb_record(clientdata_and_cbs);

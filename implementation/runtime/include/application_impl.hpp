@@ -34,8 +34,8 @@
 #endif // ANDROID
 #include "../../routing/include/routing_manager_host.hpp"
 
-// Additional include for time measurement
-#include "../../timestamps/include/timestamp_collector.hpp"
+// Additional include for statistics
+#include "../../statistics/include/statistics_recorder.hpp"
 
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
 // Additional include for payload encryption
@@ -506,8 +506,8 @@ private:
 
     bool has_session_handling_;
 
-    // Additional Member for Time measurement
-    timestamp_collector* timestamp_collector_;
+    // Additional member for statistics recording
+    std::shared_ptr<statistics_recorder> statistics_recorder_;
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)    
     // Additional Members for Payload encryption
     std::shared_ptr<dh_ecc> dh_ecc_;

@@ -24,7 +24,8 @@ statistics_writer* statistics_writer::get_instance(size_t _host_count, std::stri
 
 statistics_writer::statistics_writer() {
     time_metric_names_[time_metric::PUBLISHER_APP_INITIALIZATION_] = PUBLISHER_APP_INITIALIZATION;
-    time_metric_names_[time_metric::SUBSCRIBER_APP_INITIALIZATION_] = SUBSCRIBER_APP_INITIALIZATION;
+    time_metric_names_[time_metric::SUBSCRIBER_APP_INITIALIZATION_START_] = SUBSCRIBER_APP_INITIALIZATION_START;
+    time_metric_names_[time_metric::SUBSCRIBER_APP_INITIALIZATION_END_] = SUBSCRIBER_APP_INITIALIZATION_END;
     time_metric_names_[time_metric::GENERATE_OFFER_NONCE_START_] = GENERATE_OFFER_NONCE_START;
     time_metric_names_[time_metric::GENERATE_OFFER_NONCE_END_] = GENERATE_OFFER_NONCE_END;
     time_metric_names_[time_metric::FIND_SEND_] = FIND_SEND;
@@ -78,12 +79,12 @@ void statistics_writer::write_statistics() {
     boost::interprocess::named_condition condition(boost::interprocess::open_only, STATISTICS_CONDITION);
     boost::interprocess::named_mutex mutex(boost::interprocess::open_only, STATISTICS_MUTEX);
     boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(mutex);
-    bool entries_complete = false;
-    while(composite_time_statistics_->size() < host_count_ && !entries_complete) {
-        // TODO check if entries are complete
-        condition.notify_one();
-        condition.wait(lock);
-    }
+    // bool entries_complete = false;
+    // while(composite_time_statistics_->size() < host_count_ && !entries_complete) {
+    //     // TODO check if entries are complete
+    //     condition.notify_one();
+    //     condition.wait(lock);
+    // }
     std::ofstream statistics_file;
     int filecount = 0;
     std::stringstream absolute_result_file_path;

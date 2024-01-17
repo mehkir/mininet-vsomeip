@@ -491,7 +491,7 @@ public:
     void set_tlsa_resolver(std::shared_ptr<tlsa_resolver> _tlsa_resolver);
     void set_challenge_nonce_cache(std::shared_ptr<challenge_nonce_cache> _challenge_nonce_cache);
     void set_svcb_cache(svcb_cache* _svcb_cache);
-    void set_timestamp_collector(timestamp_collector* _timestamp_collector);
+    void set_statistics_recorder(std::shared_ptr<statistics_recorder> _statistics_recorder);
     void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache);
 #ifdef WITH_CLIENT_AUTHENTICATION
     void set_eventgroup_subscription_cache(eventgroup_subscription_cache* _eventgroup_subscription_cache);
@@ -526,7 +526,7 @@ private:
     eventgroup_subscription_cache* eventgroup_subscription_cache_;
 #endif
     eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
-    timestamp_collector* timestamp_collector_;
+    std::shared_ptr<statistics_recorder> statistics_recorder_;
     crypto_operator crypto_operator_;
     std::vector<CryptoPP::byte> certificate_data_;
     CryptoPP::RSA::PrivateKey private_key_;
