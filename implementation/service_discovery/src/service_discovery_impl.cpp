@@ -1543,6 +1543,15 @@ service_discovery_impl::process_serviceentry(
         switch(its_type) {
             case entry_type_e::FIND_SERVICE:
                 VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry FIND_SERVICE (MEHMET MUELLER DEBUG) <<<<<";
+                // Addition for FIND_RECEIVE timestamp recording Start ########################################
+                boost::asio::ip::address subscriber_address;
+                if (its_unreliable_address.to_v4().to_string().compare("0.0.0.0")) {
+                    subscriber_address = its_unreliable_address;
+                } else {
+                    subscriber_address = its_reliable_address;
+                }
+                statistics_recorder_->record_timestamp(subscriber_address.to_v4().to_uint(), time_metric::FIND_RECEIVE_);
+                // Addition for FIND_RECEIVE timestamp recording End ##########################################
                 process_findservice_serviceentry(its_service, its_instance,
                                                  its_major, its_minor, _unicast_flag);
                 break;
@@ -3557,6 +3566,9 @@ service_discovery_impl::on_find_debounce_timer_expired(
     // Serialize and send FindService (increments sent counter in requested_ map)
     insert_find_entries(its_messages, repetition_phase_finds);
     send(its_messages);
+    // Addition for FIND_SEND timestamp recording Start ########################################
+    statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::FIND_SEND_);
+    // Addition for FIND_SEND timestamp recording End ##########################################
 
     std::chrono::milliseconds its_delay(repetitions_base_delay_);
     std::uint8_t its_repetitions(1);
@@ -3762,6 +3774,9 @@ service_discovery_impl::on_find_repetition_phase_timer_expired(
             its_messages.push_back(its_message);
             insert_find_entries(its_messages, its_timer_pair->second);
             send(its_messages);
+            // Addition for FIND_SEND timestamp recording Start ########################################
+            statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::FIND_SEND_);
+            // Addition for FIND_SEND timestamp recording End ##########################################
             new_delay = std::chrono::milliseconds(_last_delay * 2);
             repetition = ++_repetition;
         } else {
