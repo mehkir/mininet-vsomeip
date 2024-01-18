@@ -28,6 +28,7 @@ namespace vsomeip_v3 {
             delete servicedata_and_cbs;
             return;
         }
+        servicedata_and_cbs->record_timestamp_callback_(servicedata_and_cbs->configuration_->get_unicast_address().to_v4().to_uint(), time_metric::TLSA_SERVICE_RESPONSE_RECEIVE_);
 
         unsigned char* copy = new unsigned char[_alen];
         memcpy(copy, _abuf, _alen);
@@ -66,6 +67,7 @@ namespace vsomeip_v3 {
             delete clientdata_and_cbs;
             return;
         }
+        clientdata_and_cbs->record_timestamp_callback_(clientdata_and_cbs->unverified_client_ipv4_address_.to_uint(), time_metric::TLSA_CLIENT_RESPONSE_RECEIVE_);
 
         unsigned char* copy = new unsigned char[_alen];
         memcpy(copy, _abuf, _alen);
@@ -102,6 +104,7 @@ namespace vsomeip_v3 {
         request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << (int) servicedata_and_cbs->service_;
         request << ".";
         request << SERVICE_PARENTDOMAIN;
+        servicedata_and_cbs->record_timestamp_callback_(servicedata_and_cbs->configuration_->get_unicast_address().to_v4().to_uint(), time_metric::TLSA_SERVICE_REQUEST_SEND_);
         dns_resolver_->resolve(request.str().c_str(), C_IN, T_TLSA, service_tlsa_resolve_callback, _service_data);
     }
 
@@ -118,6 +121,7 @@ namespace vsomeip_v3 {
         request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << (int) clientdata_and_cbs->client_;
         request << ".";
         request << CLIENT_PARENTDOMAIN;
+        clientdata_and_cbs->record_timestamp_callback_(clientdata_and_cbs->unverified_client_ipv4_address_.to_uint(), time_metric::TLSA_CLIENT_REQUEST_SEND_);
         dns_resolver_->resolve(request.str().c_str(), C_IN, T_TLSA, client_tlsa_resolve_callback, _client_data);
     }
 } /* end namespace vsomeip_v3 */

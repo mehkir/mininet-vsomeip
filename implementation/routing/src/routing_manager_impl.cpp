@@ -605,12 +605,12 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
         instance_t _instance, major_version_t _major, minor_version_t _minor) {
 
     //Addition for Service Authentication Start ##########################################################################
-    service_data_and_cbs* service_data_and_cbs_ = new service_data_and_cbs();
-    service_data_and_cbs_->service_ = _service;
-    service_data_and_cbs_->instance_ = _instance;
-    service_data_and_cbs_->major_ = _major;
-    service_data_and_cbs_->minor_ = _minor;
-    service_data_and_cbs_->add_service_svcb_entry_cache_callback_ = std::bind(&svcb_cache::add_service_svcb_cache_entry, svcb_cache_,
+    service_data_and_cbs* servicedata_and_cbs = new service_data_and_cbs();
+    servicedata_and_cbs->service_ = _service;
+    servicedata_and_cbs->instance_ = _instance;
+    servicedata_and_cbs->major_ = _major;
+    servicedata_and_cbs->minor_ = _minor;
+    servicedata_and_cbs->add_service_svcb_entry_cache_callback_ = std::bind(&svcb_cache::add_service_svcb_cache_entry, svcb_cache_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
@@ -620,7 +620,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_7);
 #ifndef WITH_SOMEIP_SD
     // Addition for w/o SOME/IP SD Start #######################################################
-    service_data_and_cbs_->mimic_offerservice_serviceentry_callback_ = std::bind(&sd::service_discovery::mimic_offerservice_serviceentry, discovery_,
+    servicedata_and_cbs->mimic_offerservice_serviceentry_callback_ = std::bind(&sd::service_discovery::mimic_offerservice_serviceentry, discovery_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
@@ -630,29 +630,30 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_7);
     // Addition for w/o SOME/IP SD End #########################################################
 #endif
-    service_data_and_cbs_->validate_offer_callback_ = std::bind(&sd::service_discovery::validate_offer, discovery_,
+    servicedata_and_cbs->validate_offer_callback_ = std::bind(&sd::service_discovery::validate_offer, discovery_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
                                             std::placeholders::_4);
-    service_data_and_cbs_->add_publisher_certificate_callback_ = std::bind(&challenge_nonce_cache::add_publisher_certificate, challenge_nonce_cache_,
+    servicedata_and_cbs->add_publisher_certificate_callback_ = std::bind(&challenge_nonce_cache::add_publisher_certificate, challenge_nonce_cache_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
                                             std::placeholders::_4);
-    service_data_and_cbs_->request_service_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_service_tlsa_record, tlsa_resolver_,
+    servicedata_and_cbs->request_service_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_service_tlsa_record, tlsa_resolver_,
                                             std::placeholders::_1);
-    service_data_and_cbs_->validate_subscribe_ack_and_verify_signature_callback_ = std::bind(&sd::service_discovery::validate_subscribe_ack_and_verify_signature, discovery_,
+    servicedata_and_cbs->validate_subscribe_ack_and_verify_signature_callback_ = std::bind(&sd::service_discovery::validate_subscribe_ack_and_verify_signature, discovery_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
                                             std::placeholders::_4);
-    service_data_and_cbs_->record_timestamp_callback_ = std::bind(&statistics_recorder::record_timestamp, statistics_recorder_,
+    servicedata_and_cbs->record_timestamp_callback_ = std::bind(&statistics_recorder::record_timestamp, statistics_recorder_,
                                             std::placeholders::_1,
                                             std::placeholders::_2);
-    service_data_and_cbs_->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, &crypto_operator_,
+    servicedata_and_cbs->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, &crypto_operator_,
                                             std::placeholders::_1);
-    svcb_resolver_->request_service_svcb_record(service_data_and_cbs_);
+    servicedata_and_cbs->configuration_ = configuration_;
+    svcb_resolver_->request_service_svcb_record(servicedata_and_cbs);
     //Addition for Service Authentication End ############################################################################
 
     VSOMEIP_INFO << "REQUEST("
