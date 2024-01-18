@@ -47,24 +47,8 @@ namespace vsomeip_v3 {
         svcb_reply* svcb_reply_ptr = svcbreply;
         while (svcb_reply_ptr != nullptr) {
             //std::cout << "svcb_resolver\n" << *svcb_reply_ptr << std::endl;
-            std::string reliable_address = "", unreliable_address = "";
-            // uint16_t reliable_port = 0, unreliable_port = 0;
             int l4protocol = std::stoi(svcb_reply_ptr->get_svcb_key(L4PROTOCOL));
-            switch (l4protocol)
-            {
-            case IPPROTO_UDP:
-                unreliable_address = svcb_reply_ptr->ipv4_address_string_;
-                // unreliable_port = svcb_reply_ptr->port_;
-                servicedata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(unreliable_address);
-                break;
-            case IPPROTO_TCP:
-                reliable_address = svcb_reply_ptr->ipv4_address_string_;
-                // reliable_port = svcb_reply_ptr->port_;
-                servicedata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(unreliable_address);
-                break;
-            default:
-                break;
-            }
+            servicedata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(svcb_reply_ptr->ipv4_address_string_);
             //Fill with concrete values in case instance, major and minor were not specified
             servicedata_and_cbs->instance_ = (vsomeip_v3::instance_t) std::stoi(svcb_reply_ptr->get_svcb_key(INSTANCE),0,16);
             servicedata_and_cbs->major_ = (vsomeip_v3::major_version_t) std::stoi(svcb_reply_ptr->get_svcb_key(MAJOR_VERSION),0,16);
@@ -118,21 +102,7 @@ namespace vsomeip_v3 {
             std::string reliable_address = "", unreliable_address = "";
             // uint16_t reliable_port = 0, unreliable_port = 0;
             int l4protocol = std::stoi(svcb_reply_ptr->get_svcb_key(L4PROTOCOL));
-            switch (l4protocol)
-            {
-            case IPPROTO_UDP:
-                unreliable_address = svcb_reply_ptr->ipv4_address_string_;
-                // unreliable_port = svcb_reply_ptr->port_;
-                clientdata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(unreliable_address);
-                break;
-            case IPPROTO_TCP:
-                reliable_address = svcb_reply_ptr->ipv4_address_string_;
-                // reliable_port = svcb_reply_ptr->port_;
-                clientdata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(unreliable_address);
-                break;
-            default:
-                break;
-            }
+            clientdata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(svcb_reply_ptr->ipv4_address_string_);
             std::set<std::string> str_ports;
             boost::split(str_ports, svcb_reply_ptr->get_svcb_key(CLIENT_PORTS), boost::is_any_of(","));
             std::set<port_t> ports;
