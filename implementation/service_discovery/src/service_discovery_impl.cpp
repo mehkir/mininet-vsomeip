@@ -1174,6 +1174,7 @@ service_discovery_impl::insert_subscription_ack(
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
     boost::asio::ip::address_v4 subscriber_address = _target->get_address().to_v4();
     // Signing nonce from subscriber and add signature
+    statistics_recorder_->record_timestamp(subscriber_address.to_uint(), time_metric::SERVICE_SIGN_START_);
     std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(subscriber_address, its_service, its_instance);
     VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << subscriber_address.to_string();
     if (signed_nonce.empty()) {
@@ -1199,6 +1200,7 @@ service_discovery_impl::insert_subscription_ack(
 #endif
     std::vector<CryptoPP::byte> signature = crypto_operator_.sign(private_key_, data_to_be_signed);
     data_partitioner().partition_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
+    statistics_recorder_->record_timestamp(subscriber_address.to_uint(), time_metric::SERVICE_SIGN_END_);
     its_data.options_.push_back(configuration_option);
     // VSOMEIP_DEBUG << "Created subscribe ack by Publisher (SUBSCRIBE_ACK_SEND)" << "(" << subscriber_address.to_string() << "," << its_service << "," << its_instance << ")";
     // print_numerical_representation(signed_nonce, "Signed nonce");
