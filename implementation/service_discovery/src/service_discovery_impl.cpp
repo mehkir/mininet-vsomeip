@@ -1225,13 +1225,14 @@ service_discovery_impl::insert_subscription_ack(
 
     // Addition for timestamp recording Start #################################################################
     static std::set<uint32_t> recorded_subscribers;
-    if(_ttl) {
-        statistics_recorder_->record_timestamp(subscriber_address.to_uint(), time_metric::SUBSCRIBE_ACK_SEND_);
-        recorded_subscribers.insert(subscriber_address.to_uint());
-    }
     static bool already_contributed = false;
     static std::mutex contribution_mutex;
     {
+        if(_ttl) {
+            statistics_recorder_->record_timestamp(subscriber_address.to_uint(), time_metric::SUBSCRIBE_ACK_SEND_);
+            recorded_subscribers.insert(subscriber_address.to_uint());
+        }
+
         std::lock_guard<std::mutex> contribution_guard(contribution_mutex);
         if(!already_contributed && (recorded_subscribers.size() == SUBSCRIBER_COUNT_TO_RECORD)) {
             statistics_recorder_->contribute_statistics();
