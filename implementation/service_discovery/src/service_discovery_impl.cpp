@@ -45,6 +45,8 @@
 #include "../../service_authentication/include/data_partitioner.hpp"
 #include <netinet/in.h>
 
+#define SUBSCRIBER_COUNT_TO_RECORD 1
+
 #define GENERATED_NONCE_CONFIG_OPTION_KEY "gn"
 #define SIGNED_NONCE_CONFIG_OPTION_KEY "sn"
 #define SIGNATURE_CONFIG_OPTION_KEY "sig"
@@ -1221,8 +1223,22 @@ service_discovery_impl::insert_subscription_ack(
     its_data.entry_ = its_entry;
     its_data.other_ = nullptr;
 
-    if(_ttl)
+    // Addition for timestamp recording Start #################################################################
+    static std::set<uint32_t> recorded_subscribers;
+    if(_ttl) {
         statistics_recorder_->record_timestamp(subscriber_address.to_uint(), time_metric::SUBSCRIBE_ACK_SEND_);
+        recorded_subscribers.insert(subscriber_address.to_uint());
+    }
+    static bool already_contributed = false;
+    static std::mutex contribution_mutex;
+    {
+        std::lock_guard<std::mutex> contribution_guard(contribution_mutex);
+        if(!already_contributed && recorded_subscribers.size() == SUBSCRIBER_COUNT_TO_RECORD) {
+            statistics_recorder_->contribute_statistics();
+            already_contributed = true;
+        }
+    }
+    // Addition for timestamp recording End ###################################################################
 
     add_entry_data_to_remote_subscription_ack_msg(_acknowledgement, its_data);
 }

@@ -21,6 +21,7 @@ statistics_recorder::~statistics_recorder() {
 }
 
 void statistics_recorder::record_timestamp(uint32_t _host_ip, time_metric _time_metric) {
+    std::lock_guard<std::mutex> lock_guard(mutex_);
     if(!time_statistics_.count(_host_ip) || !time_statistics_[_host_ip].count(_time_metric)) {
         time_statistics_[_host_ip][_time_metric] = std::chrono::system_clock::now().time_since_epoch().count();
     }
