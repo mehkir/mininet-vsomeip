@@ -1233,7 +1233,7 @@ service_discovery_impl::insert_subscription_ack(
     static std::mutex contribution_mutex;
     {
         std::lock_guard<std::mutex> contribution_guard(contribution_mutex);
-        if(!already_contributed && recorded_subscribers.size() == SUBSCRIBER_COUNT_TO_RECORD) {
+        if(!already_contributed && (recorded_subscribers.size() == SUBSCRIBER_COUNT_TO_RECORD)) {
             statistics_recorder_->contribute_statistics();
             already_contributed = true;
         }
