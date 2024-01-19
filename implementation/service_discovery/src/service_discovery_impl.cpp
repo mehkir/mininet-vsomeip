@@ -1223,7 +1223,7 @@ service_discovery_impl::insert_subscription_ack(
     its_data.entry_ = its_entry;
     its_data.other_ = nullptr;
 
-    // Addition for timestamp recording Start #################################################################
+    // Addition for statistics contribution Start #################################################################
     static std::set<uint32_t> recorded_subscribers;
     static bool already_contributed = false;
     static std::mutex contribution_mutex;
@@ -1239,7 +1239,7 @@ service_discovery_impl::insert_subscription_ack(
             already_contributed = true;
         }
     }
-    // Addition for timestamp recording End ###################################################################
+    // Addition for statistics contribution End ###################################################################
 
     add_entry_data_to_remote_subscription_ack_msg(_acknowledgement, its_data);
 }
@@ -2973,7 +2973,19 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
         return;
     }
     VSOMEIP_DEBUG << __func__ << " SIGNATURE VERIFIED";
-    statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::VERIFY_SERVICE_SIGNATURE_END_);
+    // Addition for statistics contribution Start #################################################################
+    static bool already_contributed = false;
+    static std::mutex contribution_mutex;
+    {
+        std::lock_guard<std::mutex> contribution_guard(contribution_mutex);
+        statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::VERIFY_SERVICE_SIGNATURE_END_);
+
+        if(!already_contributed) {
+            statistics_recorder_->contribute_statistics();
+            already_contributed = true;
+        }
+    }
+    // Addition for statistics contribution End ###################################################################
     eventgroup_subscription_ack_cache_->remove_eventgroup_subscription_ack_cache_entry(_sender_ip_address, _service, _instance);
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     encrypted_group_secret_result encrypted_groupsecret_result;
