@@ -46,11 +46,16 @@ void statistics_recorder::contribute_statistics() {
             }
 
             for(auto host_entry : time_statistics_) {
-                metrics_map_data mapped_metrics_map(void_allocator_instance);
-                for(auto metrics_entry : host_entry.second) {
-                    mapped_metrics_map.metrics_map_.insert({metrics_entry.first, metrics_entry.second});
+                metrics_map_data* mapped_metrics_map;
+                if(composite_time_statistics_->count(host_entry.first)) {
+                    mapped_metrics_map = &(*composite_time_statistics_)[host_entry.first];
+                } else {
+                    mapped_metrics_map = &metrics_map_data(void_allocator_instance);
                 }
-                composite_time_statistics_->insert({host_entry.first, mapped_metrics_map});
+                for(auto metrics_entry : host_entry.second) {
+                    mapped_metrics_map->metrics_map_.insert({metrics_entry.first, metrics_entry.second});
+                }
+                composite_time_statistics_->insert({host_entry.first, *mapped_metrics_map});
             }
             condition.notify_one();
             shared_objects_initialized = true;
