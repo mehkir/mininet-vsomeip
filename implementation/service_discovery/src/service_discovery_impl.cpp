@@ -2707,7 +2707,7 @@ service_discovery_impl::process_eventgroupentry(
                                                                 std::placeholders::_3,
                                                                 std::placeholders::_4,
                                                                 std::placeholders::_5);
-                        service_data_and_cbs_->record_timestamp_callback_ = std::bind(&statistics_recorder::record_timestamp, statistics_recorder_,
+                        clientdata_and_cbs->record_timestamp_callback_ = std::bind(&statistics_recorder::record_timestamp, statistics_recorder_,
                                                                 std::placeholders::_1,
                                                                 std::placeholders::_2);
                         clientdata_and_cbs->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, &crypto_operator_,
