@@ -52,6 +52,8 @@ statistics_writer::statistics_writer() {
     time_metric_names_[time_metric::TLSA_CLIENT_RESPONSE_RECEIVE_] = TLSA_CLIENT_RESPONSE_RECEIVE;
     time_metric_names_[time_metric::VERIFY_CLIENT_SIGNATURE_START_] = VERIFY_CLIENT_SIGNATURE_START;
     time_metric_names_[time_metric::VERIFY_CLIENT_SIGNATURE_END_] = VERIFY_CLIENT_SIGNATURE_END;
+    time_metric_names_[time_metric::SERVICE_SIGN_START_] = SERVICE_SIGN_START;
+    time_metric_names_[time_metric::SERVICE_SIGN_END_] = SERVICE_SIGN_END;
     time_metric_names_[time_metric::SUBSCRIBE_ACK_SEND_] = SUBSCRIBE_ACK_SEND;
     time_metric_names_[time_metric::SUBSCRIBE_ACK_RECEIVE_] = SUBSCRIBE_ACK_RECEIVE;
     time_metric_names_[time_metric::TLSA_SERVICE_REQUEST_SEND_] = TLSA_SERVICE_REQUEST_SEND;
