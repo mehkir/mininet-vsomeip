@@ -8,6 +8,7 @@ class statistics_recorder
 public:
     static statistics_recorder* get_instance();
     void record_timestamp(uint32_t _host_ip, time_metric _time_metric);
+    void record_custom_timestamp(uint32_t _host_ip, time_metric _time_metric, uint64_t _timestamp);
     void contribute_statistics();
     ~statistics_recorder();
 private:

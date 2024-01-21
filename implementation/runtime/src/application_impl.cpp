@@ -129,9 +129,7 @@ application_impl::~application_impl() {
 
 bool application_impl::init() {
     std::lock_guard<std::mutex> its_initialized_lock(initialize_mutex_);
-    if (configuration_->get_unicast_address().to_v4().to_string().compare("10.0.0.2")) {
-        statistics_recorder_->record_timestamp(configuration_->get_unicast_address().to_v4().to_uint(), time_metric::SUBSCRIBER_APP_INITIALIZATION_START_);
-    }
+    uint64_t init_timestamp_start = std::chrono::system_clock::now().time_since_epoch().count();
     if(is_initialized_) {
         VSOMEIP_WARNING << "Trying to initialize an already initialized application.";
         return true;
@@ -389,6 +387,7 @@ bool application_impl::init() {
         std::exit(EXIT_FAILURE);
     }
     if (configuration_->get_unicast_address().to_v4().to_string().compare("10.0.0.2")) {
+        statistics_recorder_->record_custom_timestamp(configuration_->get_unicast_address().to_v4().to_uint(), time_metric::SUBSCRIBER_APP_INITIALIZATION_START_, init_timestamp_start);
         statistics_recorder_->record_timestamp(configuration_->get_unicast_address().to_v4().to_uint(), time_metric::SUBSCRIBER_APP_INITIALIZATION_END_);
     }
     return is_initialized_;
