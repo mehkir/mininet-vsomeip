@@ -6,7 +6,7 @@
 			"label": "CMake: build",
 			"command": "build",
 			"targets": [
-				"examples"
+				"examples", "statistics-writer"
 			],
 			"dependsOn": ["CMake: build all"],
 			"group": "build",
