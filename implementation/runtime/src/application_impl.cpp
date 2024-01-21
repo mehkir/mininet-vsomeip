@@ -386,7 +386,7 @@ bool application_impl::init() {
         std::cerr << "Configuration module could not be loaded!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    if (configuration_->get_unicast_address().to_v4().to_string().compare("10.0.0.2")) {
+    if (configuration_->get_unicast_address().to_v4().to_string().compare("10.0.0.1")) {
         statistics_recorder_->record_custom_timestamp(configuration_->get_unicast_address().to_v4().to_uint(), time_metric::SUBSCRIBER_APP_INITIALIZATION_START_, init_timestamp_start);
         statistics_recorder_->record_timestamp(configuration_->get_unicast_address().to_v4().to_uint(), time_metric::SUBSCRIBER_APP_INITIALIZATION_END_);
     }
