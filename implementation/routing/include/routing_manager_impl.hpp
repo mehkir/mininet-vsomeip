@@ -41,8 +41,8 @@
 
 #include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
 
-//Additional include for time measurement
-#include "../../timestamps/include/timestamp_collector.hpp"
+//Additional include for statistics recorder
+#include "../../statistics/include/statistics_recorder.hpp"
 
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
 // Additional include for payload encryption
@@ -589,8 +589,8 @@ private:
     eventgroup_subscription_cache* eventgroup_subscription_cache_;
 #endif
     eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
-    //Addition for time measurement
-    timestamp_collector* timestamp_collector_;
+    //Addition for statistics recording
+    std::shared_ptr<statistics_recorder> statistics_recorder_;
 
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     // Additional members for payload encryption
@@ -602,8 +602,8 @@ private:
 public:
     // Addtional member for service authentication
     crypto_operator crypto_operator_;
-    // Additional method for time measurement
-    void set_timestamp_collector(timestamp_collector* _timestamp_collector);
+    // Additional method for statistics recording
+    void set_statistics_recorder(std::shared_ptr<statistics_recorder> _statistics_recorder);
     
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     // Aditional methods for payload encryption

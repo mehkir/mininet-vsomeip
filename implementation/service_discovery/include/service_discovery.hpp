@@ -28,8 +28,8 @@
 #endif
 
 #include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
-//Additional include for time measurement
-#include "../../timestamps/include/timestamp_collector.hpp"
+//Additional include for statistics recorder
+#include "../../statistics/include/statistics_recorder.hpp"
 
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
 //Additional include for payload encryption key agreement
@@ -111,9 +111,9 @@ public:
     virtual void validate_offer(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) = 0;
     virtual void validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major) = 0;
     // Addition for Service Authentication End ###########################################################################
-    // Addition for Time Measurement Start ###############################################################################
-    virtual void set_timestamp_collector(timestamp_collector* _timestamp_collector) = 0;
-    // Addition for Time Measurement End #################################################################################
+    // Addition for statistics recorder Start ###############################################################################
+    virtual void set_statistics_recorder(std::shared_ptr<statistics_recorder> _statistics_recorder) = 0;
+    // Addition for statistics recorder End #################################################################################
     
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
     // Aditional methods for payload encryption Start ####################################################################

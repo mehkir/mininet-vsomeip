@@ -12,8 +12,8 @@ int main (int argc, char* argv[]) {
     std::string absolute_results_directory_path(argv[2]);
     std::string result_filename;
     result_filename = "mininet-vsomeip";
-    if (member_count <= 1) {
-      std::cerr << "member_count must be greater than 1\n";
+    if (member_count <= 0) {
+      std::cerr << "member_count must be greater than 0\n";
       return 1;
     }
     result_filename += "-" + std::to_string(member_count);

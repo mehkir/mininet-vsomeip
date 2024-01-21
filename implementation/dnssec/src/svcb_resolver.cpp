@@ -32,6 +32,7 @@ namespace vsomeip_v3 {
             delete servicedata_and_cbs;
             return;
         }
+        servicedata_and_cbs->record_timestamp_callback_(servicedata_and_cbs->configuration_->get_unicast_address().to_v4().to_uint(), time_metric::SVCB_SERVICE_RESPONSE_RECEIVE_);
 
         unsigned char* copy = new unsigned char[_alen];
         memcpy(copy, _abuf, _alen);
@@ -47,24 +48,8 @@ namespace vsomeip_v3 {
         svcb_reply* svcb_reply_ptr = svcbreply;
         while (svcb_reply_ptr != nullptr) {
             //std::cout << "svcb_resolver\n" << *svcb_reply_ptr << std::endl;
-            std::string reliable_address = "", unreliable_address = "";
-            // uint16_t reliable_port = 0, unreliable_port = 0;
             int l4protocol = std::stoi(svcb_reply_ptr->get_svcb_key(L4PROTOCOL));
-            switch (l4protocol)
-            {
-            case IPPROTO_UDP:
-                unreliable_address = svcb_reply_ptr->ipv4_address_string_;
-                // unreliable_port = svcb_reply_ptr->port_;
-                servicedata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(unreliable_address);
-                break;
-            case IPPROTO_TCP:
-                reliable_address = svcb_reply_ptr->ipv4_address_string_;
-                // reliable_port = svcb_reply_ptr->port_;
-                servicedata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(unreliable_address);
-                break;
-            default:
-                break;
-            }
+            servicedata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(svcb_reply_ptr->ipv4_address_string_);
             //Fill with concrete values in case instance, major and minor were not specified
             servicedata_and_cbs->instance_ = (vsomeip_v3::instance_t) std::stoi(svcb_reply_ptr->get_svcb_key(INSTANCE),0,16);
             servicedata_and_cbs->major_ = (vsomeip_v3::major_version_t) std::stoi(svcb_reply_ptr->get_svcb_key(MAJOR_VERSION),0,16);
@@ -100,6 +85,7 @@ namespace vsomeip_v3 {
             delete clientdata_and_cbs;
             return;
         }
+        clientdata_and_cbs->record_timestamp_callback_(clientdata_and_cbs->unverified_client_ipv4_address_.to_uint(), time_metric::SVCB_CLIENT_RESPONSE_RECEIVE_);
 
         unsigned char* copy = new unsigned char[_alen];
         memcpy(copy, _abuf, _alen);
@@ -118,21 +104,7 @@ namespace vsomeip_v3 {
             std::string reliable_address = "", unreliable_address = "";
             // uint16_t reliable_port = 0, unreliable_port = 0;
             int l4protocol = std::stoi(svcb_reply_ptr->get_svcb_key(L4PROTOCOL));
-            switch (l4protocol)
-            {
-            case IPPROTO_UDP:
-                unreliable_address = svcb_reply_ptr->ipv4_address_string_;
-                // unreliable_port = svcb_reply_ptr->port_;
-                clientdata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(unreliable_address);
-                break;
-            case IPPROTO_TCP:
-                reliable_address = svcb_reply_ptr->ipv4_address_string_;
-                // reliable_port = svcb_reply_ptr->port_;
-                clientdata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(unreliable_address);
-                break;
-            default:
-                break;
-            }
+            clientdata_and_cbs->ipv4_address_ = boost::asio::ip::address_v4::from_string(svcb_reply_ptr->ipv4_address_string_);
             std::set<std::string> str_ports;
             boost::split(str_ports, svcb_reply_ptr->get_svcb_key(CLIENT_PORTS), boost::is_any_of(","));
             std::set<port_t> ports;
@@ -167,6 +139,7 @@ namespace vsomeip_v3 {
         request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << (int) _service_data_and_cbs->service_;
         request << ".";
         request << SERVICE_PARENTDOMAIN;
+        _service_data_and_cbs->record_timestamp_callback_(_service_data_and_cbs->configuration_->get_unicast_address().to_v4().to_uint(), time_metric::SVCB_SERVICE_REQUEST_SEND_);
         dns_resolver_->resolve(request.str().c_str(), C_IN, T_SVCB, service_svcb_resolve_callback, _service_data_and_cbs);
     }
 
@@ -186,6 +159,7 @@ namespace vsomeip_v3 {
         request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << (int) _client_data_and_cbs->client_;
         request << ".";
         request << CLIENT_PARENTDOMAIN;
+        _client_data_and_cbs->record_timestamp_callback_(_client_data_and_cbs->unverified_client_ipv4_address_.to_uint(), time_metric::SVCB_CLIENT_REQUEST_SEND_);
         dns_resolver_->resolve(request.str().c_str(), C_IN, T_SVCB, client_svcb_resolve_callback, _client_data_and_cbs);
     }
 } /* end namespace vsomeip_v3 */

@@ -84,7 +84,7 @@ application_impl::application_impl(const std::string &_name, const std::string &
           watchdog_timer_(io_),
           client_side_logging_(false),
           has_session_handling_(true),
-          timestamp_collector_(timestamp_collector::get_instance())
+          statistics_recorder_(statistics_recorder::get_instance())
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
           ,dh_ecc_(std::make_shared<dh_ecc>()),
           group_secrets_(std::make_shared<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>>())
@@ -129,6 +129,9 @@ application_impl::~application_impl() {
 
 bool application_impl::init() {
     std::lock_guard<std::mutex> its_initialized_lock(initialize_mutex_);
+    if (configuration_->get_unicast_address().to_v4().to_string().compare("10.0.0.2")) {
+        statistics_recorder_->record_timestamp(configuration_->get_unicast_address().to_v4().to_uint(), time_metric::SUBSCRIBER_APP_INITIALIZATION_START_);
+    }
     if(is_initialized_) {
         VSOMEIP_WARNING << "Trying to initialize an already initialized application.";
         return true;
@@ -313,7 +316,7 @@ bool application_impl::init() {
                 utility::request_client_id(configuration_, name_, client_);
             }
             routing_ = std::make_shared<routing_manager_impl>(this);
-            dynamic_cast<routing_manager_impl*>(routing_.get())->set_timestamp_collector(timestamp_collector_);
+            dynamic_cast<routing_manager_impl*>(routing_.get())->set_statistics_recorder(statistics_recorder_);
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_dh_ecc(dh_ecc_);
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_group_secret_map(group_secrets_);
@@ -385,7 +388,9 @@ bool application_impl::init() {
         std::cerr << "Configuration module could not be loaded!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    timestamp_collector_->record_timestamp(APPLICATION_INIT);
+    if (configuration_->get_unicast_address().to_v4().to_string().compare("10.0.0.2")) {
+        statistics_recorder_->record_timestamp(configuration_->get_unicast_address().to_v4().to_uint(), time_metric::SUBSCRIBER_APP_INITIALIZATION_END_);
+    }
     return is_initialized_;
 }
 

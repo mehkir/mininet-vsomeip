@@ -24,7 +24,8 @@ statistics_writer* statistics_writer::get_instance(size_t _host_count, std::stri
 
 statistics_writer::statistics_writer() {
     time_metric_names_[time_metric::PUBLISHER_APP_INITIALIZATION_] = PUBLISHER_APP_INITIALIZATION;
-    time_metric_names_[time_metric::SUBSCRIBER_APP_INITIALIZATION_] = SUBSCRIBER_APP_INITIALIZATION;
+    time_metric_names_[time_metric::SUBSCRIBER_APP_INITIALIZATION_START_] = SUBSCRIBER_APP_INITIALIZATION_START;
+    time_metric_names_[time_metric::SUBSCRIBER_APP_INITIALIZATION_END_] = SUBSCRIBER_APP_INITIALIZATION_END;
     time_metric_names_[time_metric::GENERATE_OFFER_NONCE_START_] = GENERATE_OFFER_NONCE_START;
     time_metric_names_[time_metric::GENERATE_OFFER_NONCE_END_] = GENERATE_OFFER_NONCE_END;
     time_metric_names_[time_metric::FIND_SEND_] = FIND_SEND;
@@ -51,6 +52,8 @@ statistics_writer::statistics_writer() {
     time_metric_names_[time_metric::TLSA_CLIENT_RESPONSE_RECEIVE_] = TLSA_CLIENT_RESPONSE_RECEIVE;
     time_metric_names_[time_metric::VERIFY_CLIENT_SIGNATURE_START_] = VERIFY_CLIENT_SIGNATURE_START;
     time_metric_names_[time_metric::VERIFY_CLIENT_SIGNATURE_END_] = VERIFY_CLIENT_SIGNATURE_END;
+    time_metric_names_[time_metric::SERVICE_SIGN_START_] = SERVICE_SIGN_START;
+    time_metric_names_[time_metric::SERVICE_SIGN_END_] = SERVICE_SIGN_END;
     time_metric_names_[time_metric::SUBSCRIBE_ACK_SEND_] = SUBSCRIBE_ACK_SEND;
     time_metric_names_[time_metric::SUBSCRIBE_ACK_RECEIVE_] = SUBSCRIBE_ACK_RECEIVE;
     time_metric_names_[time_metric::TLSA_SERVICE_REQUEST_SEND_] = TLSA_SERVICE_REQUEST_SEND;
@@ -78,9 +81,7 @@ void statistics_writer::write_statistics() {
     boost::interprocess::named_condition condition(boost::interprocess::open_only, STATISTICS_CONDITION);
     boost::interprocess::named_mutex mutex(boost::interprocess::open_only, STATISTICS_MUTEX);
     boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(mutex);
-    bool entries_complete = false;
-    while(composite_time_statistics_->size() < host_count_ && !entries_complete) {
-        // TODO check if entries are complete
+    while(!entries_are_complete()) {
         condition.notify_one();
         condition.wait(lock);
     }
@@ -123,4 +124,16 @@ void statistics_writer::write_statistics() {
         }
     }
     statistics_file.close();
+}
+
+bool statistics_writer::entries_are_complete() {
+    bool entries_are_complete = false;
+    size_t host_entry_count = composite_time_statistics_->size();
+    for(auto host_entry = composite_time_statistics_->begin(); (host_entry_count == host_count_) && (host_entry != composite_time_statistics_->end()); host_entry++) {
+        auto metrics_map = host_entry->second.metrics_map_;
+        entries_are_complete = metrics_map.count(time_metric::SUBSCRIBE_ACK_SEND_) && metrics_map.count(time_metric::VERIFY_SERVICE_SIGNATURE_END_);
+        if(!entries_are_complete)
+            break;
+    }
+    return entries_are_complete;
 }
