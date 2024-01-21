@@ -49,9 +49,10 @@ void statistics_recorder::contribute_statistics() {
             for(auto host_entry : time_statistics_) {
                 metrics_map_data* mapped_metrics_map;
                 if(composite_time_statistics_->count(host_entry.first)) {
-                    mapped_metrics_map = &(*composite_time_statistics_)[host_entry.first];
+                    mapped_metrics_map = &composite_time_statistics_->at(host_entry.first);
                 } else {
-                    mapped_metrics_map = &metrics_map_data(void_allocator_instance);
+                    metrics_map_data metrics_map_data_var = metrics_map_data(void_allocator_instance);
+                    mapped_metrics_map = &metrics_map_data_var;
                 }
                 for(auto metrics_entry : host_entry.second) {
                     mapped_metrics_map->metrics_map_.insert({metrics_entry.first, metrics_entry.second});
