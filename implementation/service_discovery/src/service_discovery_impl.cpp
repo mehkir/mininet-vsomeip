@@ -45,7 +45,7 @@
 #include "../../service_authentication/include/data_partitioner.hpp"
 #include <netinet/in.h>
 
-#define SUBSCRIBER_COUNT_TO_RECORD 1
+#define SUBSCRIBER_COUNT_TO_RECORD 2
 
 #define GENERATED_NONCE_CONFIG_OPTION_KEY "gn"
 #define SIGNED_NONCE_CONFIG_OPTION_KEY "sn"
@@ -1570,13 +1570,14 @@ service_discovery_impl::process_serviceentry(
             case entry_type_e::FIND_SERVICE: {
                 VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry FIND_SERVICE (MEHMET MUELLER DEBUG) <<<<<";
                 // Addition for FIND_RECEIVE timestamp recording Start ########################################
-                boost::asio::ip::address subscriber_address;
-                if (its_unreliable_address.to_v4().to_string().compare("0.0.0.0")) {
-                    subscriber_address = its_unreliable_address;
-                } else {
-                    subscriber_address = its_reliable_address;
-                }
-                statistics_recorder_->record_timestamp(subscriber_address.to_v4().to_uint(), time_metric::FIND_RECEIVE_);
+                // NOTE: Can not be mapped to subscriber since FIND entries do not contain endpoint options
+                // boost::asio::ip::address subscriber_address;
+                // if (its_unreliable_address.to_v4().to_string().compare("0.0.0.0")) {
+                //     subscriber_address = its_unreliable_address;
+                // } else {
+                //     subscriber_address = its_reliable_address;
+                // }
+                // statistics_recorder_->record_timestamp(subscriber_address.to_v4().to_uint(), time_metric::FIND_RECEIVE_);
                 // Addition for FIND_RECEIVE timestamp recording End ##########################################
                 process_findservice_serviceentry(its_service, its_instance,
                                                  its_major, its_minor, _unicast_flag);
