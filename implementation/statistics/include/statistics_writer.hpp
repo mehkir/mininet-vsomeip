@@ -39,6 +39,7 @@ private:
     shared_statistics_map* composite_time_statistics_;
     statistics_writer();
     bool entries_are_complete();
+    void print_statistics();
 };
 
 #endif /* VSOMEIP_V3_STATISTICS_WRITER */

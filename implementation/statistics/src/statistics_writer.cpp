@@ -137,3 +137,36 @@ bool statistics_writer::entries_are_complete() {
     }
     return entries_are_complete;
 }
+
+void statistics_writer::print_statistics() {
+    std::cout << __func__ << std::endl;
+    std::stringstream sstream;
+    sstream << "HOST,";
+    for(metric_key_t metric_key = 0; metric_key < time_metric::TIME_METRIC_COUNT_; metric_key++) {
+        sstream << time_metric_names_[metric_key];
+        if(metric_key != time_metric::TIME_METRIC_COUNT_-1) {
+            sstream << ",";
+        } else {
+            sstream << "\n";
+        }
+    }
+
+    for(auto host_entry = composite_time_statistics_->begin(); host_entry != composite_time_statistics_->end(); host_entry++) {
+        sstream << host_entry->first << ",";
+        auto metrics_map = host_entry->second.metrics_map_;
+        for(metric_key_t metric_key = 0; metric_key < time_metric::TIME_METRIC_COUNT_; metric_key++) {
+            if(metrics_map.count(metric_key)) {
+                sstream << metrics_map[metric_key];
+            } else {
+                sstream << 0;
+            }
+            if(metric_key != time_metric::TIME_METRIC_COUNT_-1) {
+                sstream << ",";
+            } else {
+                sstream << "\n";
+            }
+        }
+    }
+
+    std::cout << sstream.str() << std::endl;
+}
