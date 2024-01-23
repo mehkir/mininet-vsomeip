@@ -129,6 +129,9 @@ void statistics_writer::write_statistics() {
 bool statistics_writer::entries_are_complete() {
     bool entries_are_complete = false;
     size_t host_entry_count = composite_time_statistics_->size();
+    // std::cout << __func__ << " " << host_entry_count << std::endl;
+    // boost::interprocess::managed_shared_memory segment(boost::interprocess::open_only, SEGMENT_NAME);
+    // std::cout << __func__ << " free memory=" << segment.get_free_memory() << std::endl;
     for(auto host_entry = composite_time_statistics_->begin(); (host_entry_count == host_count_) && (host_entry != composite_time_statistics_->end()); host_entry++) {
         auto metrics_map = host_entry->second.metrics_map_;
         entries_are_complete = metrics_map.count(time_metric::SUBSCRIBE_ACK_SEND_) && metrics_map.count(time_metric::VERIFY_SERVICE_SIGNATURE_END_);
