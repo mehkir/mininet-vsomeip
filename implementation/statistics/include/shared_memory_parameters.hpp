@@ -45,7 +45,7 @@
 #define TIME_STATISTICS_MAP_NAME        "time_statistics_shared_map"
 #define STATISTICS_MUTEX                "statistics_mutex"
 #define STATISTICS_CONDITION            "statistics_condition"
-#define SEGMENT_SIZE_BYTES              65536
+#define SEGMENT_SIZE_BYTES              1048576
 
 #include <mutex>
 #include <chrono>
