@@ -69,8 +69,8 @@ void statistics_recorder::contribute_statistics() {
             condition.notify_one();
             shared_objects_initialized = true;
         } catch (boost::interprocess::interprocess_exception& interprocess_exception) {
-            std::cerr << interprocess_exception.what() << std::endl;
-            std::cout << "[<statistics_recorder>] (" << __func__ << ") shared objects not created yet" << std::endl;
+            std::cerr << __func__ << interprocess_exception.what() << std::endl;
+            std::cout << "[<statistics_recorder>] (" << __func__ << ") shared objects may not created yet or segment size is not enough. Examine error message for exact cause." << std::endl;
             sleep(1);
         }
     }
