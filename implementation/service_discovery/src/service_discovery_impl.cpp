@@ -45,7 +45,7 @@
 #include "../../service_authentication/include/data_partitioner.hpp"
 #include <netinet/in.h>
 
-#define SUBSCRIBER_COUNT_TO_RECORD 2
+#define SUBSCRIBER_COUNT_TO_RECORD 49
 
 #define GENERATED_NONCE_CONFIG_OPTION_KEY "gn"
 #define SIGNED_NONCE_CONFIG_OPTION_KEY "sn"
@@ -1902,6 +1902,7 @@ service_discovery_impl::process_offerservice_serviceentry(
 void
 service_discovery_impl::validate_offer(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) {
     resume_process_offerservice_entry resume_processofferservice_entry = resume_process_offerservice_cache_->get_offerservice_entry(_service, _instance, _major, _minor);
+#ifdef WITH_SOMEIP_SD
     service_svcb_cache_entry service_svcbcache_entry = svcb_cache_->get_service_svcb_cache_entry(_service, _instance, _major, _minor);
     statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::VALIDATE_OFFER_START_);
     bool offer_verified = false;
@@ -1924,6 +1925,7 @@ service_discovery_impl::validate_offer(service_t _service, instance_t _instance,
     << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
     VSOMEIP_DEBUG << "\n\nOFFER VERIFIED\n\n";
     statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::VALIDATE_OFFER_END_);
+#endif
     resume_process_offerservice_serviceentry(resume_processofferservice_entry.service_, resume_processofferservice_entry.instance_, resume_processofferservice_entry.major_, resume_processofferservice_entry.minor_, resume_processofferservice_entry.ttl_, resume_processofferservice_entry.reliable_address_, resume_processofferservice_entry.reliable_port_, resume_processofferservice_entry.unreliable_address_, resume_processofferservice_entry.unreliable_port_, resume_processofferservice_entry.resubscribes_, resume_processofferservice_entry.received_via_mcast_);
     resume_process_offerservice_cache_->remove_offerservice_entry(_service, _instance, _major, _minor);
 }
