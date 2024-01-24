@@ -134,7 +134,11 @@ bool statistics_writer::entries_are_complete() {
     // std::cout << __func__ << " free memory=" << segment.get_free_memory() << std::endl;
     for(auto host_entry = composite_time_statistics_->begin(); (host_entry_count == host_count_) && (host_entry != composite_time_statistics_->end()); host_entry++) {
         auto metrics_map = host_entry->second.metrics_map_;
+#ifdef WITH_DANE
         entries_are_complete = metrics_map.count(time_metric::SUBSCRIBE_ACK_SEND_) && metrics_map.count(time_metric::VERIFY_SERVICE_SIGNATURE_END_);
+#else
+        entries_are_complete = metrics_map.count(time_metric::SUBSCRIBE_ACK_SEND_) && metrics_map.count(time_metric::SUBSCRIBE_ACK_RECEIVE_);
+#endif
         if(!entries_are_complete)
             break;
     }
