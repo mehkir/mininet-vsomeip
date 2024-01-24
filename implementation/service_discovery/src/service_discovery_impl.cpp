@@ -47,6 +47,7 @@
 
 #define SUBSCRIBER_COUNT_TO_RECORD 49
 
+#ifdef WITH_DANE
 #define GENERATED_NONCE_CONFIG_OPTION_KEY "gn"
 #define SIGNED_NONCE_CONFIG_OPTION_KEY "sn"
 #define SIGNATURE_CONFIG_OPTION_KEY "sig"
@@ -56,6 +57,7 @@
 #define BLINDED_SECRET_CONFIG_OPTION_KEY "bs"
 #define ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY "egs"
 #define INITIALIZATION_VECTOR_CONFIG_OPTION_KEY "iv"
+#endif
 #endif
 
 namespace vsomeip_v3 {
@@ -1010,6 +1012,7 @@ service_discovery_impl::create_eventgroup_entry(
         }
     }
 
+#ifdef WITH_DANE
     // Service Authentication Start ######################################################################################
     if (its_data.entry_->get_type() == entry_type_e::SUBSCRIBE_EVENTGROUP && its_data.entry_->get_ttl() > 0) {
         boost::asio::ip::address publisher_address;
@@ -1075,6 +1078,7 @@ service_discovery_impl::create_eventgroup_entry(
         // std::cout << "Client id=" << std::hex << client << std::endl;
     }
     // Service Authentication End ########################################################################################
+#endif
 
     if (its_entry &&_subscription->is_selective()) {
         auto its_selective_option = std::make_shared<selective_option_impl>();
@@ -1087,8 +1091,10 @@ service_discovery_impl::create_eventgroup_entry(
         its_data.other_ = its_entry;
     }
 
+    // Addition for timestamp recording Start ###########################################################
     if(_subscription->get_ttl())
         statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::SUBSCRIBE_SEND_);
+    // Addition for timestamp recording End #############################################################
     return its_data;
 }
 
@@ -1172,6 +1178,7 @@ service_discovery_impl::insert_subscription_ack(
         }
     }
 
+#ifdef WITH_DANE
     // Service Authentication Start ######################################################################################
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
     boost::asio::ip::address_v4 subscriber_address = _target->get_address().to_v4();
@@ -1211,6 +1218,7 @@ service_discovery_impl::insert_subscription_ack(
     // print_numerical_representation(initialization_vector, "Initialization vector");
     // print_numerical_representation(signature, "Signature");
     // Service Authentication End ########################################################################################
+#endif
 
     // Selective
     if (_clients.size() > 1 || (*(_clients.begin())) != 0) {
@@ -1472,7 +1480,7 @@ service_discovery_impl::process_serviceentry(
         bool _received_via_mcast,
         const sd_acceptance_state_t& _sd_ac_state) {
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry (MEHMET MUELLER DEBUG) <<<<<";
-#ifdef WITH_CLIENT_AUTHENTICATION
+#if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE)
     // Addition for Service Authentication Start ###########
     std::vector<unsigned char> generated_nonce;
     // Addition for Service Authentication End #############
@@ -1543,7 +1551,7 @@ service_discovery_impl::process_serviceentry(
                     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry IP4/6_MULTICAST (MEHMET MUELLER DEBUG) <<<<<";
                     break;
                 case option_type_e::CONFIGURATION: {
-#ifdef WITH_CLIENT_AUTHENTICATION
+#if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE)
                     // Addition for Service Authentication Start ###########
                     if (its_type == entry_type_e::OFFER_SERVICE) {
                         VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry CONFIGURATION (MEHMET MUELLER DEBUG) <<<<<";
@@ -1577,6 +1585,7 @@ service_discovery_impl::process_serviceentry(
                 // } else {
                 //     subscriber_address = its_reliable_address;
                 // }
+                // TODO: Check if there is STOP FIND, if yes, only record with ttl > 0
                 // statistics_recorder_->record_timestamp(subscriber_address.to_v4().to_uint(), time_metric::FIND_RECEIVE_);
                 // Addition for FIND_RECEIVE timestamp recording End ##########################################
                 process_findservice_serviceentry(its_service, its_instance,
@@ -1585,7 +1594,7 @@ service_discovery_impl::process_serviceentry(
                 break;
             case entry_type_e::OFFER_SERVICE: {
                 VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry OFFER_SERVICE (MEHMET MUELLER DEBUG) <<<<<";
-#ifdef WITH_CLIENT_AUTHENTICATION
+#if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE)
                 // Service Authentication Start ##########################################################################
                 boost::asio::ip::address publisher_address;
                 if (its_unreliable_address.to_v4().to_string().compare("0.0.0.0")) {
@@ -1643,6 +1652,17 @@ service_discovery_impl::set_svcb_resolver(std::shared_ptr<svcb_resolver> _svcb_r
 }
 
 void
+service_discovery_impl::set_svcb_cache(svcb_cache* _svcb_cache) {
+    this->svcb_cache_ = _svcb_cache;
+}
+
+void
+service_discovery_impl::set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache) {
+    this->resume_process_offerservice_cache_ = _resume_process_offerservice_cache;
+}
+
+#ifdef WITH_DANE
+void
 service_discovery_impl::set_tlsa_resolver(std::shared_ptr<tlsa_resolver> _tlsa_resolver) {
     this->tlsa_resolver_ = _tlsa_resolver;
 }
@@ -1653,13 +1673,8 @@ service_discovery_impl::set_challenge_nonce_cache(std::shared_ptr<challenge_nonc
 }
 
 void
-service_discovery_impl::set_svcb_cache(svcb_cache* _svcb_cache) {
-    this->svcb_cache_ = _svcb_cache;
-}
-
-void
-service_discovery_impl::set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache) {
-    this->resume_process_offerservice_cache_ = _resume_process_offerservice_cache;
+service_discovery_impl::set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache* _eventgroup_subscription_ack_cache) {
+    this->eventgroup_subscription_ack_cache_ = _eventgroup_subscription_ack_cache;
 }
 
 #ifdef WITH_CLIENT_AUTHENTICATION
@@ -1668,18 +1683,14 @@ service_discovery_impl::set_eventgroup_subscription_cache(eventgroup_subscriptio
     this->eventgroup_subscription_cache_ = _eventgroup_subscription_cache;
 }
 #endif
-
-void
-service_discovery_impl::set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache* _eventgroup_subscription_ack_cache) {
-    this->eventgroup_subscription_ack_cache_ = _eventgroup_subscription_ack_cache;
-}
+#endif
 
 void
 service_discovery_impl::set_statistics_recorder(std::shared_ptr<statistics_recorder> _statistics_recorder) {
     this->statistics_recorder_ = _statistics_recorder;
 }
 
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE)
 // Aditional methods for payload encryption Start ####################################################################
 void
 service_discovery_impl::set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) {
@@ -1742,6 +1753,7 @@ service_discovery_impl::process_offerservice_serviceentry(
         std::vector<std::shared_ptr<message_impl> > &_resubscribes,
         bool _received_via_mcast, const sd_acceptance_state_t& _sd_ac_state) {
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_offerservice_serviceentry (MEHMET MUELLER DEBUG) <<<<<";
+    // Addition for checking parameter contents Start ##############################################################
     // std::cout
     // << "service=" << _service
     // << ", instance=" << _instance
@@ -1765,6 +1777,7 @@ service_discovery_impl::process_offerservice_serviceentry(
     // << ", sd ac state accept entries=" << _sd_ac_state.accept_entries_
     // << ", sd ac state accept ports count=" << _sd_ac_state.expired_ports_.size()
     // << std::endl;
+    // Addition for checking parameter contents End ################################################################
     std::shared_ptr < runtime > its_runtime = runtime_.lock();
     if (!its_runtime)
         return;
@@ -2203,7 +2216,7 @@ service_discovery_impl::insert_offer_service(
             its_ttl = ttl_;
         its_entry->set_ttl(its_ttl);
 
-#ifdef WITH_CLIENT_AUTHENTICATION
+#if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE)
         // Service Authentication Start ################################
         if (challenge_nonce_cache_->get_offered_nonce(_info->get_service(), _info->get_instance()).empty()) {
             CryptoPP::SecByteBlock generated_nonce = crypto_operator_.get_random_byte_block();
@@ -2235,20 +2248,23 @@ service_discovery_impl::process_eventgroupentry(
         bool _is_stop_subscribe_subscribe, bool _force_initial_events,
         const sd_acceptance_state_t& _sd_ac_state) {
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_eventgroupentry (MEHMET MUELLER DEBUG) <<<<<";
+#ifdef WITH_DANE
     // Additional variables for service Authentication Start ##############
-#ifdef WITH_CLIENT_AUTHENTICATION
-    client_t client = -1;
-#endif
     std::vector<unsigned char> signed_nonce;
     std::vector<unsigned char> signature;
     // Additional variables for service Authentication End ################
-
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
+#ifdef WITH_CLIENT_AUTHENTICATION
+    // Additional variable for client authentication Start ##############
+    client_t client = -1;
+    // Additional variable for client authentication End ################
+#ifdef WITH_ENCRYPTION
     // Additional variables for payload encryption Start ##############
     std::vector<unsigned char> blinded_secret;
     std::vector<unsigned char> encrypted_group_secret;
     std::vector<unsigned char> initialization_vector;
     // Additional variables for payload encryption End ################
+#endif
+#endif
 #endif
 
     std::set<client_t> its_clients({0}); // maybe overridden for selectives
@@ -2657,9 +2673,10 @@ service_discovery_impl::process_eventgroupentry(
                 // Service Authentication Start ##########################################################################
                 if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type && its_ttl > 0) {
                     statistics_recorder_->record_timestamp(_sender.to_v4().to_uint(), time_metric::SUBSCRIBE_RECEIVE_);
+#ifdef WITH_DANE
                     std::vector<unsigned char> generated_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     challenge_nonce_cache_->add_subscriber_challenge_nonce(_sender.to_v4(), its_service, its_instance, generated_nonce);
-#ifdef WITH_CLIENT_AUTHENTICATION                    
+#ifdef WITH_CLIENT_AUTHENTICATION
                     signed_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     signature = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
                     std::vector<unsigned char> client_id = data_partitioner().reassemble_data<std::vector<unsigned char>>(CLIENT_ID_CONFIG_OPTION_KEY, its_configuration_option);
@@ -2719,8 +2736,10 @@ service_discovery_impl::process_eventgroupentry(
                         svcb_resolver_->request_client_svcb_record(clientdata_and_cbs);
                     }
 #endif
+#endif
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
                     statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::SUBSCRIBE_ACK_RECEIVE_);
+#ifdef WITH_DANE
                     signed_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     signature = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
@@ -2735,6 +2754,7 @@ service_discovery_impl::process_eventgroupentry(
                     // print_numerical_representation(encrypted_group_secret, "Encrypted group secret");
                     // print_numerical_representation(initialization_vector, "Initialization vector");
                     // print_numerical_representation(signature, "Signature");
+#endif
                 }
                 // Service Authentication End ############################################################################
                 break;
@@ -2765,7 +2785,7 @@ service_discovery_impl::process_eventgroupentry(
     }
 
     if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
-#ifdef WITH_CLIENT_AUTHENTICATION
+#if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE)
         // Service Authentication Start ##########################################################################
         eventgroup_subscription_cache_->add_eventgroup_subscription_cache_entry(client, its_service, its_instance,
             its_eventgroup, its_major, its_ttl, 0, 0,
@@ -2790,6 +2810,7 @@ service_discovery_impl::process_eventgroupentry(
     } else {
         if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type) { //this type is used for ACK and NACK messages
             if (its_ttl > 0) {
+#ifdef WITH_DANE
                 eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance,
                     its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port,
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
@@ -2798,6 +2819,12 @@ service_discovery_impl::process_eventgroupentry(
                     signed_nonce, std::vector<unsigned char>(), std::vector<unsigned char>(), std::vector<unsigned char>(), signature);
 #endif
                 validate_subscribe_ack_and_verify_signature(_sender.to_v4(), its_service, its_instance, its_major);
+#else
+                handle_eventgroup_subscription_ack(its_service, its_instance,
+                        its_eventgroup, its_major, its_ttl, 0,
+                        its_clients, _sender,
+                        its_first_address, its_first_port);
+#endif
         // Service Authentication End ############################################################################
             } else {
                 handle_eventgroup_subscription_nack(its_service, its_instance, its_eventgroup,
@@ -2807,7 +2834,7 @@ service_discovery_impl::process_eventgroupentry(
     }
 }
 
-#ifdef WITH_CLIENT_AUTHENTICATION
+#if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE)
 void
 service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client, boost::asio::ip::address_v4 _subscriber_ip_address, service_t _service, instance_t _instance, major_version_t _major) {
     statistics_recorder_->record_timestamp(_subscriber_ip_address.to_uint(), time_metric::VERIFY_CLIENT_SIGNATURE_START_);
@@ -2917,6 +2944,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
 }
 #endif
 
+#ifdef WITH_DANE
 void
 service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major) {
     statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::VERIFY_SERVICE_SIGNATURE_START_);
@@ -3011,6 +3039,7 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
                                         eventgroup_subscriptionackcache_entry.first_ip_address_,
                                         eventgroup_subscriptionackcache_entry.port_);
 }
+#endif
 
 void
 service_discovery_impl::handle_eventgroup_subscription(
