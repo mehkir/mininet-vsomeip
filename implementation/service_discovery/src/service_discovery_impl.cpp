@@ -2851,7 +2851,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
     std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_publisher_challenge_nonce(_client, _subscriber_ip_address, _service, _instance);
     eventgroup_subscription_cache_entry eventgroup_subscriptioncache_entry = eventgroup_subscription_cache_->get_eventgroup_subscription_cache_entry(_client, _service, _instance, _major);
     std::vector<unsigned char> signature = eventgroup_subscriptioncache_entry.signature_;
-    requirements_are_fulfilled = client_svcbcache_entry.client_ == eventgroup_subscriptioncache_entry.client_
+    requirements_are_fulfilled = (client_svcbcache_entry.client_ == eventgroup_subscriptioncache_entry.client_)
                                 && !certificate_data.empty()
                                 && !signed_nonce.empty()
                                 && !signature.empty();
@@ -2885,14 +2885,14 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
     std::shared_ptr<vsomeip_v3::eventgroupinfo> its_info = eventgroup_subscriptioncache_entry.info_;
 
     bool subscription_validated = false;
-    subscription_validated = client_svcbcache_entry.client_ == eventgroup_subscriptioncache_entry.client_
-                            && client_svcbcache_entry.service_ == its_service
-                            && client_svcbcache_entry.instance_ == its_instance
-                            && client_svcbcache_entry.major_ == its_major
+    subscription_validated = (client_svcbcache_entry.client_ == eventgroup_subscriptioncache_entry.client_)
+                            && (client_svcbcache_entry.service_ == its_service)
+                            && (client_svcbcache_entry.instance_ == its_instance)
+                            && (client_svcbcache_entry.major_ == its_major)
                             && challenge_nonce_cache_->has_publisher_challenge_nonce_and_remove(_client, _subscriber_ip_address, _service, _instance, challenge_nonce_cache_->get_offered_nonce(_service, _instance))
-                            && challenge_nonce_cache_->get_offered_nonce(_service, _instance) == eventgroup_subscriptioncache_entry.nonce_;
+                            && (challenge_nonce_cache_->get_offered_nonce(_service, _instance) == eventgroup_subscriptioncache_entry.nonce_);
 
-    bool first_endpoint_validated = client_svcbcache_entry.ipv4_address_ == its_first_address
+    bool first_endpoint_validated = (client_svcbcache_entry.ipv4_address_ == its_first_address)
                                     && client_svcbcache_entry.ports_.count(its_first_port)
                                     && ((client_svcbcache_entry.l4protocol_ == IPPROTO_UDP && !is_first_reliable)
                                     || (client_svcbcache_entry.l4protocol_ == IPPROTO_TCP && is_first_reliable));
@@ -2974,10 +2974,10 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
     VSOMEIP_DEBUG << __func__ << " REQUIREMENTS ARE FULFILLED";
 
     bool subscription_ack_validated = false;
-    subscription_ack_validated = service_svcbcache_entry.service_ ==  eventgroup_subscriptionackcache_entry.service_
-                                 && service_svcbcache_entry.instance_ == eventgroup_subscriptionackcache_entry.instance_
-                                 && service_svcbcache_entry.major_ == eventgroup_subscriptionackcache_entry.major_version_
-                                 && service_svcbcache_entry.ipv4_address_ == eventgroup_subscriptionackcache_entry.sender_ip_address_
+    subscription_ack_validated = (service_svcbcache_entry.service_ ==  eventgroup_subscriptionackcache_entry.service_)
+                                 && (service_svcbcache_entry.instance_ == eventgroup_subscriptionackcache_entry.instance_)
+                                 && (service_svcbcache_entry.major_ == eventgroup_subscriptionackcache_entry.major_version_)
+                                 && (service_svcbcache_entry.ipv4_address_ == eventgroup_subscriptionackcache_entry.sender_ip_address_)
                                  && challenge_nonce_cache_->has_subscriber_challenge_nonce_and_remove(_sender_ip_address, _service, _instance, eventgroup_subscriptionackcache_entry.nonce_);
 
     if (!subscription_ack_validated) {
