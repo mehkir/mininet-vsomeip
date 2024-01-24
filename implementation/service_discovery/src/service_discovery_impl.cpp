@@ -45,7 +45,7 @@
 #include "../../service_authentication/include/data_partitioner.hpp"
 #include <netinet/in.h>
 
-#define SUBSCRIBER_COUNT_TO_RECORD 49
+#define SUBSCRIBER_COUNT_TO_RECORD 199
 
 #ifdef WITH_DANE
 #define GENERATED_NONCE_CONFIG_OPTION_KEY "gn"
@@ -97,10 +97,12 @@ service_discovery_impl::service_discovery_impl(
        {
 
     next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
+#ifdef WITH_DANE
     // Addition for Service Authentication Start ############################################################
     certificate_data_ = crypto_operator_.load_certificate_from_file(configuration_->get_certificate_path());
     crypto_operator_.load_pem_private_key(configuration_->get_private_key_path(), private_key_);
     // Addition for Service Authentication End ##############################################################
+#endif
 }
 
 service_discovery_impl::~service_discovery_impl() {
@@ -1177,11 +1179,11 @@ service_discovery_impl::insert_subscription_ack(
             its_data.options_.push_back(its_option);
         }
     }
-
+    
+    boost::asio::ip::address_v4 subscriber_address = _target->get_address().to_v4();
 #ifdef WITH_DANE
     // Service Authentication Start ######################################################################################
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-    boost::asio::ip::address_v4 subscriber_address = _target->get_address().to_v4();
     // Signing nonce from subscriber and add signature
     statistics_recorder_->record_timestamp(subscriber_address.to_uint(), time_metric::SERVICE_SIGN_START_);
     std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(subscriber_address, its_service, its_instance);

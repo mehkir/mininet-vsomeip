@@ -524,10 +524,10 @@ private:
     dns_resolver* dns_resolver_;
     std::shared_ptr<svcb_resolver> svcb_resolver_;
     svcb_cache* svcb_cache_;
+    resume_process_offerservice_cache* resume_process_offerservice_cache_;
 #ifdef WITH_DANE
     std::shared_ptr<tlsa_resolver> tlsa_resolver_;
     std::shared_ptr<challenge_nonce_cache> challenge_nonce_cache_;
-    resume_process_offerservice_cache* resume_process_offerservice_cache_;
     eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
     crypto_operator crypto_operator_;
     std::vector<CryptoPP::byte> certificate_data_;
