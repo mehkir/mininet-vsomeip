@@ -89,9 +89,9 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         dns_resolver_(dns_resolver::get_instance()),
         svcb_resolver_(std::make_shared<svcb_resolver>()),
         svcb_cache_(svcb_cache::get_instance()),
-        resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance()),
+        resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance())
 #ifdef WITH_DANE
-        tlsa_resolver_(std::make_shared<tlsa_resolver>()),
+        ,tlsa_resolver_(std::make_shared<tlsa_resolver>()),
         challenge_nonce_cache_(std::make_shared<challenge_nonce_cache>()),
         eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance())
     #ifdef WITH_CLIENT_AUTHENTICATION
@@ -5143,7 +5143,7 @@ void routing_manager_impl::set_statistics_recorder(std::shared_ptr<statistics_re
     statistics_recorder_ = _statistics_recorder;
 }
 
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE)
 // Aditional methods for payload encryption
 void routing_manager_impl::set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) {
     dh_ecc_ = _dh_ecc;
