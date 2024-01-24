@@ -88,12 +88,14 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         ignored_statistics_counter_(0),
         dns_resolver_(dns_resolver::get_instance()),
         svcb_resolver_(std::make_shared<svcb_resolver>()),
-        tlsa_resolver_(std::make_shared<tlsa_resolver>()),
         svcb_cache_(svcb_cache::get_instance()),
-        challenge_nonce_cache_(std::make_shared<challenge_nonce_cache>()),
         resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance()),
-#ifdef WITH_CLIENT_AUTHENTICATION
+#ifdef WITH_DANE
+        tlsa_resolver_(std::make_shared<tlsa_resolver>()),
+        challenge_nonce_cache_(std::make_shared<challenge_nonce_cache>()),
+    #ifdef WITH_CLIENT_AUTHENTICATION
         eventgroup_subscription_cache_(eventgroup_subscription_cache::get_instance()),
+    #endif
 #endif
         eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance())
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)

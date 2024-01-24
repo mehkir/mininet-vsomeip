@@ -30,13 +30,15 @@
 // Additional include for service authentication
 #include "../../dnssec/include/dns_resolver.hpp"
 #include "../../dnssec/include/svcb_resolver.hpp"
-#include "../../dnssec/include/tlsa_resolver.hpp"
 #include "../../service_authentication/include/challenge_nonce_cache.hpp"
 #include "../../service_authentication/include/svcb_cache.hpp"
 #include "../../service_discovery/include/resume_process_offerservice_cache.hpp"
 
-#ifdef WITH_CLIENT_AUTHENTICATION
+#ifdef WITH_DANE
+#include "../../dnssec/include/tlsa_resolver.hpp"
+    #ifdef WITH_CLIENT_AUTHENTICATION
 #include "../../service_authentication/include/eventgroup_subscription_cache.hpp"
+    #endif
 #endif
 
 #include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
