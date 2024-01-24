@@ -1183,42 +1183,44 @@ service_discovery_impl::insert_subscription_ack(
     boost::asio::ip::address_v4 subscriber_address = _target->get_address().to_v4();
 #ifdef WITH_DANE
     // Service Authentication Start ######################################################################################
-    std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-    // Signing nonce from subscriber and add signature
-    statistics_recorder_->record_timestamp(subscriber_address.to_uint(), time_metric::SERVICE_SIGN_START_);
-    std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(subscriber_address, its_service, its_instance);
-    VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << subscriber_address.to_string();
-    if (signed_nonce.empty()) {
-        throw std::runtime_error("Nonce is empty!");
+    if(_ttl) {
+        std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
+        // Signing nonce from subscriber and add signature
+        statistics_recorder_->record_timestamp(subscriber_address.to_uint(), time_metric::SERVICE_SIGN_START_);
+        std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(subscriber_address, its_service, its_instance);
+        VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << subscriber_address.to_string();
+        if (signed_nonce.empty()) {
+            throw std::runtime_error("Nonce is empty!");
+        }
+        data_partitioner().partition_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce);
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
+        encrypted_group_secret_result encrypted_groupsecret_result = encrypted_group_secret_result_cache_->get_encrypted_group_secret_result(subscriber_address, its_service, its_instance, its_major);
+        CryptoPP::SecByteBlock blinded_secret = encrypted_groupsecret_result.blinded_publisher_secret_;
+        CryptoPP::SecByteBlock encrypted_group_secret = encrypted_groupsecret_result.encrypted_group_secret_;
+        std::vector<unsigned char> initialization_vector = encrypted_groupsecret_result.initialization_vector_;
+        data_partitioner().partition_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(blinded_secret.begin(), blinded_secret.end()));
+        data_partitioner().partition_data<std::vector<unsigned char>>(ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(encrypted_group_secret.begin(), encrypted_group_secret.end()));
+        data_partitioner().partition_data<std::vector<unsigned char>>(INITIALIZATION_VECTOR_CONFIG_OPTION_KEY, configuration_option, initialization_vector);
+        encrypted_group_secret_result_cache_->remove_encrypted_group_secret_result(subscriber_address, its_service, its_instance, its_major);
+#endif
+        std::vector<CryptoPP::byte> data_to_be_signed;
+        data_to_be_signed.insert(data_to_be_signed.end(), signed_nonce.begin(), signed_nonce.end());
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
+        data_to_be_signed.insert(data_to_be_signed.end(), blinded_secret.begin(), blinded_secret.end());
+        data_to_be_signed.insert(data_to_be_signed.end(), encrypted_group_secret.begin(), encrypted_group_secret.end());
+        data_to_be_signed.insert(data_to_be_signed.end(), initialization_vector.begin(), initialization_vector.end());
+#endif
+        std::vector<CryptoPP::byte> signature = crypto_operator_.sign(private_key_, data_to_be_signed);
+        data_partitioner().partition_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
+        statistics_recorder_->record_timestamp(subscriber_address.to_uint(), time_metric::SERVICE_SIGN_END_);
+        its_data.options_.push_back(configuration_option);
+        // VSOMEIP_DEBUG << "Created subscribe ack by Publisher (SUBSCRIBE_ACK_SEND)" << "(" << subscriber_address.to_string() << "," << its_service << "," << its_instance << ")";
+        // print_numerical_representation(signed_nonce, "Signed nonce");
+        // print_numerical_representation(std::vector<unsigned char>(blinded_secret.begin(), blinded_secret.end()), "Blinded secret");
+        // print_numerical_representation(std::vector<unsigned char>(encrypted_group_secret.begin(), encrypted_group_secret.end()), "Encrypted group secret");
+        // print_numerical_representation(initialization_vector, "Initialization vector");
+        // print_numerical_representation(signature, "Signature");
     }
-    data_partitioner().partition_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce);
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
-    encrypted_group_secret_result encrypted_groupsecret_result = encrypted_group_secret_result_cache_->get_encrypted_group_secret_result(subscriber_address, its_service, its_instance, its_major);
-    CryptoPP::SecByteBlock blinded_secret = encrypted_groupsecret_result.blinded_publisher_secret_;
-    CryptoPP::SecByteBlock encrypted_group_secret = encrypted_groupsecret_result.encrypted_group_secret_;
-    std::vector<unsigned char> initialization_vector = encrypted_groupsecret_result.initialization_vector_;
-    data_partitioner().partition_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(blinded_secret.begin(), blinded_secret.end()));
-    data_partitioner().partition_data<std::vector<unsigned char>>(ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(encrypted_group_secret.begin(), encrypted_group_secret.end()));
-    data_partitioner().partition_data<std::vector<unsigned char>>(INITIALIZATION_VECTOR_CONFIG_OPTION_KEY, configuration_option, initialization_vector);
-    encrypted_group_secret_result_cache_->remove_encrypted_group_secret_result(subscriber_address, its_service, its_instance, its_major);
-#endif
-    std::vector<CryptoPP::byte> data_to_be_signed;
-    data_to_be_signed.insert(data_to_be_signed.end(), signed_nonce.begin(), signed_nonce.end());
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
-    data_to_be_signed.insert(data_to_be_signed.end(), blinded_secret.begin(), blinded_secret.end());
-    data_to_be_signed.insert(data_to_be_signed.end(), encrypted_group_secret.begin(), encrypted_group_secret.end());
-    data_to_be_signed.insert(data_to_be_signed.end(), initialization_vector.begin(), initialization_vector.end());
-#endif
-    std::vector<CryptoPP::byte> signature = crypto_operator_.sign(private_key_, data_to_be_signed);
-    data_partitioner().partition_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
-    statistics_recorder_->record_timestamp(subscriber_address.to_uint(), time_metric::SERVICE_SIGN_END_);
-    its_data.options_.push_back(configuration_option);
-    // VSOMEIP_DEBUG << "Created subscribe ack by Publisher (SUBSCRIBE_ACK_SEND)" << "(" << subscriber_address.to_string() << "," << its_service << "," << its_instance << ")";
-    // print_numerical_representation(signed_nonce, "Signed nonce");
-    // print_numerical_representation(std::vector<unsigned char>(blinded_secret.begin(), blinded_secret.end()), "Blinded secret");
-    // print_numerical_representation(std::vector<unsigned char>(encrypted_group_secret.begin(), encrypted_group_secret.end()), "Encrypted group secret");
-    // print_numerical_representation(initialization_vector, "Initialization vector");
-    // print_numerical_representation(signature, "Signature");
     // Service Authentication End ########################################################################################
 #endif
 
@@ -1919,17 +1921,18 @@ service_discovery_impl::validate_offer(service_t _service, instance_t _instance,
     resume_process_offerservice_entry resume_processofferservice_entry = resume_process_offerservice_cache_->get_offerservice_entry(_service, _instance, _major, _minor);
 #ifdef WITH_SOMEIP_SD
     service_svcb_cache_entry service_svcbcache_entry = svcb_cache_->get_service_svcb_cache_entry(_service, _instance, _major, _minor);
-    statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::VALIDATE_OFFER_START_);
+    if(resume_processofferservice_entry.ttl_)
+        statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::VALIDATE_OFFER_START_);
     bool offer_verified = false;
 
-    offer_verified = resume_processofferservice_entry.service_ == service_svcbcache_entry.service_
-        && resume_processofferservice_entry.instance_ == service_svcbcache_entry.instance_
-        && resume_processofferservice_entry.major_ == service_svcbcache_entry.major_
-        && resume_processofferservice_entry.minor_ == service_svcbcache_entry.minor_
-        && (   (service_svcbcache_entry.l4protocol_ == IPPROTO_UDP && resume_processofferservice_entry.unreliable_address_ == service_svcbcache_entry.ipv4_address_
-                && resume_processofferservice_entry.unreliable_port_ == service_svcbcache_entry.port_) 
-            || (service_svcbcache_entry.l4protocol_ == IPPROTO_TCP && resume_processofferservice_entry.reliable_address_ == service_svcbcache_entry.ipv4_address_
-                && resume_processofferservice_entry.reliable_port_ == service_svcbcache_entry.port_)
+    offer_verified = (resume_processofferservice_entry.service_ == service_svcbcache_entry.service_)
+        && (resume_processofferservice_entry.instance_ == service_svcbcache_entry.instance_)
+        && (resume_processofferservice_entry.major_ == service_svcbcache_entry.major_)
+        && (resume_processofferservice_entry.minor_ == service_svcbcache_entry.minor_)
+        && (   ((service_svcbcache_entry.l4protocol_ == IPPROTO_UDP) && (resume_processofferservice_entry.unreliable_address_ == service_svcbcache_entry.ipv4_address_)
+                && (resume_processofferservice_entry.unreliable_port_ == service_svcbcache_entry.port_)) 
+            || ((service_svcbcache_entry.l4protocol_ == IPPROTO_TCP) && (resume_processofferservice_entry.reliable_address_ == service_svcbcache_entry.ipv4_address_)
+                && (resume_processofferservice_entry.reliable_port_ == service_svcbcache_entry.port_))
            );
     if (!offer_verified) {
         VSOMEIP_DEBUG << ">>>>> service_discovery_impl::validate_offer: No offer or SVCB record for service=" << _service
@@ -1939,7 +1942,8 @@ service_discovery_impl::validate_offer(service_t _service, instance_t _instance,
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::validate_offer: Found SVCB record for service=" << _service
     << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
     VSOMEIP_DEBUG << "\n\nOFFER VERIFIED\n\n";
-    statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::VALIDATE_OFFER_END_);
+    if(resume_processofferservice_entry.ttl_)
+        statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::VALIDATE_OFFER_END_);
 #endif
     resume_process_offerservice_serviceentry(resume_processofferservice_entry.service_, resume_processofferservice_entry.instance_, resume_processofferservice_entry.major_, resume_processofferservice_entry.minor_, resume_processofferservice_entry.ttl_, resume_processofferservice_entry.reliable_address_, resume_processofferservice_entry.reliable_port_, resume_processofferservice_entry.unreliable_address_, resume_processofferservice_entry.unreliable_port_, resume_processofferservice_entry.resubscribes_, resume_processofferservice_entry.received_via_mcast_);
     resume_process_offerservice_cache_->remove_offerservice_entry(_service, _instance, _major, _minor);
