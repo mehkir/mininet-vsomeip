@@ -45,7 +45,7 @@
 #include "../../service_authentication/include/data_partitioner.hpp"
 #include <netinet/in.h>
 
-#define SUBSCRIBER_COUNT_TO_RECORD 199
+#define SUBSCRIBER_COUNT_TO_RECORD 1
 
 #ifdef WITH_DANE
 #define GENERATED_NONCE_CONFIG_OPTION_KEY "gn"
@@ -2288,8 +2288,28 @@ service_discovery_impl::process_eventgroupentry(
     if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type && its_ttl > 0)
         statistics_recorder_->record_timestamp(_sender.to_v4().to_uint(), time_metric::SUBSCRIBE_RECEIVE_);
 
+#ifdef WITH_DANE
     if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0)
         statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::SUBSCRIBE_ACK_RECEIVE_);
+
+#else
+    // Addition for statistics contribution Start #################################################################
+    if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
+        static bool already_contributed = false;
+        static std::mutex contribution_mutex;
+        {
+            std::lock_guard<std::mutex> contribution_guard(contribution_mutex);
+            statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::SUBSCRIBE_ACK_RECEIVE_);
+
+            if(!already_contributed) {
+                statistics_recorder_->contribute_statistics();
+                already_contributed = true;
+            }
+        }
+    }
+    // Addition for statistics contribution End ###################################################################
+#endif
+
 
     auto its_info = host_->find_eventgroup(
             its_service, its_instance, its_eventgroup);
