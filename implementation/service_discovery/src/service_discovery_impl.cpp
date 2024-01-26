@@ -45,7 +45,7 @@
 #include "../../service_authentication/include/data_partitioner.hpp"
 #include <netinet/in.h>
 
-#define SUBSCRIBER_COUNT_TO_RECORD 1
+#define SUBSCRIBER_COUNT_TO_RECORD 29
 
 #ifdef WITH_DANE
 #define GENERATED_NONCE_CONFIG_OPTION_KEY "gn"
@@ -1051,6 +1051,7 @@ service_discovery_impl::create_eventgroup_entry(
         client_t client = configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME)));
         std::vector<unsigned char> signed_nonce_vector = challenge_nonce_cache_->get_publisher_challenge_nonce(client, publisher_address.to_v4(), _service, _instance);
         if (signed_nonce_vector.empty()) {
+            // TODO: Better would be to return here and cancel sending the subscription
             throw std::runtime_error("Nonce is empty!");
         }
         data_partitioner().partition_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce_vector);
@@ -1190,6 +1191,7 @@ service_discovery_impl::insert_subscription_ack(
         std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(subscriber_address, its_service, its_instance);
         VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << subscriber_address.to_string();
         if (signed_nonce.empty()) {
+            // TODO: Better would be to return here and cancel sending the subscription acknowledge
             throw std::runtime_error("Nonce is empty!");
         }
         data_partitioner().partition_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce);
