@@ -25,7 +25,7 @@
 #include "../../dnssec/include/tlsa_resolver.hpp"
 #include "../../service_authentication/include/challenge_nonce_cache.hpp"
 #include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
-    #ifdef WITH_CLIENT_AUTHENTICATION
+    #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
 #include "../../service_authentication/include/eventgroup_subscription_cache.hpp"
     #endif
 #endif
@@ -33,7 +33,7 @@
 //Additional include for statistics recorder
 #include "../../statistics/include/statistics_recorder.hpp"
 
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
 //Additional include for payload encryption key agreement
 #include "../../dh_ecc/include/dh_ecc.hpp"
 #include "../../dh_ecc/include/encrypted_group_secret_result_cache.hpp"
@@ -108,7 +108,7 @@ public:
     virtual void set_challenge_nonce_cache(std::shared_ptr<challenge_nonce_cache> _challenge_nonce_cache) = 0;
     virtual void set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache* _eventgroup_subscription_ack_cache) = 0;
     virtual void validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major) = 0;
-    #ifdef WITH_CLIENT_AUTHENTICATION
+    #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
     virtual void set_eventgroup_subscription_cache(eventgroup_subscription_cache* _eventgroup_subscription_cache) = 0;
     #endif
 #endif
@@ -117,7 +117,7 @@ public:
     virtual void set_statistics_recorder(std::shared_ptr<statistics_recorder> _statistics_recorder) = 0;
     // Addition for statistics recorder End #################################################################################
     
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
     // Aditional methods for payload encryption Start ####################################################################
     virtual void set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) = 0;
     virtual void set_group_secret_map(std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> _group_secrets) = 0;

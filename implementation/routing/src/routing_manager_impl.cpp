@@ -94,11 +94,11 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         ,tlsa_resolver_(std::make_shared<tlsa_resolver>()),
         challenge_nonce_cache_(std::make_shared<challenge_nonce_cache>()),
         eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance())
-    #ifdef WITH_CLIENT_AUTHENTICATION
+    #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
         ,eventgroup_subscription_cache_(eventgroup_subscription_cache::get_instance())
     #endif
 #endif
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
         ,encrypted_group_secret_result_cache_(std::make_shared<encrypted_group_secret_result_cache>())
 #endif
 {
@@ -196,12 +196,12 @@ void routing_manager_impl::init() {
             discovery_->set_tlsa_resolver(tlsa_resolver_);
             discovery_->set_challenge_nonce_cache(challenge_nonce_cache_);
             discovery_->set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache_);
-    #ifdef WITH_CLIENT_AUTHENTICATION
+    #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
             discovery_->set_eventgroup_subscription_cache(eventgroup_subscription_cache_);
     #endif
 #endif
             discovery_->set_statistics_recorder(statistics_recorder_);
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
             discovery_->set_dh_ecc(dh_ecc_);
             discovery_->set_group_secret_map(group_secrets_);
             discovery_->set_encrypted_group_secret_result_cache(encrypted_group_secret_result_cache_);
@@ -5143,7 +5143,7 @@ void routing_manager_impl::set_statistics_recorder(std::shared_ptr<statistics_re
     statistics_recorder_ = _statistics_recorder;
 }
 
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
 // Aditional methods for payload encryption
 void routing_manager_impl::set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) {
     dh_ecc_ = _dh_ecc;
