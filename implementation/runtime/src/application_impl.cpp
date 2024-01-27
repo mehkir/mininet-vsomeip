@@ -39,7 +39,7 @@
 #include "../../tracing/include/connector_impl.hpp"
 #include "../../utility/include/utility.hpp"
 
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
 // Additional defines for payload encryption
 #define INITIALIZATION_VECTOR_PAYLOAD_KEY_NAME "iv"
 #define ENCRYPTED_DATA_PAYLOAD_KEY_NAME "ed"
@@ -85,7 +85,7 @@ application_impl::application_impl(const std::string &_name, const std::string &
           client_side_logging_(false),
           has_session_handling_(true),
           statistics_recorder_(statistics_recorder::get_instance())
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
           ,dh_ecc_(std::make_shared<dh_ecc>()),
           group_secrets_(std::make_shared<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>>())
 #endif
@@ -315,7 +315,7 @@ bool application_impl::init() {
             }
             routing_ = std::make_shared<routing_manager_impl>(this);
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_statistics_recorder(statistics_recorder_);
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_dh_ecc(dh_ecc_);
             dynamic_cast<routing_manager_impl*>(routing_.get())->set_group_secret_map(group_secrets_);
 #endif
@@ -919,7 +919,7 @@ void application_impl::send(std::shared_ptr<message> _message) {
 
 void application_impl::notify(service_t _service, instance_t _instance,
         event_t _event, std::shared_ptr<payload> _payload, bool _force) const {
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
     // Payload encryption Start ###############################################
     if (!group_secrets_->count({_service, _instance}))
         return;
@@ -928,7 +928,7 @@ void application_impl::notify(service_t _service, instance_t _instance,
     // Payload encryption End #################################################
 #endif
     if (routing_)
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
         routing_->notify(_service, _instance, _event, encrypted_and_encoded_payload, _force);
 #else
         routing_->notify(_service, _instance, _event, _payload, _force);
@@ -1776,7 +1776,7 @@ void application_impl::on_message(std::shared_ptr<message> &&_message) {
         if (its_handlers.size()) {
             std::lock_guard<std::mutex> its_lock(handlers_mutex_);
             for (const auto &handler : its_handlers) {
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
                 // Payload decryption Start ###############################################
                 if (!group_secrets_->count({its_service, its_instance}))
                     return;
@@ -3012,7 +3012,7 @@ void application_impl::register_message_handler_ext(
     }
 }
 
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
 // Additional methods for payload encryption
 cfb_encrypted_data application_impl::encrypt_payload(service_t _service, instance_t _instance, std::shared_ptr<payload> _payload) const {
     CryptoPP::SecByteBlock plain_payload(_payload->get_data(), _payload->get_length());

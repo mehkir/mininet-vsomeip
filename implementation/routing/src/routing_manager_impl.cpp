@@ -90,12 +90,12 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         svcb_resolver_(std::make_shared<svcb_resolver>()),
         svcb_cache_(svcb_cache::get_instance()),
         resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance())
-#ifdef WITH_DANE
+#ifdef WITH_SERVICE_AUTHENTICATION
         ,tlsa_resolver_(std::make_shared<tlsa_resolver>()),
         challenge_nonce_cache_(std::make_shared<challenge_nonce_cache>()),
-        eventgroup_subscription_ack_cache_(eventgroup_subscription_ack_cache::get_instance())
+        eventgroup_subscription_ack_cache_(std::make_shared<eventgroup_subscription_ack_cache>())
     #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
-        ,eventgroup_subscription_cache_(eventgroup_subscription_cache::get_instance())
+        ,eventgroup_subscription_cache_(std::make_shared<eventgroup_subscription_cache>())
     #endif
 #endif
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
@@ -192,7 +192,7 @@ void routing_manager_impl::init() {
             discovery_->set_svcb_resolver(svcb_resolver_);
             discovery_->set_svcb_cache(svcb_cache_);
             discovery_->set_resume_process_offerservice_cache(resume_process_offerservice_cache_);
-#ifdef WITH_DANE
+#ifdef WITH_SERVICE_AUTHENTICATION
             discovery_->set_tlsa_resolver(tlsa_resolver_);
             discovery_->set_challenge_nonce_cache(challenge_nonce_cache_);
             discovery_->set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache_);
@@ -201,7 +201,7 @@ void routing_manager_impl::init() {
     #endif
 #endif
             discovery_->set_statistics_recorder(statistics_recorder_);
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
             discovery_->set_dh_ecc(dh_ecc_);
             discovery_->set_group_secret_map(group_secrets_);
             discovery_->set_encrypted_group_secret_result_cache(encrypted_group_secret_result_cache_);
@@ -639,7 +639,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
                                             std::placeholders::_4);
-#ifdef WITH_DANE
+#ifdef WITH_SERVICE_AUTHENTICATION
     servicedata_and_cbs->add_publisher_certificate_callback_ = std::bind(&challenge_nonce_cache::add_publisher_certificate, challenge_nonce_cache_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
@@ -5143,7 +5143,7 @@ void routing_manager_impl::set_statistics_recorder(std::shared_ptr<statistics_re
     statistics_recorder_ = _statistics_recorder;
 }
 
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
 // Aditional methods for payload encryption
 void routing_manager_impl::set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) {
     dh_ecc_ = _dh_ecc;

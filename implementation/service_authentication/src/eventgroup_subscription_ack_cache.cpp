@@ -1,21 +1,10 @@
 #include "../include/eventgroup_subscription_ack_cache.hpp"
 
 namespace vsomeip_v3 {
-    std::mutex eventgroup_subscription_ack_cache::mutex_;
-    eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache::instance_;
-
     eventgroup_subscription_ack_cache::eventgroup_subscription_ack_cache() {
     }
     
     eventgroup_subscription_ack_cache::~eventgroup_subscription_ack_cache() {
-    }
-
-    eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache::get_instance() {
-        std::lock_guard<std::mutex> lockguard(mutex_);
-        if(instance_ == nullptr) {
-            instance_ = new eventgroup_subscription_ack_cache();
-        }
-        return instance_;
     }
 
     void eventgroup_subscription_ack_cache::add_eventgroup_subscription_ack_cache_entry(service_t _service, instance_t _instance, eventgroup_t _eventgroup, major_version_t _major_version, ttl_t _ttl, uint8_t _counter, std::set<uint16_t> _clients, boost::asio::ip::address_v4 _sender_ip_address, boost::asio::ip::address_v4 _first_ip_address, uint16_t _port, std::vector<unsigned char> _nonce, std::vector<unsigned char> _blinded_secret, std::vector<unsigned char> _encrypted_group_secret, std::vector<unsigned char> _initialization_vector, std::vector<byte_t> _signature) {

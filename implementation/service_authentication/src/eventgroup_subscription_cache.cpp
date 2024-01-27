@@ -1,21 +1,10 @@
 #include "../include/eventgroup_subscription_cache.hpp"
 
 namespace vsomeip_v3 {
-    std::mutex eventgroup_subscription_cache::mutex_;
-    eventgroup_subscription_cache* eventgroup_subscription_cache::instance_;
-
     eventgroup_subscription_cache::eventgroup_subscription_cache() {
     }
     
     eventgroup_subscription_cache::~eventgroup_subscription_cache() {
-    }
-
-    eventgroup_subscription_cache* eventgroup_subscription_cache::get_instance() {
-        std::lock_guard<std::mutex> lockguard(mutex_);
-        if(instance_ == nullptr) {
-            instance_ = new eventgroup_subscription_cache();
-        }
-        return instance_;
     }
 
     void eventgroup_subscription_cache::add_eventgroup_subscription_cache_entry(client_t _client, service_t _service, instance_t _instance, eventgroup_t _eventgroup, major_version_t _major, ttl_t _ttl, uint8_t _counter, uint16_t _reserved, const boost::asio::ip::address_v4 _first_address, uint16_t _first_port, bool _is_first_reliable,

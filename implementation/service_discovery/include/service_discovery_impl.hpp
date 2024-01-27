@@ -28,7 +28,7 @@
 #include "deserializer.hpp"
 #include "message_impl.hpp"
 
-#ifdef WITH_DANE
+#ifdef WITH_SERVICE_AUTHENTICATION
 // Additional includes for service authentication
 #include "../../service_authentication/include/crypto_operator.hpp"
 #endif
@@ -495,13 +495,13 @@ public:
     void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache);
     void validate_offer(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor);
 
-#ifdef WITH_DANE
+#ifdef WITH_SERVICE_AUTHENTICATION
     void set_tlsa_resolver(std::shared_ptr<tlsa_resolver> _tlsa_resolver);
     void set_challenge_nonce_cache(std::shared_ptr<challenge_nonce_cache> _challenge_nonce_cache);
-    void set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache* _eventgroup_subscription_ack_cache);
+    void set_eventgroup_subscription_ack_cache(std::shared_ptr<eventgroup_subscription_ack_cache> _eventgroup_subscription_ack_cache);
     void validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major);
     #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
-    void set_eventgroup_subscription_cache(eventgroup_subscription_cache* _eventgroup_subscription_cache);
+    void set_eventgroup_subscription_cache(std::shared_ptr<eventgroup_subscription_cache> _eventgroup_subscription_cache);
     #endif
 #endif
 
@@ -515,7 +515,7 @@ private:
         uint16_t _unreliable_port,
         std::vector<std::shared_ptr<message_impl> >& _resubscribes,
         bool _received_via_mcast);
-#if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
     // Additional Method for Service Authenticity Start ######################################################################
     void validate_subscribe_and_verify_signature(client_t _client, boost::asio::ip::address_v4 _subscriber_ip_address, service_t _service, instance_t _instance, major_version_t _major);
     // Additional Method for Service Authenticity End ########################################################################
@@ -525,20 +525,20 @@ private:
     std::shared_ptr<svcb_resolver> svcb_resolver_;
     svcb_cache* svcb_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
-#ifdef WITH_DANE
+#ifdef WITH_SERVICE_AUTHENTICATION
     std::shared_ptr<tlsa_resolver> tlsa_resolver_;
     std::shared_ptr<challenge_nonce_cache> challenge_nonce_cache_;
-    eventgroup_subscription_ack_cache* eventgroup_subscription_ack_cache_;
+    std::shared_ptr<eventgroup_subscription_ack_cache> eventgroup_subscription_ack_cache_;
     crypto_operator crypto_operator_;
     std::vector<CryptoPP::byte> certificate_data_;
     CryptoPP::RSA::PrivateKey private_key_;
     #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
-    eventgroup_subscription_cache* eventgroup_subscription_cache_;
+    std::shared_ptr<eventgroup_subscription_cache> eventgroup_subscription_cache_;
     #endif
 #endif
     std::shared_ptr<statistics_recorder> statistics_recorder_;
     // Addition for Service Authentication End ###############################################################################
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_DANE) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
     // Additional members for payload encryption key agreement Start #########################################################
     std::shared_ptr<dh_ecc> dh_ecc_;
     std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> group_secrets_;

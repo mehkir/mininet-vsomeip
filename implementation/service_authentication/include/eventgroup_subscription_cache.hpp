@@ -43,14 +43,12 @@ namespace vsomeip_v3 {
 
     class eventgroup_subscription_cache {
     private:
-        eventgroup_subscription_cache();
-        ~eventgroup_subscription_cache();
-        static std::mutex mutex_;
-        static eventgroup_subscription_cache* instance_;
+        std::mutex mutex_;
         std::map<std::tuple<client_t, service_t, instance_t, major_version_t>, eventgroup_subscription_cache_entry> eventgroup_subscription_cache_map_;
         std::tuple<client_t, service_t, instance_t, major_version_t> make_key_tuple(client_t _client, service_t _service, instance_t _instance, major_version_t _major);
     public:
-        static eventgroup_subscription_cache* get_instance();
+        eventgroup_subscription_cache();
+        ~eventgroup_subscription_cache();
 
         eventgroup_subscription_cache(eventgroup_subscription_cache const&) = delete;
         eventgroup_subscription_cache(eventgroup_subscription_cache&&) = delete;

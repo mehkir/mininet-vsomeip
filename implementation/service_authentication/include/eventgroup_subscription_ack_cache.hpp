@@ -30,14 +30,12 @@ namespace vsomeip_v3 {
 
     class eventgroup_subscription_ack_cache {
     private:
-        eventgroup_subscription_ack_cache();
-        ~eventgroup_subscription_ack_cache();
-        static std::mutex mutex_;
-        static eventgroup_subscription_ack_cache* instance_;
+        std::mutex mutex_;
         std::map<std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t, vsomeip_v3::instance_t>, eventgroup_subscription_ack_cache_entry> eventgroup_subscription_ack_cache_map_;
         std::tuple<boost::asio::ip::address_v4, vsomeip_v3::service_t, vsomeip_v3::instance_t> make_key_tuple(boost::asio::ip::address_v4 _sender_ip_address, vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance);
     public:
-        static eventgroup_subscription_ack_cache* get_instance();
+        eventgroup_subscription_ack_cache();
+        ~eventgroup_subscription_ack_cache();
 
         eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache const&) = delete;
         eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache&&) = delete;
