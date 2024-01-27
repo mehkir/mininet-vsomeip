@@ -553,6 +553,11 @@ private:
     // Additional util methods Start #########################################################################################
     void print_numerical_representation(std::vector<unsigned char> _vector, std::string _title="");
     // Additional util methods End ###########################################################################################
+    // Additional methods for extracting service and client authentication Start #############################################
+    void process_authentication_for_created_subscribe_eventgroup(
+        vsomeip_v3::sd::entry_data_t& its_data, vsomeip_v3::reliability_type_e _reliability_type, std::shared_ptr<vsomeip_v3::endpoint> its_reliable_endpoint,
+        std::shared_ptr<vsomeip_v3::endpoint> its_unreliable_endpoint, service_t _service, instance_t _instance);
+    // Additional methods for extracting service and client authentication End ###############################################
 };
 
 }  // namespace sd

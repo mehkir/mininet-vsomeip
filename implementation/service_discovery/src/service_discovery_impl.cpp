@@ -1016,6 +1016,33 @@ service_discovery_impl::create_eventgroup_entry(
 
 #ifdef WITH_SERVICE_AUTHENTICATION
     // Service Authentication Start ######################################################################################
+    process_authentication_for_created_subscribe_eventgroup(its_data, _reliability_type, its_reliable_endpoint, its_unreliable_endpoint, _service, _instance);
+    // Service Authentication End ########################################################################################
+#endif
+
+    if (its_entry &&_subscription->is_selective()) {
+        auto its_selective_option = std::make_shared<selective_option_impl>();
+        its_selective_option->set_clients(_subscription->get_clients());
+        its_data.options_.push_back(its_selective_option);
+    }
+
+    if (its_entry && its_other) {
+        its_data.entry_ = its_other;
+        its_data.other_ = its_entry;
+    }
+
+    // Addition for timestamp recording Start ###########################################################
+    if(_subscription->get_ttl())
+        statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::SUBSCRIBE_SEND_);
+    // Addition for timestamp recording End #############################################################
+    return its_data;
+}
+
+void
+service_discovery_impl::process_authentication_for_created_subscribe_eventgroup(
+        vsomeip_v3::sd::entry_data_t& its_data, vsomeip_v3::reliability_type_e _reliability_type, std::shared_ptr<vsomeip_v3::endpoint> its_reliable_endpoint,
+        std::shared_ptr<vsomeip_v3::endpoint> its_unreliable_endpoint, service_t _service, instance_t _instance) {
+    // Service Authentication Start ######################################################################################
     if (its_data.entry_->get_type() == entry_type_e::SUBSCRIBE_EVENTGROUP && its_data.entry_->get_ttl() > 0) {
         boost::asio::ip::address publisher_address;
         std::shared_ptr<endpoint> its_dummy;
@@ -1081,24 +1108,6 @@ service_discovery_impl::create_eventgroup_entry(
         // std::cout << "Client id=" << std::hex << client << std::endl;
     }
     // Service Authentication End ########################################################################################
-#endif
-
-    if (its_entry &&_subscription->is_selective()) {
-        auto its_selective_option = std::make_shared<selective_option_impl>();
-        its_selective_option->set_clients(_subscription->get_clients());
-        its_data.options_.push_back(its_selective_option);
-    }
-
-    if (its_entry && its_other) {
-        its_data.entry_ = its_other;
-        its_data.other_ = its_entry;
-    }
-
-    // Addition for timestamp recording Start ###########################################################
-    if(_subscription->get_ttl())
-        statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::SUBSCRIBE_SEND_);
-    // Addition for timestamp recording End #############################################################
-    return its_data;
 }
 
 void
