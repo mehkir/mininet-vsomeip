@@ -1575,7 +1575,7 @@ service_discovery_impl::process_serviceentry(
                 case option_type_e::CONFIGURATION: {
 #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
                     // Addition for Service Authentication Start ###########
-                    if (its_type == entry_type_e::OFFER_SERVICE) {
+                    if (its_type == entry_type_e::OFFER_SERVICE && its_ttl > 0) {
                         VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry CONFIGURATION (MEHMET MUELLER DEBUG) <<<<<";
                         std::shared_ptr < configuration_option_impl > its_configuration_option = std::dynamic_pointer_cast < configuration_option_impl > (its_option);
                         generated_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
