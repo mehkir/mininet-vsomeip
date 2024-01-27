@@ -1515,6 +1515,11 @@ service_discovery_impl::process_serviceentry(
     minor_version_t its_minor = _entry->get_minor_version();
     ttl_t its_ttl = _entry->get_ttl();
 
+    // Addition for statistics recording Start ###################################################################
+    if(unicast_.to_v4().to_string().compare("10.0.0.1") && its_type == entry_type_e::OFFER_SERVICE && its_ttl > 0)
+        statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::OFFER_RECEIVE_);
+    // Addition for statistics recording End #####################################################################
+
     // Read address info from options
     boost::asio::ip::address its_reliable_address;
     uint16_t its_reliable_port(ILLEGAL_PORT);
@@ -1631,8 +1636,6 @@ service_discovery_impl::process_serviceentry(
                 // print_numerical_representation(generated_nonce, "Generated nonce");
                 // Service Authentication End ############################################################################
 #endif
-                if(unicast_.to_v4().to_string().compare("10.0.0.1"))
-                    statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::OFFER_RECEIVE_);
                 process_offerservice_serviceentry(its_service, its_instance,
                         its_major, its_minor, its_ttl,
                         its_reliable_address, its_reliable_port,
