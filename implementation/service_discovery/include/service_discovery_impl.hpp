@@ -559,6 +559,7 @@ private:
         std::shared_ptr<vsomeip_v3::endpoint> its_unreliable_endpoint, service_t _service, instance_t _instance);
     void process_authentication_for_created_subscribe_ack(
         ttl_t _ttl, boost::asio::ip::address_v4 _subscriber_address, service_t _service, instance_t _instance, major_version_t _major, vsomeip_v3::sd::entry_data_t& _its_data);
+    void generate_and_add_nonce_for_offer_entry(service_t _service, instance_t _instance, vsomeip_v3::sd::entry_data_t& _its_data);
     // Additional methods for extracting service and client authentication End ###############################################
 };
 
