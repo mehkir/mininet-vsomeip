@@ -1193,45 +1193,7 @@ service_discovery_impl::insert_subscription_ack(
     boost::asio::ip::address_v4 subscriber_address = _target->get_address().to_v4();
 #ifdef WITH_SERVICE_AUTHENTICATION
     // Service Authentication Start ######################################################################################
-    if(_ttl) {
-        std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
-        // Signing nonce from subscriber and add signature
-        statistics_recorder_->record_timestamp(subscriber_address.to_uint(), time_metric::SERVICE_SIGN_START_);
-        std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(subscriber_address, its_service, its_instance);
-        VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << subscriber_address.to_string();
-        if (signed_nonce.empty()) {
-            // TODO: Better would be to return here and cancel sending the subscription acknowledge
-            throw std::runtime_error("Nonce is empty!");
-        }
-        data_partitioner().partition_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce);
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
-        encrypted_group_secret_result encrypted_groupsecret_result = encrypted_group_secret_result_cache_->get_encrypted_group_secret_result(subscriber_address, its_service, its_instance, its_major);
-        CryptoPP::SecByteBlock blinded_secret = encrypted_groupsecret_result.blinded_publisher_secret_;
-        CryptoPP::SecByteBlock encrypted_group_secret = encrypted_groupsecret_result.encrypted_group_secret_;
-        std::vector<unsigned char> initialization_vector = encrypted_groupsecret_result.initialization_vector_;
-        data_partitioner().partition_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(blinded_secret.begin(), blinded_secret.end()));
-        data_partitioner().partition_data<std::vector<unsigned char>>(ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(encrypted_group_secret.begin(), encrypted_group_secret.end()));
-        data_partitioner().partition_data<std::vector<unsigned char>>(INITIALIZATION_VECTOR_CONFIG_OPTION_KEY, configuration_option, initialization_vector);
-        encrypted_group_secret_result_cache_->remove_encrypted_group_secret_result(subscriber_address, its_service, its_instance, its_major);
-#endif
-        std::vector<CryptoPP::byte> data_to_be_signed;
-        data_to_be_signed.insert(data_to_be_signed.end(), signed_nonce.begin(), signed_nonce.end());
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
-        data_to_be_signed.insert(data_to_be_signed.end(), blinded_secret.begin(), blinded_secret.end());
-        data_to_be_signed.insert(data_to_be_signed.end(), encrypted_group_secret.begin(), encrypted_group_secret.end());
-        data_to_be_signed.insert(data_to_be_signed.end(), initialization_vector.begin(), initialization_vector.end());
-#endif
-        std::vector<CryptoPP::byte> signature = crypto_operator_.sign(private_key_, data_to_be_signed);
-        data_partitioner().partition_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
-        statistics_recorder_->record_timestamp(subscriber_address.to_uint(), time_metric::SERVICE_SIGN_END_);
-        its_data.options_.push_back(configuration_option);
-        // VSOMEIP_DEBUG << "Created subscribe ack by Publisher (SUBSCRIBE_ACK_SEND)" << "(" << subscriber_address.to_string() << "," << its_service << "," << its_instance << ")";
-        // print_numerical_representation(signed_nonce, "Signed nonce");
-        // print_numerical_representation(std::vector<unsigned char>(blinded_secret.begin(), blinded_secret.end()), "Blinded secret");
-        // print_numerical_representation(std::vector<unsigned char>(encrypted_group_secret.begin(), encrypted_group_secret.end()), "Encrypted group secret");
-        // print_numerical_representation(initialization_vector, "Initialization vector");
-        // print_numerical_representation(signature, "Signature");
-    }
+    process_authentication_for_created_subscribe_ack(_ttl, subscriber_address, its_service, its_instance, its_major, its_data);
     // Service Authentication End ########################################################################################
 #endif
 
@@ -1265,6 +1227,51 @@ service_discovery_impl::insert_subscription_ack(
     // Addition for statistics contribution End ###################################################################
 
     add_entry_data_to_remote_subscription_ack_msg(_acknowledgement, its_data);
+}
+
+void
+service_discovery_impl::process_authentication_for_created_subscribe_ack(ttl_t _ttl, boost::asio::ip::address_v4 _subscriber_address, service_t _service, instance_t _instance, major_version_t _major, vsomeip_v3::sd::entry_data_t& _its_data) {
+    // Service Authentication Start ######################################################################################
+    if(_ttl) {
+        std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
+        // Signing nonce from subscriber and add signature
+        statistics_recorder_->record_timestamp(_subscriber_address.to_uint(), time_metric::SERVICE_SIGN_START_);
+        std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(_subscriber_address, _service, _instance);
+        VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << _subscriber_address.to_string();
+        if (signed_nonce.empty()) {
+            // TODO: Better would be to return here and cancel sending the subscription acknowledge
+            throw std::runtime_error("Nonce is empty!");
+        }
+        data_partitioner().partition_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce);
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+        encrypted_group_secret_result encrypted_groupsecret_result = encrypted_group_secret_result_cache_->get_encrypted_group_secret_result(_subscriber_address, _service, _instance, _major);
+        CryptoPP::SecByteBlock blinded_secret = encrypted_groupsecret_result.blinded_publisher_secret_;
+        CryptoPP::SecByteBlock encrypted_group_secret = encrypted_groupsecret_result.encrypted_group_secret_;
+        std::vector<unsigned char> initialization_vector = encrypted_groupsecret_result.initialization_vector_;
+        data_partitioner().partition_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(blinded_secret.begin(), blinded_secret.end()));
+        data_partitioner().partition_data<std::vector<unsigned char>>(ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY, configuration_option, std::vector<unsigned char>(encrypted_group_secret.begin(), encrypted_group_secret.end()));
+        data_partitioner().partition_data<std::vector<unsigned char>>(INITIALIZATION_VECTOR_CONFIG_OPTION_KEY, configuration_option, initialization_vector);
+        encrypted_group_secret_result_cache_->remove_encrypted_group_secret_result(_subscriber_address, _service, _instance, _major);
+#endif
+        std::vector<CryptoPP::byte> data_to_be_signed;
+        data_to_be_signed.insert(data_to_be_signed.end(), signed_nonce.begin(), signed_nonce.end());
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+        data_to_be_signed.insert(data_to_be_signed.end(), blinded_secret.begin(), blinded_secret.end());
+        data_to_be_signed.insert(data_to_be_signed.end(), encrypted_group_secret.begin(), encrypted_group_secret.end());
+        data_to_be_signed.insert(data_to_be_signed.end(), initialization_vector.begin(), initialization_vector.end());
+#endif
+        std::vector<CryptoPP::byte> signature = crypto_operator_.sign(private_key_, data_to_be_signed);
+        data_partitioner().partition_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, configuration_option, signature);
+        statistics_recorder_->record_timestamp(_subscriber_address.to_uint(), time_metric::SERVICE_SIGN_END_);
+        _its_data.options_.push_back(configuration_option);
+        // VSOMEIP_DEBUG << "Created subscribe ack by Publisher (SUBSCRIBE_ACK_SEND)" << "(" << _subscriber_address.to_string() << "," << _service << "," << _instance << ")";
+        // print_numerical_representation(signed_nonce, "Signed nonce");
+        // print_numerical_representation(std::vector<unsigned char>(blinded_secret.begin(), blinded_secret.end()), "Blinded secret");
+        // print_numerical_representation(std::vector<unsigned char>(encrypted_group_secret.begin(), encrypted_group_secret.end()), "Encrypted group secret");
+        // print_numerical_representation(initialization_vector, "Initialization vector");
+        // print_numerical_representation(signature, "Signature");
+    }
+    // Service Authentication End ########################################################################################
 }
 
 bool
