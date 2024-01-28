@@ -85,21 +85,27 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         pending_remote_offer_id_(0),
         last_resume_(std::chrono::steady_clock::now().min()),
         statistics_log_timer_(_host->get_io()),
-        ignored_statistics_counter_(0),
-        dns_resolver_(dns_resolver::get_instance()),
+        ignored_statistics_counter_(0)
+#ifdef WITH_DNSSEC
+        ,dns_resolver_(dns_resolver::get_instance()),
         svcb_resolver_(std::make_shared<svcb_resolver>()),
         svcb_cache_(svcb_cache::get_instance()),
         resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance())
+#endif
 #ifdef WITH_SERVICE_AUTHENTICATION
+    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
         ,tlsa_resolver_(std::make_shared<tlsa_resolver>()),
+    #else
+        ,
+    #endif
         challenge_nonce_cache_(std::make_shared<challenge_nonce_cache>()),
         eventgroup_subscription_ack_cache_(std::make_shared<eventgroup_subscription_ack_cache>())
     #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
         ,eventgroup_subscription_cache_(std::make_shared<eventgroup_subscription_cache>())
-    #endif
-#endif
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
+        #ifdef WITH_ENCRYPTION
         ,encrypted_group_secret_result_cache_(std::make_shared<encrypted_group_secret_result_cache>())
+        #endif
+    #endif
 #endif
 {
 }
@@ -188,24 +194,28 @@ void routing_manager_impl::init() {
         if (its_plugin) {
             VSOMEIP_INFO << "Service Discovery module loaded.";
             discovery_ = std::dynamic_pointer_cast<sd::runtime>(its_plugin)->create_service_discovery(this, configuration_);
+#ifdef WITH_DNSSEC
             discovery_->set_dns_resolver(dns_resolver_);
             discovery_->set_svcb_resolver(svcb_resolver_);
             discovery_->set_svcb_cache(svcb_cache_);
             discovery_->set_resume_process_offerservice_cache(resume_process_offerservice_cache_);
+#endif
 #ifdef WITH_SERVICE_AUTHENTICATION
-            discovery_->set_tlsa_resolver(tlsa_resolver_);
             discovery_->set_challenge_nonce_cache(challenge_nonce_cache_);
             discovery_->set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache_);
+    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
+            discovery_->set_tlsa_resolver(tlsa_resolver_);
+    #endif
     #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
             discovery_->set_eventgroup_subscription_cache(eventgroup_subscription_cache_);
-    #endif
-#endif
-            discovery_->set_statistics_recorder(statistics_recorder_);
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
+        #ifdef WITH_ENCRYPTION
             discovery_->set_dh_ecc(dh_ecc_);
             discovery_->set_group_secret_map(group_secrets_);
             discovery_->set_encrypted_group_secret_result_cache(encrypted_group_secret_result_cache_);
+        #endif
+    #endif
 #endif
+            discovery_->set_statistics_recorder(statistics_recorder_);
             discovery_->init();
         } else {
             VSOMEIP_ERROR << "Service Discovery module could not be loaded!";
@@ -607,7 +617,7 @@ void routing_manager_impl::stop_offer_service(client_t _client,
 
 void routing_manager_impl::request_service(client_t _client, service_t _service,
         instance_t _instance, major_version_t _major, minor_version_t _minor) {
-
+#ifdef WITH_DNSSEC
     //Addition for Service Authentication Start ##########################################################################
     service_data_and_cbs* servicedata_and_cbs = new service_data_and_cbs();
     servicedata_and_cbs->service_ = _service;
@@ -622,7 +632,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_5,
                                             std::placeholders::_6,
                                             std::placeholders::_7);
-#ifdef NO_SOMEIP_SD
+    #ifdef NO_SOMEIP_SD
     // Addition for w/o SOME/IP SD Start #######################################################
     servicedata_and_cbs->mimic_offerservice_serviceentry_callback_ = std::bind(&sd::service_discovery::mimic_offerservice_serviceentry, discovery_,
                                             std::placeholders::_1,
@@ -633,13 +643,13 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_6,
                                             std::placeholders::_7);
     // Addition for w/o SOME/IP SD End #########################################################
-#endif
+    #endif
     servicedata_and_cbs->validate_offer_callback_ = std::bind(&sd::service_discovery::validate_offer, discovery_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             std::placeholders::_3,
                                             std::placeholders::_4);
-#ifdef WITH_SERVICE_AUTHENTICATION
+    #if defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_DANE)
     servicedata_and_cbs->add_publisher_certificate_callback_ = std::bind(&challenge_nonce_cache::add_publisher_certificate, challenge_nonce_cache_,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
@@ -654,13 +664,14 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_4);
     servicedata_and_cbs->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, &crypto_operator_,
                                             std::placeholders::_1);
-#endif
+    #endif
     servicedata_and_cbs->record_timestamp_callback_ = std::bind(&statistics_recorder::record_timestamp, statistics_recorder_,
                                             std::placeholders::_1,
                                             std::placeholders::_2);
     servicedata_and_cbs->configuration_ = configuration_;
     svcb_resolver_->request_service_svcb_record(servicedata_and_cbs);
     //Addition for Service Authentication End ############################################################################
+#endif
 
     VSOMEIP_INFO << "REQUEST("
         << std::hex << std::setfill('0')

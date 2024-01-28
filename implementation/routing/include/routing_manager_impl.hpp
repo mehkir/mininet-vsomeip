@@ -28,15 +28,19 @@
 #include "../../endpoints/include/endpoint_manager_impl.hpp"
 
 // Additional include for service authentication
+#ifdef WITH_DNSSEC
 #include "../../dnssec/include/dns_resolver.hpp"
 #include "../../dnssec/include/svcb_resolver.hpp"
 #include "../../service_authentication/include/svcb_cache.hpp"
 #include "../../service_discovery/include/resume_process_offerservice_cache.hpp"
+#endif
 
 #ifdef WITH_SERVICE_AUTHENTICATION
 #include "../../service_authentication/include/challenge_nonce_cache.hpp"
-#include "../../dnssec/include/tlsa_resolver.hpp"
 #include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
+    #if defined(WITH_DNSSEC) && (WITH_DANE)
+#include "../../dnssec/include/tlsa_resolver.hpp"
+    #endif
     #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
 #include "../../service_authentication/include/eventgroup_subscription_cache.hpp"
     #endif
@@ -580,14 +584,18 @@ private:
     message_acceptance_handler_t message_acceptance_handler_;
 
     // Addtional Member for Service Authenticity
+#ifdef WITH_DNSSEC
     dns_resolver* dns_resolver_;
     std::shared_ptr<svcb_resolver> svcb_resolver_;
     svcb_cache* svcb_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
+#endif
 #ifdef WITH_SERVICE_AUTHENTICATION
-    std::shared_ptr<tlsa_resolver> tlsa_resolver_;
     std::shared_ptr<challenge_nonce_cache> challenge_nonce_cache_;
     std::shared_ptr<eventgroup_subscription_ack_cache> eventgroup_subscription_ack_cache_;
+    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
+    std::shared_ptr<tlsa_resolver> tlsa_resolver_;
+    #endif
     #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
     std::shared_ptr<eventgroup_subscription_cache> eventgroup_subscription_cache_;
     #endif
