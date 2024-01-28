@@ -563,7 +563,9 @@ private:
     void process_authentication_for_received_subscribe(
         std::shared_ptr<configuration_option_impl> _configuration_option, const boost::asio::ip::address& _sender, service_t _service, instance_t _instance, major_version_t _major,
         std::vector<unsigned char>& _signed_nonce, std::vector<unsigned char>& _signature, client_t& _client, std::vector<unsigned char>& _blinded_secret);
-    void process_authentication_for_received_subscribe_ack();
+    void process_authentication_for_received_subscribe_ack(
+        std::vector<unsigned char>& _signed_nonce, std::vector<unsigned char>& _signature, std::vector<unsigned char>& _blinded_secret, std::vector<unsigned char>& _encrypted_group_secret,
+        std::vector<unsigned char>& _initialization_vector, std::shared_ptr<configuration_option_impl> _configuration_option);
     // Additional methods for extracting service and client authentication End ###############################################
 };
 

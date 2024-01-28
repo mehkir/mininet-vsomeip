@@ -2735,20 +2735,7 @@ service_discovery_impl::process_eventgroupentry(
 #endif
                 } else if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
 #ifdef WITH_SERVICE_AUTHENTICATION
-                    signed_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
-                    signature = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, its_configuration_option);
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
-                    blinded_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, its_configuration_option);
-                    encrypted_group_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY, its_configuration_option);
-                    initialization_vector = data_partitioner().reassemble_data<std::vector<unsigned char>>(INITIALIZATION_VECTOR_CONFIG_OPTION_KEY, its_configuration_option);
-#endif
-                    // VSOMEIP_DEBUG << "Received subscribe ack from Publisher (SUBSCRIBE_ACK_ARRIVED)"
-                    // << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl;
-                    // print_numerical_representation(signed_nonce, "Signed nonce");
-                    // print_numerical_representation(blinded_secret, "Blinded secret");
-                    // print_numerical_representation(encrypted_group_secret, "Encrypted group secret");
-                    // print_numerical_representation(initialization_vector, "Initialization vector");
-                    // print_numerical_representation(signature, "Signature");
+                    process_authentication_for_received_subscribe_ack(signed_nonce, signature, blinded_secret, encrypted_group_secret, initialization_vector, its_configuration_option);
 #endif
                 }
                 // Service Authentication End ############################################################################
@@ -2781,19 +2768,28 @@ service_discovery_impl::process_eventgroupentry(
 
     if (entry_type_e::SUBSCRIBE_EVENTGROUP == its_type) {
 #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
-        // Service Authentication Start ##########################################################################
-        eventgroup_subscription_cache_->add_eventgroup_subscription_cache_entry(client, its_service, its_instance,
-            its_eventgroup, its_major, its_ttl, 0, 0,
-            its_first_address.to_v4(), its_first_port, is_first_reliable,
-            its_second_address.to_v4(), its_second_port, is_second_reliable,
-            _acknowledgement, _is_stop_subscribe_subscribe,
-            _force_initial_events, its_clients, _sd_ac_state.expired_ports_, _sd_ac_state.sd_acceptance_required_, _sd_ac_state.accept_entries_, its_info,
+        if (its_ttl > 0) {
+            // Service Authentication Start ##########################################################################
+            eventgroup_subscription_cache_->add_eventgroup_subscription_cache_entry(client, its_service, its_instance,
+                its_eventgroup, its_major, its_ttl, 0, 0,
+                its_first_address.to_v4(), its_first_port, is_first_reliable,
+                its_second_address.to_v4(), its_second_port, is_second_reliable,
+                _acknowledgement, _is_stop_subscribe_subscribe,
+                _force_initial_events, its_clients, _sd_ac_state.expired_ports_, _sd_ac_state.sd_acceptance_required_, _sd_ac_state.accept_entries_, its_info,
     #ifdef WITH_ENCRYPTION 
-            signed_nonce, blinded_secret, signature);
+                signed_nonce, blinded_secret, signature);
     #else
-            signed_nonce, std::vector<unsigned char>(), signature);
+                signed_nonce, std::vector<unsigned char>(), signature);
     #endif
-            validate_subscribe_and_verify_signature(client, _sender.to_v4(), its_service, its_instance, its_major);
+                validate_subscribe_and_verify_signature(client, _sender.to_v4(), its_service, its_instance, its_major);
+        } else {
+            handle_eventgroup_subscription(its_service, its_instance,
+                its_eventgroup, its_major, its_ttl, 0, 0,
+                its_first_address, its_first_port, is_first_reliable,
+                its_second_address, its_second_port, is_second_reliable,
+                _acknowledgement, _is_stop_subscribe_subscribe,
+                _force_initial_events, its_clients, _sd_ac_state, its_info);
+        }
 #else
             handle_eventgroup_subscription(its_service, its_instance,
                 its_eventgroup, its_major, its_ttl, 0, 0,
@@ -2899,8 +2895,23 @@ service_discovery_impl::process_authentication_for_received_subscribe(
 }
 
 void
-service_discovery_impl::process_authentication_for_received_subscribe_ack() {
-
+service_discovery_impl::process_authentication_for_received_subscribe_ack(
+        std::vector<unsigned char>& _signed_nonce, std::vector<unsigned char>& _signature, std::vector<unsigned char>& _blinded_secret, std::vector<unsigned char>& _encrypted_group_secret,
+        std::vector<unsigned char>& _initialization_vector, std::shared_ptr<configuration_option_impl> _configuration_option) {
+    _signed_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, _configuration_option);
+    _signature = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, _configuration_option);
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+    _blinded_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, _configuration_option);
+    _encrypted_group_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY, _configuration_option);
+    _initialization_vector = data_partitioner().reassemble_data<std::vector<unsigned char>>(INITIALIZATION_VECTOR_CONFIG_OPTION_KEY, _configuration_option);
+#endif
+    // VSOMEIP_DEBUG << "Received subscribe ack from Publisher (SUBSCRIBE_ACK_ARRIVED)"
+    // << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl;
+    // print_numerical_representation(signed_nonce, "Signed nonce");
+    // print_numerical_representation(blinded_secret, "Blinded secret");
+    // print_numerical_representation(encrypted_group_secret, "Encrypted group secret");
+    // print_numerical_representation(initialization_vector, "Initialization vector");
+    // print_numerical_representation(signature, "Signature");
 }
 
 
