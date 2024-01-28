@@ -554,12 +554,16 @@ private:
     void print_numerical_representation(std::vector<unsigned char> _vector, std::string _title="");
     // Additional util methods End ###########################################################################################
     // Additional methods for extracting service and client authentication Start #############################################
-    void process_authentication_for_created_subscribe_eventgroup(
+    void process_authentication_for_created_subscribe(
         vsomeip_v3::sd::entry_data_t& its_data, vsomeip_v3::reliability_type_e _reliability_type, std::shared_ptr<vsomeip_v3::endpoint> its_reliable_endpoint,
         std::shared_ptr<vsomeip_v3::endpoint> its_unreliable_endpoint, service_t _service, instance_t _instance);
     void process_authentication_for_created_subscribe_ack(
         ttl_t _ttl, boost::asio::ip::address_v4 _subscriber_address, service_t _service, instance_t _instance, major_version_t _major, vsomeip_v3::sd::entry_data_t& _its_data);
     void generate_and_add_nonce_for_offer_entry(service_t _service, instance_t _instance, vsomeip_v3::sd::entry_data_t& _its_data);
+    void process_authentication_for_received_subscribe(
+        std::shared_ptr<configuration_option_impl> _configuration_option, const boost::asio::ip::address& _sender, service_t _service, instance_t _instance, major_version_t _major,
+        std::vector<unsigned char>& _signed_nonce, std::vector<unsigned char>& _signature, client_t& _client, std::vector<unsigned char>& _blinded_secret);
+    void process_authentication_for_received_subscribe_ack();
     // Additional methods for extracting service and client authentication End ###############################################
 };
 

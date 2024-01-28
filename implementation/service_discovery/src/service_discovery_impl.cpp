@@ -1016,7 +1016,7 @@ service_discovery_impl::create_eventgroup_entry(
 
 #ifdef WITH_SERVICE_AUTHENTICATION
     // Service Authentication Start ######################################################################################
-    process_authentication_for_created_subscribe_eventgroup(its_data, _reliability_type, its_reliable_endpoint, its_unreliable_endpoint, _service, _instance);
+    process_authentication_for_created_subscribe(its_data, _reliability_type, its_reliable_endpoint, its_unreliable_endpoint, _service, _instance);
     // Service Authentication End ########################################################################################
 #endif
 
@@ -1039,7 +1039,7 @@ service_discovery_impl::create_eventgroup_entry(
 }
 
 void
-service_discovery_impl::process_authentication_for_created_subscribe_eventgroup(
+service_discovery_impl::process_authentication_for_created_subscribe(
         vsomeip_v3::sd::entry_data_t& its_data, vsomeip_v3::reliability_type_e _reliability_type, std::shared_ptr<vsomeip_v3::endpoint> its_reliable_endpoint,
         std::shared_ptr<vsomeip_v3::endpoint> its_unreliable_endpoint, service_t _service, instance_t _instance) {
     // Service Authentication Start ######################################################################################
@@ -2282,24 +2282,22 @@ service_discovery_impl::process_eventgroupentry(
         bool _is_stop_subscribe_subscribe, bool _force_initial_events,
         const sd_acceptance_state_t& _sd_ac_state) {
     VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_eventgroupentry (MEHMET MUELLER DEBUG) <<<<<";
-#ifdef WITH_SERVICE_AUTHENTICATION
+
     // Additional variables for service Authentication Start ##############
     std::vector<unsigned char> signed_nonce;
     std::vector<unsigned char> signature;
     // Additional variables for service Authentication End ################
-#if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+
     // Additional variable for client authentication Start ##############
     client_t client = -1;
     // Additional variable for client authentication End ################
-#ifdef WITH_ENCRYPTION
+
     // Additional variables for payload encryption Start ##############
     std::vector<unsigned char> blinded_secret;
     std::vector<unsigned char> encrypted_group_secret;
     std::vector<unsigned char> initialization_vector;
     // Additional variables for payload encryption End ################
-#endif
-#endif
-#endif
+
 
     std::set<client_t> its_clients({0}); // maybe overridden for selectives
 
@@ -2891,6 +2889,81 @@ service_discovery_impl::process_eventgroupentry(
         }
     }
 }
+
+
+void
+service_discovery_impl::process_authentication_for_received_subscribe(
+        std::shared_ptr<configuration_option_impl> _configuration_option, const boost::asio::ip::address& _sender, service_t _service, instance_t _instance, major_version_t _major,
+        std::vector<unsigned char>& _signed_nonce, std::vector<unsigned char>& _signature, client_t& _client, std::vector<unsigned char>& _blinded_secret) {
+    std::vector<unsigned char> generated_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, _configuration_option);
+    challenge_nonce_cache_->add_subscriber_challenge_nonce(_sender.to_v4(), _service, _instance, generated_nonce);
+#if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+    _signed_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, _configuration_option);
+    _signature = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, _configuration_option);
+    std::vector<unsigned char> client_id = data_partitioner().reassemble_data<std::vector<unsigned char>>(CLIENT_ID_CONFIG_OPTION_KEY, _configuration_option);
+    _client = (client_t) std::stoi(std::string(client_id.begin(), client_id.end()));
+    challenge_nonce_cache_->add_publisher_challenge_nonce(_client, _sender.to_v4(), _service, _instance, _signed_nonce);
+    #ifdef WITH_ENCRYPTION
+    _blinded_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, _configuration_option);
+    #endif
+#endif
+    // VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << _sender.to_v4().to_string();
+    // VSOMEIP_DEBUG << "Received subscription from Subscriber (SUBSCRIBE_ARRIVED)"
+    // << "(" << _sender.to_v4().to_string() << "," << _service << "," << _instance << ")" << std::endl;
+    // print_numerical_representation(generated_nonce, "Generated nonce");
+    // print_numerical_representation(_signed_nonce, "Signed nonce");
+    // print_numerical_representation(_blinded_secret, "Blinded secret");
+    // print_numerical_representation(_signature, "Signature");
+    // std::cout << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end()) << std::endl;
+#if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+    // Request client svcb record
+    client_svcb_cache_entry client_svcbcache_entry = svcb_cache_->get_client_svcb_cache_entry(_client, _service, _instance, _major);
+    std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_subscriber_certificate(_client, _sender.to_v4(), _service, _instance);
+    if (client_svcbcache_entry.client_ != _client || certificate_data.empty()) {
+        client_data_and_cbs* clientdata_and_cbs = new client_data_and_cbs();
+        clientdata_and_cbs->client_ = _client;
+        clientdata_and_cbs->service_ = _service;
+        clientdata_and_cbs->instance_ = _instance;
+        clientdata_and_cbs->major_ = _major;
+        clientdata_and_cbs->unverified_client_ipv4_address_ = _sender.to_v4();
+        clientdata_and_cbs->add_client_svcb_entry_cache_callback_ = std::bind(&svcb_cache::add_client_svcb_cache_entry, svcb_cache_,
+                                                std::placeholders::_1,
+                                                std::placeholders::_2,
+                                                std::placeholders::_3,
+                                                std::placeholders::_4,
+                                                std::placeholders::_5,
+                                                std::placeholders::_6,
+                                                std::placeholders::_7);
+        clientdata_and_cbs->request_client_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_client_tlsa_record, tlsa_resolver_,
+                                                std::placeholders::_1);
+        clientdata_and_cbs->add_subscriber_certificate_callback_ = std::bind(&challenge_nonce_cache::add_subscriber_certificate, challenge_nonce_cache_,
+                                                std::placeholders::_1,
+                                                std::placeholders::_2,
+                                                std::placeholders::_3,
+                                                std::placeholders::_4,
+                                                std::placeholders::_5);
+        clientdata_and_cbs->validate_subscribe_and_verify_signature_callback_ = std::bind(&sd::service_discovery_impl::validate_subscribe_and_verify_signature, this,
+                                                std::placeholders::_1,
+                                                std::placeholders::_2,
+                                                std::placeholders::_3,
+                                                std::placeholders::_4,
+                                                std::placeholders::_5);
+        clientdata_and_cbs->record_timestamp_callback_ = std::bind(&statistics_recorder::record_timestamp, statistics_recorder_,
+                                                std::placeholders::_1,
+                                                std::placeholders::_2);
+        clientdata_and_cbs->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, &crypto_operator_,
+                                                std::placeholders::_1);
+        clientdata_and_cbs->configuration_ = configuration_;
+        svcb_resolver_->request_client_svcb_record(clientdata_and_cbs);
+    }
+#endif
+}
+
+void
+service_discovery_impl::process_authentication_for_received_subscribe_ack() {
+
+}
+
 
 #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
 void
