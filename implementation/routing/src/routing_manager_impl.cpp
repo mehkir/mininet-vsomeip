@@ -94,11 +94,11 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         ,tlsa_resolver_(std::make_shared<tlsa_resolver>()),
         challenge_nonce_cache_(std::make_shared<challenge_nonce_cache>()),
         eventgroup_subscription_ack_cache_(std::make_shared<eventgroup_subscription_ack_cache>())
-    #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
         ,eventgroup_subscription_cache_(std::make_shared<eventgroup_subscription_cache>())
     #endif
 #endif
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
         ,encrypted_group_secret_result_cache_(std::make_shared<encrypted_group_secret_result_cache>())
 #endif
 {
@@ -196,12 +196,12 @@ void routing_manager_impl::init() {
             discovery_->set_tlsa_resolver(tlsa_resolver_);
             discovery_->set_challenge_nonce_cache(challenge_nonce_cache_);
             discovery_->set_eventgroup_subscription_ack_cache(eventgroup_subscription_ack_cache_);
-    #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
             discovery_->set_eventgroup_subscription_cache(eventgroup_subscription_cache_);
     #endif
 #endif
             discovery_->set_statistics_recorder(statistics_recorder_);
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
             discovery_->set_dh_ecc(dh_ecc_);
             discovery_->set_group_secret_map(group_secrets_);
             discovery_->set_encrypted_group_secret_result_cache(encrypted_group_secret_result_cache_);
@@ -622,7 +622,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
                                             std::placeholders::_5,
                                             std::placeholders::_6,
                                             std::placeholders::_7);
-#ifndef WITH_SOMEIP_SD
+#ifdef NO_SOMEIP_SD
     // Addition for w/o SOME/IP SD Start #######################################################
     servicedata_and_cbs->mimic_offerservice_serviceentry_callback_ = std::bind(&sd::service_discovery::mimic_offerservice_serviceentry, discovery_,
                                             std::placeholders::_1,
@@ -5143,7 +5143,7 @@ void routing_manager_impl::set_statistics_recorder(std::shared_ptr<statistics_re
     statistics_recorder_ = _statistics_recorder;
 }
 
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
 // Aditional methods for payload encryption
 void routing_manager_impl::set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc) {
     dh_ecc_ = _dh_ecc;

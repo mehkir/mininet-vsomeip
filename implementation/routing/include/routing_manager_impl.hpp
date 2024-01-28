@@ -37,7 +37,7 @@
 #include "../../service_authentication/include/challenge_nonce_cache.hpp"
 #include "../../dnssec/include/tlsa_resolver.hpp"
 #include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
-    #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
 #include "../../service_authentication/include/eventgroup_subscription_cache.hpp"
     #endif
 #endif
@@ -45,7 +45,7 @@
 //Additional include for statistics recorder
 #include "../../statistics/include/statistics_recorder.hpp"
 
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
 // Additional include for payload encryption
 #include "../../dh_ecc/include/dh_ecc.hpp"
 #include "../../dh_ecc/include/encrypted_group_secret_result_cache.hpp"
@@ -588,14 +588,14 @@ private:
     std::shared_ptr<tlsa_resolver> tlsa_resolver_;
     std::shared_ptr<challenge_nonce_cache> challenge_nonce_cache_;
     std::shared_ptr<eventgroup_subscription_ack_cache> eventgroup_subscription_ack_cache_;
-    #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
     std::shared_ptr<eventgroup_subscription_cache> eventgroup_subscription_cache_;
     #endif
 #endif
     //Addition for statistics recording
     std::shared_ptr<statistics_recorder> statistics_recorder_;
 
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
     // Additional members for payload encryption
     std::shared_ptr<dh_ecc> dh_ecc_;
     std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> group_secrets_;
@@ -610,7 +610,7 @@ public:
     // Additional method for statistics recording
     void set_statistics_recorder(std::shared_ptr<statistics_recorder> _statistics_recorder);
     
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
+#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
     // Aditional methods for payload encryption
     void set_dh_ecc(std::shared_ptr<dh_ecc> _dh_ecc);
     void set_group_secret_map(std::shared_ptr<std::map<std::tuple<service_t, instance_t>, CryptoPP::SecByteBlock>> _group_secrets);

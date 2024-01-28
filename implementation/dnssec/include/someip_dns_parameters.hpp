@@ -10,7 +10,7 @@
 #include <functional>
 #include <boost/asio/ip/address_v4.hpp>
 
-#define DNS_SERVER_IP 0x0a000003
+#define DNS_SERVER_IP 0x0a00001f
 #define INSTANCE 65280
 #define MAJOR_VERSION 65281
 #define MINOR_VERSION 65282
