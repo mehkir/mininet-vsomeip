@@ -2245,7 +2245,8 @@ service_discovery_impl::insert_offer_service(
 
 #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_SOMEIP_SD)
         // Service Authentication Start ################################
-        generate_and_add_nonce_for_offer_entry(_info->get_service(), _info->get_instance(), its_data);
+        if (its_entry->get_ttl() > 0)
+            generate_and_add_nonce_for_offer_entry(_info->get_service(), _info->get_instance(), its_data);
         // Service Authentication End ##################################
 #endif
 
