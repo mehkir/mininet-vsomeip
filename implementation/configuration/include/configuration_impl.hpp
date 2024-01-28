@@ -300,6 +300,7 @@ public:
     // Additional Methods for Service Authentication
     VSOMEIP_EXPORT std::string get_private_key_path() const;
     VSOMEIP_EXPORT std::string get_certificate_path() const;
+    VSOMEIP_EXPORT std::string get_service_certificate_path() const;
 
 private:
     void read_data(const std::set<std::string> &_input,
@@ -657,6 +658,7 @@ protected:
     // Additional Members for Service Authentication
     std::string certificate_path_;
     std::string private_key_path_;
+    std::string service_certificate_path_;
 
     bool log_statistics_;
     uint32_t statistics_interval_;

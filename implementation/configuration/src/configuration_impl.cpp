@@ -4524,6 +4524,7 @@ void configuration_impl::load_asymmetric_keys(const configuration_element& _elem
     try {
         private_key_path_ = _element.tree_.get<std::string>("private-key-path");
         certificate_path_ = _element.tree_.get<std::string>("certificate-path");
+        service_certificate_path_ = _element.tree_.get<std::string>("service-certificate-path");
     } catch (...) {
         // intentionally left empty!
     }
@@ -5056,6 +5057,10 @@ std::string configuration_impl::get_private_key_path() const {
 
 std::string configuration_impl::get_certificate_path() const {
     return certificate_path_;
+}
+
+std::string configuration_impl::get_service_certificate_path() const {
+    return service_certificate_path_;
 }
 
 }  // namespace cfg
