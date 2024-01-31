@@ -51,13 +51,15 @@
 #define GENERATED_NONCE_CONFIG_OPTION_KEY "gn"
 #define SIGNED_NONCE_CONFIG_OPTION_KEY "sn"
 #define SIGNATURE_CONFIG_OPTION_KEY "sig"
-#define CLIENT_ID_CONFIG_OPTION_KEY "cid"
 
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
+    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
+#define CLIENT_ID_CONFIG_OPTION_KEY "cid"
+        #if defined(WITH_ENCRYPTION)
 #define BLINDED_SECRET_CONFIG_OPTION_KEY "bs"
 #define ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY "egs"
 #define INITIALIZATION_VECTOR_CONFIG_OPTION_KEY "iv"
-#endif
+        #endif
+    #endif
 #endif
 
 namespace vsomeip_v3 {
@@ -101,6 +103,9 @@ service_discovery_impl::service_discovery_impl(
     // Addition for Service Authentication Start ############################################################
     certificate_data_ = crypto_operator_.load_certificate_from_file(configuration_->get_certificate_path());
     crypto_operator_.load_pem_private_key(configuration_->get_private_key_path(), private_key_);
+    #ifndef WITH_DANE
+    // TODO: parse service and client certificates
+    #endif
     // Addition for Service Authentication End ##############################################################
 #endif
 }
@@ -1038,6 +1043,8 @@ service_discovery_impl::create_eventgroup_entry(
     return its_data;
 }
 
+
+#ifdef WITH_SERVICE_AUTHENTICATION
 void
 service_discovery_impl::process_authentication_for_created_subscribe(
         vsomeip_v3::sd::entry_data_t& its_data, vsomeip_v3::reliability_type_e _reliability_type, std::shared_ptr<vsomeip_v3::endpoint> its_reliable_endpoint,
@@ -1078,7 +1085,7 @@ service_discovery_impl::process_authentication_for_created_subscribe(
         client_t client = configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME)));
         std::vector<unsigned char> signed_nonce_vector = challenge_nonce_cache_->get_publisher_challenge_nonce(client, publisher_address.to_v4(), _service, _instance);
         if (signed_nonce_vector.empty()) {
-            // TODO: Better would be to return here and cancel sending the subscription
+            // TODO: Better would be to return here and check on the receiving node if the required conf option is included
             throw std::runtime_error("Nonce is empty!");
         }
         data_partitioner().partition_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce_vector);
@@ -1109,6 +1116,7 @@ service_discovery_impl::process_authentication_for_created_subscribe(
     }
     // Service Authentication End ########################################################################################
 }
+#endif
 
 void
 service_discovery_impl::insert_subscription_ack(
@@ -1229,6 +1237,7 @@ service_discovery_impl::insert_subscription_ack(
     add_entry_data_to_remote_subscription_ack_msg(_acknowledgement, its_data);
 }
 
+#ifdef WITH_SERVICE_AUTHENTICATION
 void
 service_discovery_impl::process_authentication_for_created_subscribe_ack(ttl_t _ttl, boost::asio::ip::address_v4 _subscriber_address, service_t _service, instance_t _instance, major_version_t _major, vsomeip_v3::sd::entry_data_t& _its_data) {
     // Service Authentication Start ######################################################################################
@@ -1273,6 +1282,7 @@ service_discovery_impl::process_authentication_for_created_subscribe_ack(ttl_t _
     }
     // Service Authentication End ########################################################################################
 }
+#endif
 
 bool
 service_discovery_impl::send(bool _is_announcing) {
@@ -1666,6 +1676,7 @@ service_discovery_impl::process_serviceentry(
     }
 }
 
+#ifdef WITH_DNSSEC
 void
 service_discovery_impl::set_dns_resolver(dns_resolver* _dns_resolver) {
     this->dns_resolver_ = _dns_resolver;
@@ -1685,12 +1696,15 @@ void
 service_discovery_impl::set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache) {
     this->resume_process_offerservice_cache_ = _resume_process_offerservice_cache;
 }
+#endif
 
 #ifdef WITH_SERVICE_AUTHENTICATION
+    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
 void
 service_discovery_impl::set_tlsa_resolver(std::shared_ptr<tlsa_resolver> _tlsa_resolver) {
     this->tlsa_resolver_ = _tlsa_resolver;
 }
+    #endif
 
 void
 service_discovery_impl::set_challenge_nonce_cache(std::shared_ptr<challenge_nonce_cache> _challenge_nonce_cache) {
@@ -1702,12 +1716,12 @@ service_discovery_impl::set_eventgroup_subscription_ack_cache(std::shared_ptr<ev
     this->eventgroup_subscription_ack_cache_ = _eventgroup_subscription_ack_cache;
 }
 
-#if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
+    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
 void
 service_discovery_impl::set_eventgroup_subscription_cache(std::shared_ptr<eventgroup_subscription_cache> _eventgroup_subscription_cache) {
     this->eventgroup_subscription_cache_ = _eventgroup_subscription_cache;
 }
-#endif
+    #endif
 #endif
 
 void
@@ -1734,7 +1748,7 @@ service_discovery_impl::set_encrypted_group_secret_result_cache(std::shared_ptr<
 // Aditional methods for payload encryption End ######################################################################
 #endif
 
-#ifdef NO_SOMEIP_SD
+#if defined(WITH_DNSSEC) && defined(NO_SOMEIP_SD)
 // Addition for w/o SOME/IP SD Start #######################################################
 void
 service_discovery_impl::mimic_offerservice_serviceentry(
@@ -1767,6 +1781,7 @@ service_discovery_impl::mimic_offerservice_serviceentry(
 // Addition for w/o SOME/IP SD End #########################################################
 #endif
 
+#ifdef WITH_DNSSEC
 void
 service_discovery_impl::process_offerservice_serviceentry(
         service_t _service, instance_t _instance, major_version_t _major,
@@ -2035,6 +2050,189 @@ service_discovery_impl::resume_process_offerservice_serviceentry(
                             _reliable_address, _reliable_port,
                             _unreliable_address, _unreliable_port);
 }
+#else
+void
+service_discovery_impl::process_offerservice_serviceentry(
+        service_t _service, instance_t _instance, major_version_t _major,
+        minor_version_t _minor, ttl_t _ttl,
+        const boost::asio::ip::address &_reliable_address,
+        uint16_t _reliable_port,
+        const boost::asio::ip::address &_unreliable_address,
+        uint16_t _unreliable_port,
+        std::vector<std::shared_ptr<message_impl> > &_resubscribes,
+        bool _received_via_mcast, const sd_acceptance_state_t& _sd_ac_state) {
+    std::shared_ptr < runtime > its_runtime = runtime_.lock();
+    if (!its_runtime)
+        return;
+
+    bool is_secure = configuration_->is_secure_service(_service, _instance);
+    if (is_secure &&
+            ((_reliable_port != ILLEGAL_PORT &&
+                    !configuration_->is_secure_port(_reliable_address, _reliable_port, true))
+             ||  (_unreliable_port != ILLEGAL_PORT
+                     && !configuration_->is_secure_port(_unreliable_address, _unreliable_port, false)))) {
+
+        VSOMEIP_WARNING << __func__ << ": Ignoring offer of ["
+                << std::hex << std::setfill('0')
+                << std::setw(4) << _service << "." << std::setw(4) << _instance
+                << "]";
+        return;
+    }
+
+    // stop sending find service in repetition phase
+    update_request(_service, _instance);
+
+    const reliability_type_e offer_type = configuration_->get_reliability_type(
+        _reliable_address, _reliable_port, _unreliable_address,_unreliable_port);
+
+    if (offer_type == reliability_type_e::RT_UNKNOWN) {
+        VSOMEIP_WARNING << __func__ << ": Unknown remote offer type ["
+                << std::hex << std::setfill('0')
+                << std::setw(4) << _service << "."
+                << std::setw(4) << _instance << "]";
+        return; // Unknown remote offer type --> no way to access it!
+    }
+
+    if (_sd_ac_state.sd_acceptance_required_) {
+
+        auto expire_subscriptions_and_services =
+                [this, &_sd_ac_state](const boost::asio::ip::address& _address,
+                                      std::uint16_t _port, bool _reliable) {
+            const auto its_port_pair = std::make_pair(_reliable, _port);
+            if (_sd_ac_state.expired_ports_.find(its_port_pair) ==
+                    _sd_ac_state.expired_ports_.end()) {
+                VSOMEIP_WARNING << "service_discovery_impl::" << __func__
+                        << ": Do not accept offer from "
+                        << _address.to_string() << ":"
+                        << std::dec << _port << " reliable=" << _reliable;
+                remove_remote_offer_type_by_ip(_address, _port, _reliable);
+                host_->expire_subscriptions(_address, _port, _reliable);
+                host_->expire_services(_address, _port, _reliable);
+                _sd_ac_state.expired_ports_.insert(its_port_pair);
+            }
+        };
+
+        // return if the registered sd_acceptance handler returned false
+        // and for the provided port sd_acceptance is necessary
+        switch (offer_type) {
+            case reliability_type_e::RT_UNRELIABLE:
+                if (!_sd_ac_state.accept_entries_
+                        && configuration_->is_protected_port(
+                                _unreliable_address, _unreliable_port, false)) {
+                    expire_subscriptions_and_services(_unreliable_address,
+                            _unreliable_port, false);
+                    return;
+                }
+                break;
+            case reliability_type_e::RT_RELIABLE:
+                if (!_sd_ac_state.accept_entries_
+                        && configuration_->is_protected_port(
+                                _reliable_address, _reliable_port, true)) {
+                    expire_subscriptions_and_services(_reliable_address,
+                            _reliable_port, true);
+                    return;
+                }
+                break;
+            case reliability_type_e::RT_BOTH:
+                if (!_sd_ac_state.accept_entries_
+                        && (configuration_->is_protected_port(
+                                _unreliable_address, _unreliable_port, false)
+                                || configuration_->is_protected_port(
+                                        _reliable_address, _reliable_port, true))) {
+                    expire_subscriptions_and_services(_unreliable_address,
+                            _unreliable_port, false);
+                    expire_subscriptions_and_services(_reliable_address,
+                            _reliable_port, true);
+                    return;
+                }
+                break;
+            case reliability_type_e::RT_UNKNOWN:
+            default:
+                break;
+        }
+    }
+
+    if (update_remote_offer_type(_service, _instance, offer_type,
+            _reliable_address, _reliable_port,
+            _unreliable_address, _unreliable_port)) {
+        VSOMEIP_WARNING << __func__ << ": Remote offer type changed ["
+                << std::hex << std::setfill('0')
+                << std::setw(4) << _service << "."
+                << std::setw(4) << _instance << "]";
+
+        // Only update eventgroup reliability type if it was initially unknown
+        auto its_eventgroups = host_->get_subscribed_eventgroups(_service, _instance);
+        for (auto eg : its_eventgroups) {
+            auto its_info = host_->find_eventgroup(
+                    _service, _instance, eg);
+            if (its_info) {
+                if (its_info->is_reliability_auto_mode()) {
+                    if (offer_type != reliability_type_e::RT_UNKNOWN
+                            && offer_type != its_info->get_reliability()) {
+                        VSOMEIP_WARNING << "sd::" << __func__ << ": eventgroup reliability type changed ["
+                                    << std::hex << std::setfill('0')
+                                    << std::setw(4) << _service << "."
+                                    << std::setw(4) << _instance << "."
+                                    << std::setw(4) << eg << "]"
+                                    << " using reliability type:  "
+                                    << std::setw(4) << (uint16_t) offer_type;
+                        its_info->set_reliability(offer_type);
+                    }
+                }
+            }
+        }
+    }
+
+    // No need to resubscribe for unicast offers
+    if (_received_via_mcast) {
+        auto found_service = subscribed_.find(_service);
+        if (found_service != subscribed_.end()) {
+            auto found_instance = found_service->second.find(_instance);
+            if (found_instance != found_service->second.end()) {
+                if (0 < found_instance->second.size()) {
+                    for (const auto& its_eventgroup : found_instance->second) {
+                        auto its_subscription = its_eventgroup.second;
+                        std::shared_ptr<endpoint> its_reliable, its_unreliable;
+                        get_subscription_endpoints(_service, _instance,
+                                its_reliable, its_unreliable);
+                        its_subscription->set_endpoint(its_reliable, true);
+                        its_subscription->set_endpoint(its_unreliable, false);
+                        for (const auto& its_client : its_subscription->get_clients()) {
+                            if (its_subscription->get_state(its_client)
+                                    == subscription_state_e::ST_ACKNOWLEDGED) {
+                                its_subscription->set_state(its_client,
+                                        subscription_state_e::ST_RESUBSCRIBING);
+                            } else {
+                                its_subscription->set_state(its_client,
+                                        subscription_state_e::ST_RESUBSCRIBING_NOT_ACKNOWLEDGED);
+                            }
+                        }
+                        const reliability_type_e its_reliability =
+                                get_eventgroup_reliability(_service, _instance,
+                                        its_eventgroup.first, its_subscription);
+
+                        auto its_data = create_eventgroup_entry(_service, _instance,
+                                its_eventgroup.first, its_subscription, its_reliability);
+                        if (its_data.entry_) {
+                            add_entry_data(_resubscribes, its_data);
+                        }
+                        for (const auto its_client : its_subscription->get_clients()) {
+                            its_subscription->set_state(its_client,
+                                    subscription_state_e::ST_NOT_ACKNOWLEDGED);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    host_->add_routing_info(_service, _instance,
+                            _major, _minor,
+                            _ttl * get_ttl_factor(_service, _instance, ttl_factor_offers_),
+                            _reliable_address, _reliable_port,
+                            _unreliable_address, _unreliable_port);
+}
+#endif
 
 void
 service_discovery_impl::process_findservice_serviceentry(
@@ -2777,12 +2975,8 @@ service_discovery_impl::process_eventgroupentry(
                 its_second_address.to_v4(), its_second_port, is_second_reliable,
                 _acknowledgement, _is_stop_subscribe_subscribe,
                 _force_initial_events, its_clients, _sd_ac_state.expired_ports_, _sd_ac_state.sd_acceptance_required_, _sd_ac_state.accept_entries_, its_info,
-    #ifdef WITH_ENCRYPTION 
                 signed_nonce, blinded_secret, signature);
-    #else
-                signed_nonce, std::vector<unsigned char>(), signature);
-    #endif
-                validate_subscribe_and_verify_signature(client, _sender.to_v4(), its_service, its_instance, its_major);
+            validate_subscribe_and_verify_signature(client, _sender.to_v4(), its_service, its_instance, its_major);
         } else {
             handle_eventgroup_subscription(its_service, its_instance,
                 its_eventgroup, its_major, its_ttl, 0, 0,
@@ -2805,11 +2999,7 @@ service_discovery_impl::process_eventgroupentry(
 #ifdef WITH_SERVICE_AUTHENTICATION
                 eventgroup_subscription_ack_cache_->add_eventgroup_subscription_ack_cache_entry(its_service, its_instance,
                     its_eventgroup, its_major, its_ttl, 0, its_clients, _sender.to_v4(), its_first_address.to_v4(), its_first_port,
-#if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
                     signed_nonce, blinded_secret, encrypted_group_secret, initialization_vector, signature);
-#else
-                    signed_nonce, std::vector<unsigned char>(), std::vector<unsigned char>(), std::vector<unsigned char>(), signature);
-#endif
                 validate_subscribe_ack_and_verify_signature(_sender.to_v4(), its_service, its_instance, its_major);
 #else
                 handle_eventgroup_subscription_ack(its_service, its_instance,
@@ -2826,7 +3016,7 @@ service_discovery_impl::process_eventgroupentry(
     }
 }
 
-
+#ifdef WITH_SERVICE_AUTHENTICATION
 void
 service_discovery_impl::process_authentication_for_received_subscribe(
         std::shared_ptr<configuration_option_impl> _configuration_option, const boost::asio::ip::address& _sender, service_t _service, instance_t _instance, major_version_t _major,
@@ -2842,16 +3032,8 @@ service_discovery_impl::process_authentication_for_received_subscribe(
     #ifdef WITH_ENCRYPTION
     _blinded_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, _configuration_option);
     #endif
-#endif
-    // VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << _sender.to_v4().to_string();
-    // VSOMEIP_DEBUG << "Received subscription from Subscriber (SUBSCRIBE_ARRIVED)"
-    // << "(" << _sender.to_v4().to_string() << "," << _service << "," << _instance << ")" << std::endl;
-    // print_numerical_representation(generated_nonce, "Generated nonce");
-    // print_numerical_representation(_signed_nonce, "Signed nonce");
-    // print_numerical_representation(_blinded_secret, "Blinded secret");
-    // print_numerical_representation(_signature, "Signature");
-    // std::cout << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end()) << std::endl;
-#if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
+
+    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
     // Request client svcb record
     client_svcb_cache_entry client_svcbcache_entry = svcb_cache_->get_client_svcb_cache_entry(_client, _service, _instance, _major);
     std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_subscriber_certificate(_client, _sender.to_v4(), _service, _instance);
@@ -2892,9 +3074,22 @@ service_discovery_impl::process_authentication_for_received_subscribe(
         clientdata_and_cbs->configuration_ = configuration_;
         svcb_resolver_->request_client_svcb_record(clientdata_and_cbs);
     }
+    #else
+    // TODO: Retrieve certificate from map and put it into challenge nonce cache
+    #endif
 #endif
+    // VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << _sender.to_v4().to_string();
+    // VSOMEIP_DEBUG << "Received subscription from Subscriber (SUBSCRIBE_ARRIVED)"
+    // << "(" << _sender.to_v4().to_string() << "," << _service << "," << _instance << ")" << std::endl;
+    // print_numerical_representation(generated_nonce, "Generated nonce");
+    // print_numerical_representation(_signed_nonce, "Signed nonce");
+    // print_numerical_representation(_blinded_secret, "Blinded secret");
+    // print_numerical_representation(_signature, "Signature");
+    // std::cout << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end()) << std::endl;
 }
+#endif
 
+#ifdef WITH_SERVICE_AUTHENTICATION
 void
 service_discovery_impl::process_authentication_for_received_subscribe_ack(
         std::vector<unsigned char>& _signed_nonce, std::vector<unsigned char>& _signature, std::vector<unsigned char>& _blinded_secret, std::vector<unsigned char>& _encrypted_group_secret,
@@ -2914,6 +3109,7 @@ service_discovery_impl::process_authentication_for_received_subscribe_ack(
     // print_numerical_representation(initialization_vector, "Initialization vector");
     // print_numerical_representation(signature, "Signature");
 }
+#endif
 
 
 #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
@@ -2922,15 +3118,21 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
     statistics_recorder_->record_timestamp(_subscriber_ip_address.to_uint(), time_metric::VERIFY_CLIENT_SIGNATURE_START_);
     // Check if required subscription, signature and certificate are available/cached
     bool requirements_are_fulfilled = false;
+#if defined(WITH_DNSSEC) && defined(WITH_DANE)
     client_svcb_cache_entry client_svcbcache_entry = svcb_cache_->get_client_svcb_cache_entry(_client, _service, _instance, _major);
+#endif
     std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_subscriber_certificate(_client, _subscriber_ip_address, _service, _instance);
     std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_publisher_challenge_nonce(_client, _subscriber_ip_address, _service, _instance);
     eventgroup_subscription_cache_entry eventgroup_subscriptioncache_entry = eventgroup_subscription_cache_->get_eventgroup_subscription_cache_entry(_client, _service, _instance, _major);
     std::vector<unsigned char> signature = eventgroup_subscriptioncache_entry.signature_;
-    requirements_are_fulfilled = (client_svcbcache_entry.client_ == eventgroup_subscriptioncache_entry.client_)
-                                && !certificate_data.empty()
+    requirements_are_fulfilled = !certificate_data.empty()
                                 && !signed_nonce.empty()
-                                && !signature.empty();
+                                && !signature.empty()
+#if defined(WITH_DNSSEC) && defined(WITH_DANE)
+                                && (client_svcbcache_entry.client_ == eventgroup_subscriptioncache_entry.client_);
+#else
+                                ;
+#endif
 
     if (!requirements_are_fulfilled) {
         return;
@@ -2960,6 +3162,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
     sd_ac_state.accept_entries_ = eventgroup_subscriptioncache_entry.accept_entries_;
     std::shared_ptr<vsomeip_v3::eventgroupinfo> its_info = eventgroup_subscriptioncache_entry.info_;
 
+#if defined(WITH_DNSSEC) && defined(WITH_DANE)
     bool subscription_validated = false;
     subscription_validated = (client_svcbcache_entry.client_ == eventgroup_subscriptioncache_entry.client_)
                             && (client_svcbcache_entry.service_ == its_service)
@@ -2982,6 +3185,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
     }
 
     VSOMEIP_DEBUG << __func__ << " SUBSCRIPTION VALIDATED";
+#endif
 
     bool signature_verified = false;
     CryptoPP::RSA::PublicKey public_key;
@@ -3008,12 +3212,20 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
     eventgroup_subscription_cache_->remove_eventgroup_subscription_cache_entry(_client, _service, _instance, _major);
 #ifdef WITH_ENCRYPTION
     encrypted_group_secret_result encrypted_groupsecret_result = dh_ecc_->compute_encrypted_group_secret(CryptoPP::SecByteBlock(blinded_secret.data(), blinded_secret.size()));
+    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
     encrypted_group_secret_result_cache_->add_encrypted_group_secret_result(client_svcbcache_entry.ipv4_address_, client_svcbcache_entry.service_, client_svcbcache_entry.instance_, client_svcbcache_entry.major_, encrypted_groupsecret_result);
+    #else
+    encrypted_group_secret_result_cache_->add_encrypted_group_secret_result(_subscriber_ip_address, _service, _instance, _major, encrypted_groupsecret_result);
+    #endif
 #endif
 
 #ifdef WITH_ENCRYPTION
     CryptoPP::SecByteBlock group_secret = dh_ecc_->get_group_secret();
+    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
     std::tuple<service_t, instance_t> key_tuple = std::make_tuple(client_svcbcache_entry.service_, client_svcbcache_entry.instance_);
+    #else
+    std::tuple<service_t, instance_t> key_tuple = std::make_tuple(_service, _instance);
+    #endif
     group_secrets_.operator*()[key_tuple] = group_secret;
 #endif
 
@@ -3032,15 +3244,21 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
     statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::VERIFY_SERVICE_SIGNATURE_START_);
     // Check if required subscription ack, signature and certificate are available/cached
     bool requirements_are_fulfilled = false;
+#if defined(WITH_DNSSEC) && defined(WITH_DANE)
     service_svcb_cache_entry service_svcbcache_entry = svcb_cache_->get_service_svcb_cache_entry(_service, _instance, _major);
+#endif
     std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_publisher_certificate(_sender_ip_address, _service, _instance);
     std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(_sender_ip_address, _service, _instance);
     eventgroup_subscription_ack_cache_entry eventgroup_subscriptionackcache_entry = eventgroup_subscription_ack_cache_->get_eventgroup_subscription_ack_cache_entry(_sender_ip_address, _service, _instance);
     std::vector<unsigned char> signature = eventgroup_subscriptionackcache_entry.signature_;
-    requirements_are_fulfilled = service_svcbcache_entry.service_ == _service
-                                && !certificate_data.empty()
+    requirements_are_fulfilled = !certificate_data.empty()
                                 && !signed_nonce.empty()
-                                && !signature.empty();
+                                && !signature.empty()
+#if defined(WITH_DNSSEC) && defined(WITH_DANE)
+                                && service_svcbcache_entry.service_ == _service;
+#else
+                                ;
+#endif
 
 
     if (!requirements_are_fulfilled) {
@@ -3049,6 +3267,7 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
 
     VSOMEIP_DEBUG << __func__ << " REQUIREMENTS ARE FULFILLED";
 
+#if defined(WITH_DNSSEC) && defined(WITH_DANE)
     bool subscription_ack_validated = false;
     subscription_ack_validated = (service_svcbcache_entry.service_ ==  eventgroup_subscriptionackcache_entry.service_)
                                  && (service_svcbcache_entry.instance_ == eventgroup_subscriptionackcache_entry.instance_)
@@ -3061,6 +3280,7 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
     }
 
     VSOMEIP_DEBUG << __func__ << " SUBSCRIPTION ACK VALIDATED";
+#endif
 
     bool signature_verified = false;
     CryptoPP::RSA::PublicKey public_key;
@@ -3106,7 +3326,11 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
     encrypted_groupsecret_result.encrypted_group_secret_ = CryptoPP::SecByteBlock(encrypted_group_secret.data(), encrypted_group_secret.size());
     encrypted_groupsecret_result.initialization_vector_ = initialization_vector;
     CryptoPP::SecByteBlock group_secret = dh_ecc_->decrypt_group_secret(encrypted_groupsecret_result);
+    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
     std::tuple<service_t, instance_t> key_tuple = std::make_tuple(service_svcbcache_entry.service_,service_svcbcache_entry.instance_);
+    #else
+    std::tuple<service_t, instance_t> key_tuple = std::make_tuple(_service, _instance);
+    #endif
     group_secrets_.operator*()[key_tuple] = group_secret;
 #endif
 

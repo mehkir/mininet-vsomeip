@@ -61,7 +61,7 @@ namespace vsomeip_v3 {
             // Addition for w/o SOME/IP SD End #########################################################
 #endif
             servicedata_and_cbs->validate_offer_callback_(servicedata_and_cbs->service_, servicedata_and_cbs->instance_, servicedata_and_cbs->major_, servicedata_and_cbs->minor_);
-#ifdef WITH_SERVICE_AUTHENTICATION
+#if defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_DANE)
             servicedata_and_cbs->request_service_tlsa_record_callback_(servicedata_and_cbs);
 #endif
 

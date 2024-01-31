@@ -488,15 +488,18 @@ public:
 // Addition for w/o SOME/IP SD End #########################################################
 #endif
 
+#ifdef WITH_DNSSEC
     void set_dns_resolver(dns_resolver* _dns_resolver);
     void set_svcb_resolver(std::shared_ptr<svcb_resolver> _svcb_resolver);
     void set_svcb_cache(svcb_cache* _svcb_cache);
-    void set_statistics_recorder(std::shared_ptr<statistics_recorder> _statistics_recorder);
     void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache);
     void validate_offer(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor);
+#endif
 
 #ifdef WITH_SERVICE_AUTHENTICATION
+    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
     void set_tlsa_resolver(std::shared_ptr<tlsa_resolver> _tlsa_resolver);
+    #endif
     void set_challenge_nonce_cache(std::shared_ptr<challenge_nonce_cache> _challenge_nonce_cache);
     void set_eventgroup_subscription_ack_cache(std::shared_ptr<eventgroup_subscription_ack_cache> _eventgroup_subscription_ack_cache);
     void validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major);
@@ -504,6 +507,7 @@ public:
     void set_eventgroup_subscription_cache(std::shared_ptr<eventgroup_subscription_cache> _eventgroup_subscription_cache);
     #endif
 #endif
+    void set_statistics_recorder(std::shared_ptr<statistics_recorder> _statistics_recorder);
 
 private:
     void resume_process_offerservice_serviceentry(
@@ -526,7 +530,9 @@ private:
     svcb_cache* svcb_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
 #ifdef WITH_SERVICE_AUTHENTICATION
+    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
     std::shared_ptr<tlsa_resolver> tlsa_resolver_;
+    #endif
     std::shared_ptr<challenge_nonce_cache> challenge_nonce_cache_;
     std::shared_ptr<eventgroup_subscription_ack_cache> eventgroup_subscription_ack_cache_;
     crypto_operator crypto_operator_;
@@ -553,20 +559,24 @@ private:
     // Additional util methods Start #########################################################################################
     void print_numerical_representation(std::vector<unsigned char> _vector, std::string _title="");
     // Additional util methods End ###########################################################################################
+#ifdef WITH_SERVICE_AUTHENTICATION
     // Additional methods for extracting service and client authentication Start #############################################
     void process_authentication_for_created_subscribe(
         vsomeip_v3::sd::entry_data_t& its_data, vsomeip_v3::reliability_type_e _reliability_type, std::shared_ptr<vsomeip_v3::endpoint> its_reliable_endpoint,
         std::shared_ptr<vsomeip_v3::endpoint> its_unreliable_endpoint, service_t _service, instance_t _instance);
-    void process_authentication_for_created_subscribe_ack(
-        ttl_t _ttl, boost::asio::ip::address_v4 _subscriber_address, service_t _service, instance_t _instance, major_version_t _major, vsomeip_v3::sd::entry_data_t& _its_data);
-    void generate_and_add_nonce_for_offer_entry(service_t _service, instance_t _instance, vsomeip_v3::sd::entry_data_t& _its_data);
     void process_authentication_for_received_subscribe(
         std::shared_ptr<configuration_option_impl> _configuration_option, const boost::asio::ip::address& _sender, service_t _service, instance_t _instance, major_version_t _major,
         std::vector<unsigned char>& _signed_nonce, std::vector<unsigned char>& _signature, client_t& _client, std::vector<unsigned char>& _blinded_secret);
+    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
+    void generate_and_add_nonce_for_offer_entry(service_t _service, instance_t _instance, vsomeip_v3::sd::entry_data_t& _its_data);
+    #endif
+    void process_authentication_for_created_subscribe_ack(
+        ttl_t _ttl, boost::asio::ip::address_v4 _subscriber_address, service_t _service, instance_t _instance, major_version_t _major, vsomeip_v3::sd::entry_data_t& _its_data);
     void process_authentication_for_received_subscribe_ack(
         std::vector<unsigned char>& _signed_nonce, std::vector<unsigned char>& _signature, std::vector<unsigned char>& _blinded_secret, std::vector<unsigned char>& _encrypted_group_secret,
         std::vector<unsigned char>& _initialization_vector, std::shared_ptr<configuration_option_impl> _configuration_option);
     // Additional methods for extracting service and client authentication End ###############################################
+#endif
 };
 
 }  // namespace sd

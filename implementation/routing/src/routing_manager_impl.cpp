@@ -93,13 +93,11 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
         resume_process_offerservice_cache_(resume_process_offerservice_cache::get_instance())
 #endif
 #ifdef WITH_SERVICE_AUTHENTICATION
-    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
-        ,tlsa_resolver_(std::make_shared<tlsa_resolver>()),
-    #else
-        ,
-    #endif
-        challenge_nonce_cache_(std::make_shared<challenge_nonce_cache>()),
+        ,challenge_nonce_cache_(std::make_shared<challenge_nonce_cache>()),
         eventgroup_subscription_ack_cache_(std::make_shared<eventgroup_subscription_ack_cache>())
+    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
+        ,tlsa_resolver_(std::make_shared<tlsa_resolver>())
+    #endif
     #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
         ,eventgroup_subscription_cache_(std::make_shared<eventgroup_subscription_cache>())
         #ifdef WITH_ENCRYPTION

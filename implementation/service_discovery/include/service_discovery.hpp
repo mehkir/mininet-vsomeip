@@ -16,13 +16,17 @@
 #include "../include/service_discovery_host.hpp"
 
 //Additional includes for service authentication
+#ifdef WITH_DNSSEC
 #include "../../dnssec/include/dns_resolver.hpp"
 #include "../../dnssec/include/svcb_resolver.hpp"
 #include "../../service_authentication/include/svcb_cache.hpp"
 #include "../../service_discovery/include/resume_process_offerservice_cache.hpp"
+#endif
 
 #ifdef WITH_SERVICE_AUTHENTICATION
+    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
 #include "../../dnssec/include/tlsa_resolver.hpp"
+    #endif
 #include "../../service_authentication/include/challenge_nonce_cache.hpp"
 #include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
     #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
@@ -98,13 +102,17 @@ public:
     virtual std::recursive_mutex& get_subscribed_mutex() = 0;
 
     // Addition for Service Authentication Start #########################################################################
+#ifdef WITH_DNSSEC
     virtual void set_dns_resolver(dns_resolver* _dns_resolver) = 0;
     virtual void set_svcb_resolver(std::shared_ptr<svcb_resolver> _svcb_resolver) = 0;
     virtual void set_svcb_cache(svcb_cache* _svcb_cache) = 0;
     virtual void set_resume_process_offerservice_cache(resume_process_offerservice_cache* _resume_process_offerservice_cache) = 0;
     virtual void validate_offer(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor) = 0;
+#endif
 #ifdef WITH_SERVICE_AUTHENTICATION
+    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
     virtual void set_tlsa_resolver(std::shared_ptr<tlsa_resolver> _tlsa_resolver) = 0;
+    #endif
     virtual void set_challenge_nonce_cache(std::shared_ptr<challenge_nonce_cache> _challenge_nonce_cache) = 0;
     virtual void set_eventgroup_subscription_ack_cache(std::shared_ptr<eventgroup_subscription_ack_cache> _eventgroup_subscription_ack_cache) = 0;
     virtual void validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major) = 0;
