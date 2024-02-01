@@ -298,9 +298,10 @@ public:
     VSOMEIP_EXPORT bool is_remote_access_allowed() const;
 
     // Additional Methods for Service Authentication
-    VSOMEIP_EXPORT std::string get_private_key_path() const;
-    VSOMEIP_EXPORT std::string get_certificate_path() const;
-    VSOMEIP_EXPORT std::string get_service_certificate_path() const;
+    VSOMEIP_EXPORT const CryptoPP::RSA::PrivateKey& get_private_key() const;
+    VSOMEIP_EXPORT const std::vector<CryptoPP::byte>& get_certificate() const;
+    VSOMEIP_EXPORT const std::vector<CryptoPP::byte>& get_service_certificate() const;
+    VSOMEIP_EXPORT const std::map<std::string, std::vector<CryptoPP::byte>>& get_host_certificates() const;
 
 private:
     void read_data(const std::set<std::string> &_input,
@@ -656,9 +657,11 @@ protected:
     std::map<service_t, std::set<instance_t> > secure_services_;
 
     // Additional Members for Service Authentication
-    std::string certificate_path_;
-    std::string private_key_path_;
-    std::string service_certificate_path_;
+    crypto_operator crypto_operator_;
+    std::vector<CryptoPP::byte> certificate_;
+    CryptoPP::RSA::PrivateKey private_key_;
+    std::vector<CryptoPP::byte> service_certificate_;
+    std::map<std::string, std::vector<CryptoPP::byte>> host_certificates_;
 
     bool log_statistics_;
     uint32_t statistics_interval_;

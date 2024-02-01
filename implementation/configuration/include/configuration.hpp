@@ -35,6 +35,9 @@
 
 #include "../../security/include/policy.hpp"
 
+// Additional includes for service authentication
+#include "../../service_authentication/include/crypto_operator.hpp"
+
 #define VSOMEIP_CONFIG_PLUGIN_VERSION              1
 
 namespace vsomeip_v3 {
@@ -311,8 +314,10 @@ public:
     virtual bool is_remote_access_allowed() const = 0;
 
     // Additional Methods for Service Authentication
-    virtual std::string get_private_key_path() const = 0;
-    virtual std::string get_certificate_path() const = 0;
+    virtual const CryptoPP::RSA::PrivateKey& get_private_key() const = 0;
+    virtual const std::vector<CryptoPP::byte>& get_certificate() const = 0;
+    virtual const std::vector<CryptoPP::byte>& get_service_certificate() const = 0;
+    virtual const std::map<std::string, std::vector<CryptoPP::byte>>& get_host_certificates() const = 0;
 };
 
 } // namespace vsomeip_v3

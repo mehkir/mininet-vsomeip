@@ -4522,9 +4522,20 @@ void configuration_impl::load_secure_services(const configuration_element &_elem
 
 void configuration_impl::load_asymmetric_keys(const configuration_element& _element) {
     try {
-        private_key_path_ = _element.tree_.get<std::string>("private-key-path");
-        certificate_path_ = _element.tree_.get<std::string>("certificate-path");
-        service_certificate_path_ = _element.tree_.get<std::string>("service-certificate-path");
+        std::string certificate_path = _element.tree_.get<std::string>("certificate-path");
+        std::string private_key_path = _element.tree_.get<std::string>("private-key-path");
+        std::string service_certificate_path = _element.tree_.get<std::string>("service-certificate-path");
+
+        certificate_ = crypto_operator_.load_certificate_from_file(certificate_path);
+        crypto_operator_.load_pem_private_key(private_key_path, private_key_);
+        service_certificate_ = crypto_operator_.load_certificate_from_file(service_certificate_path);
+
+        boost::property_tree::ptree host_certificate_paths_value = _element.tree_.get_child("host-certificates");
+        uint32_t client_id = 2; // client id starts from 2 in evaluation
+        for (auto host_certificate_path : host_certificate_paths_value) {
+            host_certificates_["h"+std::to_string(client_id)] = crypto_operator_.load_certificate_from_file(host_certificate_path.second.get_value<std::string>());
+            client_id++;
+        }
     } catch (...) {
         // intentionally left empty!
     }
@@ -5051,16 +5062,21 @@ configuration_impl::is_remote_access_allowed() const {
     return is_remote_access_allowed_;
 }
 
-std::string configuration_impl::get_private_key_path() const {
-    return private_key_path_;
+// Additional Methods for Service Authentication
+const CryptoPP::RSA::PrivateKey& configuration_impl::get_private_key() const {
+    return private_key_;
 }
 
-std::string configuration_impl::get_certificate_path() const {
-    return certificate_path_;
+const std::vector<CryptoPP::byte>& configuration_impl::get_certificate() const {
+    return certificate_;
 }
 
-std::string configuration_impl::get_service_certificate_path() const {
-    return service_certificate_path_;
+const std::vector<CryptoPP::byte>& configuration_impl::get_service_certificate() const {
+    return service_certificate_;
+}
+
+const std::map<std::string, std::vector<CryptoPP::byte>>& configuration_impl::get_host_certificates() const {
+    return host_certificates_;
 }
 
 }  // namespace cfg
