@@ -44,6 +44,7 @@
 #include "../include/configuration_option_impl.hpp"
 #include "../../service_authentication/include/data_partitioner.hpp"
 #include <netinet/in.h>
+#include <iostream>
 
 #define SUBSCRIBER_COUNT_TO_RECORD 29
 
@@ -2455,6 +2456,7 @@ service_discovery_impl::insert_offer_service(
     }
 }
 
+#if defined(WITH_SERVICE_AUTHENTICATION) && defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
 void
 service_discovery_impl::generate_and_add_nonce_for_offer_entry(service_t _service, instance_t _instance, vsomeip_v3::sd::entry_data_t& _its_data) {
     // Service Authentication Start ################################
@@ -2471,6 +2473,7 @@ service_discovery_impl::generate_and_add_nonce_for_offer_entry(service_t _servic
     // print_numerical_representation(generated_nonce_vector, "Generated nonce");
     // Service Authentication End ##################################
 }
+#endif
 
 void
 service_discovery_impl::process_eventgroupentry(
@@ -2487,10 +2490,11 @@ service_discovery_impl::process_eventgroupentry(
     std::vector<unsigned char> signed_nonce;
     std::vector<unsigned char> signature;
     // Additional variables for service Authentication End ################
-
+    #ifdef WITH_SERVICE_AUTHENTICATION
     // Additional variable for client authentication Start ##############
     client_t client = -1;
     // Additional variable for client authentication End ################
+    #endif
 
     // Additional variables for payload encryption Start ##############
     std::vector<unsigned char> blinded_secret;

@@ -111,8 +111,10 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
 routing_manager_impl::~routing_manager_impl() {
     utility::remove_lockfile(configuration_->get_network());
     utility::reset_client_ids(configuration_->get_network());
+#ifdef WITH_DNSSEC
     VSOMEIP_INFO << "Cleanup DNS resolver";
     dns_resolver_->cleanup();
+#endif
 }
 
 boost::asio::io_context &routing_manager_impl::get_io() {

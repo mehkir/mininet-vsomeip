@@ -525,10 +525,12 @@ private:
     // Additional Method for Service Authenticity End ########################################################################
 #endif
     // Addtional Member for Service Authentication Start #####################################################################
+#if WITH_DNSSEC
     dns_resolver* dns_resolver_;
     std::shared_ptr<svcb_resolver> svcb_resolver_;
     svcb_cache* svcb_cache_;
     resume_process_offerservice_cache* resume_process_offerservice_cache_;
+#endif
 #ifdef WITH_SERVICE_AUTHENTICATION
     #if defined(WITH_DNSSEC) && defined(WITH_DANE)
     std::shared_ptr<tlsa_resolver> tlsa_resolver_;
