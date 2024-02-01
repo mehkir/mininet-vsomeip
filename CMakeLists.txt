@@ -265,6 +265,7 @@ endif()
 ################################################################################
 file(GLOB ${VSOMEIP_NAME}-cfg_SRC
     "implementation/configuration/src/*.cpp"
+    "implementation/service_authentication/src/*.cpp"
 )
 list(SORT ${VSOMEIP_NAME}-cfg_SRC)
 if (VSOMEIP_ENABLE_MULTIPLE_ROUTING_MANAGERS EQUAL 0)
