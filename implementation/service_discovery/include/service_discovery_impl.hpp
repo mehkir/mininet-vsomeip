@@ -502,7 +502,7 @@ public:
     #endif
     void set_challenge_nonce_cache(std::shared_ptr<challenge_nonce_cache> _challenge_nonce_cache);
     void set_eventgroup_subscription_ack_cache(std::shared_ptr<eventgroup_subscription_ack_cache> _eventgroup_subscription_ack_cache);
-    void validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major);
+    void validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _publisher_ip_address, service_t _service, instance_t _instance, major_version_t _major);
     #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
     void set_eventgroup_subscription_cache(std::shared_ptr<eventgroup_subscription_cache> _eventgroup_subscription_cache);
     #endif

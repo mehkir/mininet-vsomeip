@@ -3075,8 +3075,6 @@ service_discovery_impl::process_authentication_for_received_subscribe(
         clientdata_and_cbs->configuration_ = configuration_;
         svcb_resolver_->request_client_svcb_record(clientdata_and_cbs);
     }
-    #else
-    // TODO: Retrieve certificate from map and put it into challenge nonce cache
     #endif
 #endif
     // VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << _sender.to_v4().to_string();
@@ -3121,6 +3119,9 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
     bool requirements_are_fulfilled = false;
 #if defined(WITH_DNSSEC) && defined(WITH_DANE)
     client_svcb_cache_entry client_svcbcache_entry = svcb_cache_->get_client_svcb_cache_entry(_client, _service, _instance, _major);
+#else
+    std::string host_id = "h"+std::to_string(_subscriber_ip_address.to_uint() - configuration_->get_network_address()); // host id depends on mininet
+    challenge_nonce_cache_->add_subscriber_certificate(_client, _subscriber_ip_address, _service, _instance, host_certificates_[host_id]);
 #endif
     std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_subscriber_certificate(_client, _subscriber_ip_address, _service, _instance);
     std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_publisher_challenge_nonce(_client, _subscriber_ip_address, _service, _instance);
@@ -3241,16 +3242,18 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
 
 #ifdef WITH_SERVICE_AUTHENTICATION
 void
-service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major) {
+service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _publisher_ip_address, service_t _service, instance_t _instance, major_version_t _major) {
     statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::VERIFY_SERVICE_SIGNATURE_START_);
     // Check if required subscription ack, signature and certificate are available/cached
     bool requirements_are_fulfilled = false;
 #if defined(WITH_DNSSEC) && defined(WITH_DANE)
     service_svcb_cache_entry service_svcbcache_entry = svcb_cache_->get_service_svcb_cache_entry(_service, _instance, _major);
+#else
+    challenge_nonce_cache_->add_publisher_certificate(_publisher_ip_address, _service, _instance, service_certificate_);
 #endif
-    std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_publisher_certificate(_sender_ip_address, _service, _instance);
-    std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(_sender_ip_address, _service, _instance);
-    eventgroup_subscription_ack_cache_entry eventgroup_subscriptionackcache_entry = eventgroup_subscription_ack_cache_->get_eventgroup_subscription_ack_cache_entry(_sender_ip_address, _service, _instance);
+    std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_publisher_certificate(_publisher_ip_address, _service, _instance);
+    std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(_publisher_ip_address, _service, _instance);
+    eventgroup_subscription_ack_cache_entry eventgroup_subscriptionackcache_entry = eventgroup_subscription_ack_cache_->get_eventgroup_subscription_ack_cache_entry(_publisher_ip_address, _service, _instance);
     std::vector<unsigned char> signature = eventgroup_subscriptionackcache_entry.signature_;
     requirements_are_fulfilled = !certificate_data.empty()
                                 && !signed_nonce.empty()
@@ -3274,7 +3277,7 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
                                  && (service_svcbcache_entry.instance_ == eventgroup_subscriptionackcache_entry.instance_)
                                  && (service_svcbcache_entry.major_ == eventgroup_subscriptionackcache_entry.major_version_)
                                  && (service_svcbcache_entry.ipv4_address_ == eventgroup_subscriptionackcache_entry.sender_ip_address_)
-                                 && challenge_nonce_cache_->has_subscriber_challenge_nonce_and_remove(_sender_ip_address, _service, _instance, eventgroup_subscriptionackcache_entry.nonce_);
+                                 && challenge_nonce_cache_->has_subscriber_challenge_nonce_and_remove(_publisher_ip_address, _service, _instance, eventgroup_subscriptionackcache_entry.nonce_);
 
     if (!subscription_ack_validated) {
         return;
@@ -3320,7 +3323,7 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
         }
     }
     // Addition for statistics contribution End ###################################################################
-    eventgroup_subscription_ack_cache_->remove_eventgroup_subscription_ack_cache_entry(_sender_ip_address, _service, _instance);
+    eventgroup_subscription_ack_cache_->remove_eventgroup_subscription_ack_cache_entry(_publisher_ip_address, _service, _instance);
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
     encrypted_group_secret_result encrypted_groupsecret_result;
     encrypted_groupsecret_result.blinded_publisher_secret_ = CryptoPP::SecByteBlock(blinded_secret.data(), blinded_secret.size());
