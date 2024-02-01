@@ -302,6 +302,7 @@ public:
     VSOMEIP_EXPORT const std::vector<CryptoPP::byte>& get_certificate() const;
     VSOMEIP_EXPORT const std::vector<CryptoPP::byte>& get_service_certificate() const;
     VSOMEIP_EXPORT const std::map<std::string, std::vector<CryptoPP::byte>>& get_host_certificates() const;
+    VSOMEIP_EXPORT const uint32_t get_network_address() const;
 
 private:
     void read_data(const std::set<std::string> &_input,
@@ -478,6 +479,7 @@ private:
 
     // Additional Method for Service Authentication
     void load_asymmetric_keys(const configuration_element& _element);
+    void compute_network_address();
 
 private:
     std::mutex mutex_;
@@ -662,6 +664,7 @@ protected:
     CryptoPP::RSA::PrivateKey private_key_;
     std::vector<CryptoPP::byte> service_certificate_;
     std::map<std::string, std::vector<CryptoPP::byte>> host_certificates_;
+    uint32_t network_address_;
 
     bool log_statistics_;
     uint32_t statistics_interval_;

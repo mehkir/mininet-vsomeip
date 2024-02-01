@@ -607,6 +607,7 @@ bool configuration_impl::load_data(const std::vector<configuration_element> &_el
             load_suppress_events(e);
             // Additional method for Service Authentication
             load_asymmetric_keys(e);
+            compute_network_address();
         }
     }
 
@@ -4541,6 +4542,14 @@ void configuration_impl::load_asymmetric_keys(const configuration_element& _elem
     }
 }
 
+void configuration_impl::compute_network_address() {
+    try {
+        network_address_ = unicast_.to_v4().to_uint() & netmask_.to_v4().to_uint();
+    } catch (...) {
+        // intentionally left empty!
+    }
+}
+
 void configuration_impl::load_secure_service(const boost::property_tree::ptree &_tree) {
     try {
         service_t its_service(0);
@@ -5077,6 +5086,10 @@ const std::vector<CryptoPP::byte>& configuration_impl::get_service_certificate()
 
 const std::map<std::string, std::vector<CryptoPP::byte>>& configuration_impl::get_host_certificates() const {
     return host_certificates_;
+}
+
+const uint32_t configuration_impl::get_network_address() const {
+    return network_address_;
 }
 
 }  // namespace cfg
