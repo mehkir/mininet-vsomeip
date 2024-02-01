@@ -536,8 +536,14 @@ private:
     std::shared_ptr<challenge_nonce_cache> challenge_nonce_cache_;
     std::shared_ptr<eventgroup_subscription_ack_cache> eventgroup_subscription_ack_cache_;
     crypto_operator crypto_operator_;
-    std::vector<CryptoPP::byte> certificate_data_;
-    CryptoPP::RSA::PrivateKey private_key_;
+#ifdef WITH_SERVICE_AUTHENTICATION
+    const std::vector<CryptoPP::byte>& certificate_;
+    const CryptoPP::RSA::PrivateKey& private_key_;
+    #ifndef WITH_DANE
+    const std::vector<CryptoPP::byte>& service_certificate_;
+    const std::map<std::string, std::vector<CryptoPP::byte>>& host_certificates_;
+    #endif
+#endif
     #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
     std::shared_ptr<eventgroup_subscription_cache> eventgroup_subscription_cache_;
     #endif

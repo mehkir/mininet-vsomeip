@@ -96,18 +96,19 @@ service_discovery_impl::service_discovery_impl(
       last_msg_received_timer_(_host->get_io()),
       last_msg_received_timer_timeout_(VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY +
                                            (VSOMEIP_SD_DEFAULT_CYCLIC_OFFER_DELAY / 10))
-       {
-
-    next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
 #ifdef WITH_SERVICE_AUTHENTICATION
     // Addition for Service Authentication Start ############################################################
-    certificate_data_ = crypto_operator_.load_certificate_from_file(configuration_->get_certificate_path());
-    crypto_operator_.load_pem_private_key(configuration_->get_private_key_path(), private_key_);
+      ,certificate_(configuration_->get_certificate()),
+      private_key_(configuration_->get_private_key())
     #ifndef WITH_DANE
-    // TODO: parse service and client certificates
+      ,service_certificate_(configuration_->get_service_certificate()),
+      host_certificates_(configuration_->get_host_certificates())
     #endif
     // Addition for Service Authentication End ##############################################################
 #endif
+       {
+
+    next_subscription_expiration_ = std::chrono::steady_clock::now() + std::chrono::hours(24);
 }
 
 service_discovery_impl::~service_discovery_impl() {
