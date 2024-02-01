@@ -67,7 +67,7 @@ CryptoPP::SecByteBlock crypto_operator::decrypt(const CryptoPP::SecByteBlock& _s
     return decrypted_data;
 }
 
-std::vector<CryptoPP::byte> crypto_operator::sign(CryptoPP::PrivateKey& _private_key, std::vector<CryptoPP::byte> _data) {
+std::vector<CryptoPP::byte> crypto_operator::sign(const CryptoPP::PrivateKey& _private_key, std::vector<CryptoPP::byte> _data) {
     std::vector<CryptoPP::byte> signature;
     CryptoPP::RSASSA_PKCS1v15_SHA_Signer signer(_private_key);
     CryptoPP::VectorSource vectorSource(_data, true, new CryptoPP::SignerFilter(rng_, signer, new CryptoPP::VectorSink(signature)));
