@@ -25,7 +25,7 @@ public:
     std::vector<CryptoPP::byte> decrypt(CryptoPP::PrivateKey& _private_key, std::vector<CryptoPP::byte> _data);
     cfb_encrypted_data encrypt(const CryptoPP::SecByteBlock& _symmetric_key, const CryptoPP::SecByteBlock& _data) const;
     CryptoPP::SecByteBlock decrypt(const CryptoPP::SecByteBlock& _symmetric_key, const cfb_encrypted_data& _cfb_encrypted_data) const;
-    std::vector<CryptoPP::byte> sign(CryptoPP::PrivateKey& _private_key, std::vector<CryptoPP::byte> _data);
+    std::vector<CryptoPP::byte> sign(const CryptoPP::PrivateKey& _private_key, std::vector<CryptoPP::byte> _data);
     bool verify(CryptoPP::PublicKey& _public_key, std::vector<CryptoPP::byte> _data);
     std::string convert_hex_byte_vector_to_hex_string(std::vector<CryptoPP::byte> _data);
     void load_certificate_from_file(const std::string& _filename, CryptoPP::X509Certificate& _certificate);
