@@ -5088,7 +5088,7 @@ const std::map<std::string, std::vector<CryptoPP::byte>>& configuration_impl::ge
     return host_certificates_;
 }
 
-const uint32_t configuration_impl::get_network_address() const {
+uint32_t configuration_impl::get_network_address() const {
     return network_address_;
 }
 

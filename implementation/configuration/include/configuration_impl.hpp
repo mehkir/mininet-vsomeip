@@ -302,7 +302,7 @@ public:
     VSOMEIP_EXPORT const std::vector<CryptoPP::byte>& get_certificate() const;
     VSOMEIP_EXPORT const std::vector<CryptoPP::byte>& get_service_certificate() const;
     VSOMEIP_EXPORT const std::map<std::string, std::vector<CryptoPP::byte>>& get_host_certificates() const;
-    VSOMEIP_EXPORT const uint32_t get_network_address() const;
+    VSOMEIP_EXPORT uint32_t get_network_address() const;
 
 private:
     void read_data(const std::set<std::string> &_input,

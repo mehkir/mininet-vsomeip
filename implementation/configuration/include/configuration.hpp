@@ -318,7 +318,7 @@ public:
     virtual const std::vector<CryptoPP::byte>& get_certificate() const = 0;
     virtual const std::vector<CryptoPP::byte>& get_service_certificate() const = 0;
     virtual const std::map<std::string, std::vector<CryptoPP::byte>>& get_host_certificates() const = 0;
-    virtual const uint32_t get_network_address() const = 0;
+    virtual uint32_t get_network_address() const = 0;
 };
 
 } // namespace vsomeip_v3
