@@ -46,7 +46,7 @@
 #include <netinet/in.h>
 #include <iostream>
 
-#define SUBSCRIBER_COUNT_TO_RECORD 29
+#define SUBSCRIBER_COUNT_TO_RECORD 1
 
 #ifdef WITH_SERVICE_AUTHENTICATION
 #define GENERATED_NONCE_CONFIG_OPTION_KEY "gn"
@@ -3125,7 +3125,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
     client_svcb_cache_entry client_svcbcache_entry = svcb_cache_->get_client_svcb_cache_entry(_client, _service, _instance, _major);
 #else
     std::string host_id = "h"+std::to_string(_subscriber_ip_address.to_uint() - configuration_->get_network_address()); // host id depends on mininet
-    challenge_nonce_cache_->add_subscriber_certificate(_client, _subscriber_ip_address, _service, _instance, host_certificates_[host_id]);
+    challenge_nonce_cache_->add_subscriber_certificate(_client, _subscriber_ip_address, _service, _instance, host_certificates_.at(host_id));
 #endif
     std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_subscriber_certificate(_client, _subscriber_ip_address, _service, _instance);
     std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_publisher_challenge_nonce(_client, _subscriber_ip_address, _service, _instance);
