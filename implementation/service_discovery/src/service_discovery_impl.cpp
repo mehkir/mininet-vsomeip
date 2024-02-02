@@ -46,7 +46,7 @@
 #include <netinet/in.h>
 #include <iostream>
 
-#define SUBSCRIBER_COUNT_TO_RECORD 1
+#define SUBSCRIBER_COUNT_TO_RECORD 199
 
 #ifdef WITH_SERVICE_AUTHENTICATION
 #define GENERATED_NONCE_CONFIG_OPTION_KEY "gn"
@@ -2490,11 +2490,10 @@ service_discovery_impl::process_eventgroupentry(
     std::vector<unsigned char> signed_nonce;
     std::vector<unsigned char> signature;
     // Additional variables for service Authentication End ################
-    #ifdef WITH_SERVICE_AUTHENTICATION
+    
     // Additional variable for client authentication Start ##############
     client_t client = -1;
     // Additional variable for client authentication End ################
-    #endif
 
     // Additional variables for payload encryption Start ##############
     std::vector<unsigned char> blinded_secret;
@@ -3144,7 +3143,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
         return;
     }
 
-    VSOMEIP_DEBUG << __func__ << " REQUIREMENTS ARE FULFILLED";
+    VSOMEIP_DEBUG << "\n\n" << __func__ << " REQUIREMENTS ARE FULFILLED\n";
 
     service_t its_service = eventgroup_subscriptioncache_entry.service_;
     instance_t its_instance = eventgroup_subscriptioncache_entry.instance_;
@@ -3190,7 +3189,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
         return;
     }
 
-    VSOMEIP_DEBUG << __func__ << " SUBSCRIPTION VALIDATED";
+    VSOMEIP_DEBUG << "\n\n" << __func__ << " SUBSCRIPTION VALIDATED\n";
 #endif
 
     bool signature_verified = false;
@@ -3213,7 +3212,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
     if (!signature_verified) {
         return;
     }
-    VSOMEIP_DEBUG << __func__ << " SIGNATURE VERIFIED";
+    VSOMEIP_DEBUG << "\n\n" << __func__ << " SIGNATURE VERIFIED\n";
     statistics_recorder_->record_timestamp(_subscriber_ip_address.to_uint(), time_metric::VERIFY_CLIENT_SIGNATURE_END_);
     eventgroup_subscription_cache_->remove_eventgroup_subscription_cache_entry(_client, _service, _instance, _major);
 #ifdef WITH_ENCRYPTION
@@ -3250,11 +3249,14 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
     statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::VERIFY_SERVICE_SIGNATURE_START_);
     // Check if required subscription ack, signature and certificate are available/cached
     bool requirements_are_fulfilled = false;
-#if defined(WITH_DNSSEC) && defined(WITH_DANE)
+#if defined(WITH_DNSSEC)
     service_svcb_cache_entry service_svcbcache_entry = svcb_cache_->get_service_svcb_cache_entry(_service, _instance, _major);
-#else
+#endif
+
+#ifndef WITH_DANE
     challenge_nonce_cache_->add_publisher_certificate(_publisher_ip_address, _service, _instance, service_certificate_);
 #endif
+
     std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_publisher_certificate(_publisher_ip_address, _service, _instance);
     std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(_publisher_ip_address, _service, _instance);
     eventgroup_subscription_ack_cache_entry eventgroup_subscriptionackcache_entry = eventgroup_subscription_ack_cache_->get_eventgroup_subscription_ack_cache_entry(_publisher_ip_address, _service, _instance);
@@ -3262,7 +3264,7 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
     requirements_are_fulfilled = !certificate_data.empty()
                                 && !signed_nonce.empty()
                                 && !signature.empty()
-#if defined(WITH_DNSSEC) && defined(WITH_DANE)
+#if defined(WITH_DNSSEC)
                                 && service_svcbcache_entry.service_ == _service;
 #else
                                 ;
@@ -3273,9 +3275,9 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
         return;
     }
 
-    VSOMEIP_DEBUG << __func__ << " REQUIREMENTS ARE FULFILLED";
+    VSOMEIP_DEBUG << "\n\n" << __func__ << " REQUIREMENTS ARE FULFILLED\n";
 
-#if defined(WITH_DNSSEC) && defined(WITH_DANE)
+#if defined(WITH_DNSSEC)
     bool subscription_ack_validated = false;
     subscription_ack_validated = (service_svcbcache_entry.service_ ==  eventgroup_subscriptionackcache_entry.service_)
                                  && (service_svcbcache_entry.instance_ == eventgroup_subscriptionackcache_entry.instance_)
@@ -3287,7 +3289,7 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
         return;
     }
 
-    VSOMEIP_DEBUG << __func__ << " SUBSCRIPTION ACK VALIDATED";
+    VSOMEIP_DEBUG << "\n\n" << __func__ << " SUBSCRIPTION ACK VALIDATED\n";
 #endif
 
     bool signature_verified = false;
@@ -3313,7 +3315,7 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
     if (!signature_verified) {
         return;
     }
-    VSOMEIP_DEBUG << __func__ << " SIGNATURE VERIFIED";
+    VSOMEIP_DEBUG << "\n\n" << __func__ << " SIGNATURE VERIFIED\n";
     // Addition for statistics contribution Start #################################################################
     static bool already_contributed = false;
     static std::mutex contribution_mutex;
