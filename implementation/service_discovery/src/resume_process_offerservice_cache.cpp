@@ -19,6 +19,7 @@ namespace vsomeip_v3 {
     }
 
     void resume_process_offerservice_cache::add_offerservice_entry(service_t _service, instance_t _instance, major_version_t _major, minor_version_t _minor, ttl_t _ttl, const boost::asio::ip::address_v4 _reliable_address, uint16_t _reliable_port, const boost::asio::ip::address_v4 _unreliable_address, uint16_t _unreliable_port, std::vector<std::shared_ptr<sd::message_impl>> _resubscribes, bool _received_via_mcast) {
+        std::lock_guard<std::mutex> lockguard(mutex_);
         auto key_tuple = make_key_tuple(_service, _instance, _major, _minor);
         resume_process_offerservice_entry& entry = resume_process_offerservice_map_[key_tuple];
         entry.service_ = _service;
