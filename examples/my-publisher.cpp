@@ -12,6 +12,7 @@
 #include <sstream>
 #include <thread>
 #include <mutex>
+#include <fstream>
 
 #include <vsomeip/vsomeip.hpp>
 
@@ -185,6 +186,9 @@ int main(int argc, char **argv) {
     signal(SIGTERM, handle_signal);
 #endif
     if (publisher_app.init()) {
+        std::ofstream publisher_initialized_file;
+        publisher_initialized_file.open("/home/mehmet/vscode-workspaces/mininet-vsomeip/publisher-initialized");
+        publisher_initialized_file.close();
         publisher_app.start();
         return 0;
     } else {
