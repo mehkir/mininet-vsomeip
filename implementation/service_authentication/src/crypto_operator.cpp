@@ -8,6 +8,7 @@
 #include <openssl/x509.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
+#include <sys/stat.h>
 
 #define DOUBLE_DIGIT 2
 #define ZERO_FILL '0'
@@ -98,9 +99,11 @@ std::string crypto_operator::convert_hex_byte_vector_to_hex_string(std::vector<C
 }
 
 void crypto_operator::load(const std::string& _filename, CryptoPP::BufferedTransformation& _bt) {
-    CryptoPP::FileSource file(_filename.c_str(), true);
-    file.TransferTo(_bt);
-    _bt.MessageEnd();
+    if(!_filename.empty() && file_exists(_filename)) {
+        CryptoPP::FileSource file(_filename.c_str(), true);
+        file.TransferTo(_bt);
+        _bt.MessageEnd();
+    }
 }
 
 void crypto_operator::load_private_key(const std::string& _filename, CryptoPP::PrivateKey& _key) {
@@ -110,18 +113,23 @@ void crypto_operator::load_private_key(const std::string& _filename, CryptoPP::P
 }
 
 void crypto_operator::load_pem_private_key(const std::string& _filename, CryptoPP::RSA::PrivateKey& _key) {
-    CryptoPP::FileSource file_source(_filename.c_str(), true);
-    CryptoPP::PEM_Load(file_source, _key);
+    if(!_filename.empty() && file_exists(_filename)) {
+        CryptoPP::FileSource file_source(_filename.c_str(), true);
+        CryptoPP::PEM_Load(file_source, _key);
+    }
 }
 
 void crypto_operator::load_certificate_from_file(const std::string& _filename, CryptoPP::X509Certificate& _certificate) {
-    CryptoPP::FileSource fs(_filename.c_str(), true);
-    CryptoPP::PEM_Load(fs, _certificate);
+    if(!_filename.empty() && file_exists(_filename)) {
+        CryptoPP::FileSource fs(_filename.c_str(), true);
+        CryptoPP::PEM_Load(fs, _certificate);
+    }
 }
 
 std::vector<CryptoPP::byte> crypto_operator::load_certificate_from_file(const std::string& _filename) {
     std::vector<CryptoPP::byte> _certificate;
-    CryptoPP::FileSource fs(_filename.c_str(), true, new CryptoPP::VectorSink(_certificate));
+    if(!_filename.empty() && file_exists(_filename))
+        CryptoPP::FileSource fs(_filename.c_str(), true, new CryptoPP::VectorSink(_certificate));
     return _certificate;
 }
 
@@ -255,4 +263,9 @@ std::vector<CryptoPP::byte> crypto_operator::hex_decode(std::vector<CryptoPP::by
     std::vector<CryptoPP::byte> hex_decoded;
     CryptoPP::VectorSource vector_source(_data, true, new CryptoPP::HexDecoder(new CryptoPP::VectorSink(hex_decoded)));
     return hex_decoded;
+}
+
+bool crypto_operator::file_exists(const std::string& _filename) {
+    struct stat buffer;
+    return (stat(_filename.c_str(), &buffer) == 0);
 }

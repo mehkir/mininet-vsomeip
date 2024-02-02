@@ -18,6 +18,7 @@ class crypto_operator
 private:
     mutable CryptoPP::AutoSeededRandomPool rng_;
     void load(const std::string& _filename, CryptoPP::BufferedTransformation& _bt);
+    bool file_exists(const std::string& _filename);
 public:
     crypto_operator();
     ~crypto_operator();
