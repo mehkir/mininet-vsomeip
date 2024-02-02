@@ -32,8 +32,8 @@ statistics_writer::statistics_writer() {
     time_metric_names_[time_metric::FIND_RECEIVE_] = FIND_RECEIVE;
     time_metric_names_[time_metric::OFFER_SEND_] = OFFER_SEND;
     time_metric_names_[time_metric::OFFER_RECEIVE_] = OFFER_RECEIVE;
-    time_metric_names_[time_metric::SVCB_SERVICE_REQUEST_SEND_] = SVCB_CLIENT_REQUEST_SEND;
-    time_metric_names_[time_metric::SVCB_SERVICE_REQUEST_RECEIVE_] = SVCB_CLIENT_REQUEST_RECEIVE;
+    time_metric_names_[time_metric::SVCB_SERVICE_REQUEST_SEND_] = SVCB_SERVICE_REQUEST_SEND;
+    time_metric_names_[time_metric::SVCB_SERVICE_REQUEST_RECEIVE_] = SVCB_SERVICE_REQUEST_RECEIVE;
     time_metric_names_[time_metric::SVCB_SERVICE_RESPONSE_SEND_] = SVCB_SERVICE_RESPONSE_SEND;
     time_metric_names_[time_metric::SVCB_SERVICE_RESPONSE_RECEIVE_] = SVCB_SERVICE_RESPONSE_RECEIVE;
     time_metric_names_[time_metric::VALIDATE_OFFER_START_] = VALIDATE_OFFER_START;
