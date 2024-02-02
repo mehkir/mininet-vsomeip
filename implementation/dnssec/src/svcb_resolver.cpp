@@ -1,7 +1,6 @@
 #include "../include/svcb_resolver.hpp"
 #include "../include/logger.hpp"
 #include "../include/parse_svcb_reply.hpp"
-#include "../../timestamps/include/timestamp_collector.hpp"
 #include <arpa/nameser.h>
 #include <netinet/in.h>
 #include <string>

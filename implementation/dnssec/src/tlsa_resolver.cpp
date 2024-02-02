@@ -1,5 +1,4 @@
 #include "../include/tlsa_resolver.hpp"
-#include "../../timestamps/include/timestamp_collector.hpp"
 #include "../include/parse_tlsa_reply.hpp"
 #include <arpa/nameser.h>
 #include <netinet/in.h>
