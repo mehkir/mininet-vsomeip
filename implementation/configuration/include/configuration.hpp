@@ -320,6 +320,7 @@ public:
     virtual const std::map<std::string, std::vector<CryptoPP::byte>>& get_host_certificates() const = 0;
     virtual uint32_t get_network_address() const = 0;
     virtual uint32_t get_dns_server_ip() const = 0;
+    virtual size_t get_subscriber_count_to_record() const = 0;
 };
 
 } // namespace vsomeip_v3

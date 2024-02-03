@@ -609,6 +609,7 @@ bool configuration_impl::load_data(const std::vector<configuration_element> &_el
             load_asymmetric_keys(e);
             compute_network_address();
             load_dns_server_ip(e);
+            load_subscriber_count_to_record(e);
         }
     }
 
@@ -4566,6 +4567,21 @@ void configuration_impl::load_dns_server_ip(const configuration_element& _elemen
     }
 }
 
+void configuration_impl::load_subscriber_count_to_record(const configuration_element& _element) {
+    try {
+        std::stringstream its_converter;
+        std::string subscriber_count_to_record = _element.tree_.get<std::string>("subscriber-count-to-record");
+        if (!subscriber_count_to_record.empty() && subscriber_count_to_record[0] == '0' && subscriber_count_to_record[1] == 'x') {
+            its_converter << std::hex << subscriber_count_to_record;
+        } else {
+            its_converter << std::dec << subscriber_count_to_record;
+        }
+        its_converter >> subscriber_count_to_record_;
+    } catch (...) {
+        // intentionally left empty!
+    }
+}
+
 void configuration_impl::load_secure_service(const boost::property_tree::ptree &_tree) {
     try {
         service_t its_service(0);
@@ -5110,6 +5126,10 @@ uint32_t configuration_impl::get_network_address() const {
 
 uint32_t configuration_impl::get_dns_server_ip() const {
     return dns_server_ip_;
+}
+
+size_t configuration_impl::get_subscriber_count_to_record() const {
+    return subscriber_count_to_record_;
 }
 
 }  // namespace cfg

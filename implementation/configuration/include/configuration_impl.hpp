@@ -304,6 +304,7 @@ public:
     VSOMEIP_EXPORT const std::map<std::string, std::vector<CryptoPP::byte>>& get_host_certificates() const;
     VSOMEIP_EXPORT uint32_t get_network_address() const;
     VSOMEIP_EXPORT uint32_t get_dns_server_ip() const;
+    VSOMEIP_EXPORT size_t get_subscriber_count_to_record() const;
 
 private:
     void read_data(const std::set<std::string> &_input,
@@ -482,6 +483,7 @@ private:
     void load_asymmetric_keys(const configuration_element& _element);
     void compute_network_address();
     void load_dns_server_ip(const configuration_element& _element);
+    void load_subscriber_count_to_record(const configuration_element& _element);
 
 private:
     std::mutex mutex_;
@@ -668,6 +670,7 @@ protected:
     std::map<std::string, std::vector<CryptoPP::byte>> host_certificates_;
     uint32_t network_address_;
     uint32_t dns_server_ip_;
+    size_t subscriber_count_to_record_;
 
     bool log_statistics_;
     uint32_t statistics_interval_;
