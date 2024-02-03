@@ -28,6 +28,8 @@
 #include "deserializer.hpp"
 #include "message_impl.hpp"
 
+//Additional include for statistics contribution
+#include <thread>
 #ifdef WITH_SERVICE_AUTHENTICATION
 // Additional includes for service authentication
 #include "../../service_authentication/include/crypto_operator.hpp"
@@ -550,7 +552,10 @@ private:
     std::shared_ptr<eventgroup_subscription_cache> eventgroup_subscription_cache_;
     #endif
 #endif
+    // Additional members for statistics contribution Start #########################################################
     std::shared_ptr<statistics_recorder> statistics_recorder_;
+    std::thread statistics_contributor_;
+    // Additional members for statistics contribution End ###########################################################
     // Addition for Service Authentication End ###############################################################################
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
     // Additional members for payload encryption key agreement Start #########################################################
