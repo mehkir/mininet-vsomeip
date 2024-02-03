@@ -1305,7 +1305,6 @@ bool routing_manager_stub::send_subscribe(
         eventgroup_t _eventgroup, major_version_t _major,
         event_t _event, const std::shared_ptr<debounce_filter_impl_t> &_filter,
         remote_subscription_id_t _id) {
-    VSOMEIP_DEBUG << ">>>>> routing_manager_stub::send_subscribe (MEHMET MUELLER DEBUG) <<<<<";
 
     bool has_sent(false);
 

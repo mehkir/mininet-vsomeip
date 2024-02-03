@@ -448,7 +448,6 @@ bool routing_manager_impl::offer_service(client_t _client,
         service_t _service, instance_t _instance,
         major_version_t _major, minor_version_t _minor,
         bool _must_queue) {
-    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::offer_service (MEHMET MUELLER DEBUG) <<<<<";
     // only queue commands if method was NOT called via erase_offer_command()
     if (_must_queue) {
         if (!insert_offer_command(_service, _instance,
@@ -557,7 +556,6 @@ void routing_manager_impl::stop_offer_service(client_t _client,
         major_version_t _major, minor_version_t _minor,
         bool _must_queue) {
 
-    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::stop_offer_service (MEHMET MUELLER DEBUG) <<<<<";
     VSOMEIP_INFO << "STOP OFFER("
         << std::hex << std::setfill('0')
         << std::setw(4) << _client << "): ["
@@ -793,7 +791,6 @@ void routing_manager_impl::subscribe(
         eventgroup_t _eventgroup, major_version_t _major,
         event_t _event, const std::shared_ptr<debounce_filter_impl_t> &_filter) {
 
-    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::subscribe (MEHMET MUELLER DEBUG) <<<<<";
     VSOMEIP_INFO << "SUBSCRIBE("
         << std::hex << std::setfill('0')
         << std::setw(4) << _client << "): ["
@@ -860,7 +857,6 @@ void routing_manager_impl::subscribe(
                     // a StopSubscribe/Subscribe once the first offer is received
                     if (its_info &&
                             (!subscriber_is_rm_host || find_service(_service, _instance))) {
-                        VSOMEIP_DEBUG << ">>>>> routing_manager_impl::subscribe calls discovery_->subscribe (MEHMET MUELLER DEBUG) <<<<<";
                         discovery_->subscribe(_service, _instance, _eventgroup,
                                 _major, configured_ttl,
                                 its_info->is_selective() ? _client : VSOMEIP_ROUTING_CLIENT,
@@ -3000,7 +2996,6 @@ void routing_manager_impl::init_routing_info() {
 void routing_manager_impl::on_remote_subscribe(
         std::shared_ptr<remote_subscription> &_subscription,
         const remote_subscription_callback_t &_callback) {
-    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::on_remote_subscribe (MEHMET MUELLER DEBUG) <<<<<";
     auto its_eventgroupinfo = _subscription->get_eventgroupinfo();
     if (!its_eventgroupinfo) {
         VSOMEIP_ERROR << __func__ << " eventgroupinfo is invalid";
@@ -3158,7 +3153,6 @@ void routing_manager_impl::on_subscribe_ack_with_multicast(
 void routing_manager_impl::on_subscribe_ack(client_t _client,
         service_t _service, instance_t _instance, eventgroup_t _eventgroup,
         event_t _event, remote_subscription_id_t _id) {
-    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::on_subscribe_ack (MEHMET MUELLER DEBUG) <<<<<";        
     std::lock_guard<std::mutex> its_lock(remote_subscription_state_mutex_);
     auto its_eventgroup = find_eventgroup(_service, _instance, _eventgroup);
     if (its_eventgroup) {
@@ -3849,7 +3843,6 @@ std::shared_ptr<endpoint_manager_impl> routing_manager_impl::get_endpoint_manage
 void routing_manager_impl::send_subscribe(client_t _client, service_t _service,
         instance_t _instance, eventgroup_t _eventgroup, major_version_t _major,
         event_t _event, const std::shared_ptr<debounce_filter_impl_t> &_filter) {
-    VSOMEIP_DEBUG << ">>>>> routing_manager_impl::send_subscribe (MEHMET MUELLER DEBUG) <<<<<";
     auto endpoint = ep_mgr_->find_local(_service, _instance);
     if (endpoint && stub_) {
         stub_->send_subscribe(endpoint, _client,

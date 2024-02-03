@@ -179,7 +179,6 @@ bool client_endpoint_impl<Protocol>::send_error(
 
 template<typename Protocol>
 bool client_endpoint_impl<Protocol>::send(const uint8_t *_data, uint32_t _size) {
-    VSOMEIP_DEBUG << ">>>>> client_endpoint_impl::send (MEHMET MUELLER DEBUG) <<<<<";
     std::lock_guard<std::recursive_mutex> its_lock(mutex_);
     bool must_depart(false);
     auto its_now(std::chrono::steady_clock::now());
@@ -357,7 +356,6 @@ void client_endpoint_impl<Protocol>::schedule_train() {
 template<typename Protocol>
 bool client_endpoint_impl<Protocol>::send(const std::vector<byte_t>& _cmd_header,
                                       const byte_t *_data, uint32_t _size) {
-    VSOMEIP_DEBUG << ">>>>> client_endpoint_impl::send (MEHMET MUELLER DEBUG) <<<<<";
     (void) _cmd_header;
     (void) _data;
     (void) _size;
