@@ -190,7 +190,6 @@ service_discovery_impl::init() {
 
 void
 service_discovery_impl::start() {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::start (MEHMET MUELLER DEBUG) <<<<<";
     if (!endpoint_) {
         endpoint_ = host_->create_service_discovery_endpoint(
                 sd_multicast_, port_, reliable_);
@@ -246,7 +245,6 @@ service_discovery_impl::request_service(
         service_t _service, instance_t _instance,
         major_version_t _major, minor_version_t _minor,
         ttl_t _ttl) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::request_service (MEHMET MUELLER DEBUG) <<<<<";
     std::lock_guard<std::mutex> its_lock(requested_mutex_);
     auto find_service = requested_.find(_service);
     if (find_service != requested_.end()) {
@@ -264,7 +262,6 @@ service_discovery_impl::request_service(
 void
 service_discovery_impl::release_service(
         service_t _service, instance_t _instance) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::release_service (MEHMET MUELLER DEBUG) <<<<<";
     std::lock_guard<std::mutex> its_lock(requested_mutex_);
     auto find_service = requested_.find(_service);
     if (find_service != requested_.end()) {
@@ -274,7 +271,6 @@ service_discovery_impl::release_service(
 
 void
 service_discovery_impl::update_request(service_t _service, instance_t _instance) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::update_request (old: find_request) (MEHMET MUELLER DEBUG) <<<<<";
     std::lock_guard<std::mutex> its_lock(requested_mutex_);
     auto find_service = requested_.find(_service);
     if (find_service != requested_.end()) {
@@ -297,7 +293,6 @@ service_discovery_impl::subscribe(
         eventgroup_t _eventgroup, major_version_t _major,
         ttl_t _ttl, client_t _client,
         const std::shared_ptr<eventgroupinfo> &_info) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::subscribe (MEHMET MUELLER DEBUG) <<<<<";
     if (is_suspended_) {
         VSOMEIP_WARNING << "service_discovery::" << __func__
                 << ": Ignoring subscription as we are suspended.";
@@ -377,7 +372,6 @@ service_discovery_impl::send_subscription(
         const service_t _service, const instance_t _instance,
         const eventgroup_t _eventgroup,
         const client_t _client) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::send_subscription (MEHMET MUELLER DEBUG) <<<<<";
     (void)_client;
 
     auto its_reliable = _subscription->get_endpoint(true);
@@ -442,7 +436,6 @@ service_discovery_impl::get_subscription_endpoints(
         service_t _service, instance_t _instance,
         std::shared_ptr<endpoint> &_reliable,
         std::shared_ptr<endpoint> &_unreliable) const {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::get_subscription_endpoints (MEHMET MUELLER DEBUG) <<<<<";
     _unreliable = host_->find_or_create_remote_client(
             _service, _instance, false);
     _reliable = host_->find_or_create_remote_client(
@@ -454,7 +447,6 @@ service_discovery_impl::get_subscription_address(
         const std::shared_ptr<endpoint> &_reliable,
         const std::shared_ptr<endpoint> &_unreliable,
         boost::asio::ip::address &_address) const {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::get_subscription_address (MEHMET MUELLER DEBUG) <<<<<";
     if (_reliable) {
         auto its_client_endpoint
             = std::dynamic_pointer_cast<client_endpoint>(_reliable);
@@ -475,7 +467,6 @@ service_discovery_impl::get_subscription_address(
 void
 service_discovery_impl::unsubscribe(service_t _service,
         instance_t _instance, eventgroup_t _eventgroup, client_t _client) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::unsubscribe (MEHMET MUELLER DEBUG) <<<<<";
     std::shared_ptr < runtime > its_runtime = runtime_.lock();
     if (!its_runtime) {
         return;
@@ -849,7 +840,6 @@ service_discovery_impl::create_eventgroup_entry(
         service_t _service, instance_t _instance, eventgroup_t _eventgroup,
         const std::shared_ptr<subscription> &_subscription,
         reliability_type_e _reliability_type) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::create_eventgroup_entry (MEHMET MUELLER DEBUG) <<<<<";
     entry_data_t its_data;
     its_data.entry_ = nullptr;
     its_data.other_ = nullptr;
@@ -1312,7 +1302,6 @@ service_discovery_impl::on_message(
         const byte_t *_data, length_t _length,
         const boost::asio::ip::address &_sender,
         bool _is_multicast) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::on_message (MEHMET MUELLER DEBUG) <<<<<";
 #if 0
     std::stringstream msg;
     msg << "sdi::on_message: ";
@@ -1511,7 +1500,6 @@ service_discovery_impl::process_serviceentry(
         std::vector<std::shared_ptr<message_impl> > &_resubscribes,
         bool _received_via_mcast,
         const sd_acceptance_state_t& _sd_ac_state) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry (MEHMET MUELLER DEBUG) <<<<<";
 #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
     // Addition for Service Authentication Start ###########
     std::vector<unsigned char> generated_nonce;
@@ -1544,7 +1532,6 @@ service_discovery_impl::process_serviceentry(
 
                 switch (its_option->get_type()) {
                 case option_type_e::IP4_ENDPOINT: {
-                    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry IP4_ENDPOINT (MEHMET MUELLER DEBUG) <<<<<";
                     std::shared_ptr < ipv4_option_impl > its_ipv4_option =
                             std::dynamic_pointer_cast < ipv4_option_impl
                                     > (its_option);
@@ -1565,7 +1552,6 @@ service_discovery_impl::process_serviceentry(
                     break;
                 }
                 case option_type_e::IP6_ENDPOINT: {
-                    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry IP6_ENDPOINT (MEHMET MUELLER DEBUG) <<<<<";
                     std::shared_ptr < ipv6_option_impl > its_ipv6_option =
                             std::dynamic_pointer_cast < ipv6_option_impl
                                     > (its_option);
@@ -1585,13 +1571,11 @@ service_discovery_impl::process_serviceentry(
                 }
                 case option_type_e::IP4_MULTICAST:
                 case option_type_e::IP6_MULTICAST:
-                    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry IP4/6_MULTICAST (MEHMET MUELLER DEBUG) <<<<<";
                     break;
                 case option_type_e::CONFIGURATION: {
 #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
                     // Addition for Service Authentication Start ###########
                     if (its_type == entry_type_e::OFFER_SERVICE && its_ttl > 0) {
-                        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry CONFIGURATION (MEHMET MUELLER DEBUG) <<<<<";
                         std::shared_ptr < configuration_option_impl > its_configuration_option = std::dynamic_pointer_cast < configuration_option_impl > (its_option);
                         generated_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, its_configuration_option);
                     }
@@ -1600,7 +1584,6 @@ service_discovery_impl::process_serviceentry(
                 }
                     break;
                 case option_type_e::UNKNOWN:
-                    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry UNKNOWN (MEHMET MUELLER DEBUG) <<<<<";
                     break;
                 default:
                     VSOMEIP_ERROR << __func__ << ": Unsupported service option";
@@ -1613,24 +1596,11 @@ service_discovery_impl::process_serviceentry(
     if (0 < its_ttl) {
         switch(its_type) {
             case entry_type_e::FIND_SERVICE: {
-                VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry FIND_SERVICE (MEHMET MUELLER DEBUG) <<<<<";
-                // Addition for FIND_RECEIVE timestamp recording Start ########################################
-                // NOTE: Can not be mapped to subscriber since FIND entries do not contain endpoint options
-                // boost::asio::ip::address subscriber_address;
-                // if (its_unreliable_address.to_v4().to_string().compare("0.0.0.0")) {
-                //     subscriber_address = its_unreliable_address;
-                // } else {
-                //     subscriber_address = its_reliable_address;
-                // }
-                // TODO: Check if there is STOP FIND, if yes, only record with ttl > 0
-                // statistics_recorder_->record_timestamp(subscriber_address.to_v4().to_uint(), time_metric::FIND_RECEIVE_);
-                // Addition for FIND_RECEIVE timestamp recording End ##########################################
                 process_findservice_serviceentry(its_service, its_instance,
                                                  its_major, its_minor, _unicast_flag);
                 }
                 break;
             case entry_type_e::OFFER_SERVICE: {
-                VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry OFFER_SERVICE (MEHMET MUELLER DEBUG) <<<<<";
 #if defined(WITH_CLIENT_AUTHENTICATION) && defined(WITH_SERVICE_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
                 // Service Authentication Start ##########################################################################
                 boost::asio::ip::address publisher_address;
@@ -1654,7 +1624,6 @@ service_discovery_impl::process_serviceentry(
             }
                 break;
             case entry_type_e::UNKNOWN:
-                VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_serviceentry UNKNOWN (MEHMET MUELLER DEBUG) <<<<<";
                 break;
             default:
                 VSOMEIP_ERROR << __func__ << ": Unsupported service entry type";
@@ -1792,7 +1761,6 @@ service_discovery_impl::process_offerservice_serviceentry(
         uint16_t _unreliable_port,
         std::vector<std::shared_ptr<message_impl> > &_resubscribes,
         bool _received_via_mcast, const sd_acceptance_state_t& _sd_ac_state) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_offerservice_serviceentry (MEHMET MUELLER DEBUG) <<<<<";
     // Addition for checking parameter contents Start ##############################################################
     // std::cout
     // << "service=" << _service
@@ -1944,8 +1912,6 @@ service_discovery_impl::process_offerservice_serviceentry(
 
     // Service Authentication Start ##########################################################################
     resume_process_offerservice_cache_->add_offerservice_entry(_service, _instance, _major, _minor, _ttl, boost::asio::ip::address_v4::from_string(_reliable_address.to_string()), _reliable_port, boost::asio::ip::address_v4::from_string(_unreliable_address.to_string()), _unreliable_port, _resubscribes, _received_via_mcast);
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_offerservice_serviceentry: Add offerservice entry service=" << _service
-    << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << ", tcp=(" << _reliable_address.to_string() << "," << _reliable_port << ")" << ", udp=(" << _unreliable_address.to_string() << "," << _unreliable_port << ")" << " (MEHMET MUELLER DEBUG) <<<<<";
 #ifndef NO_SOMEIP_SD
     validate_offer(_service, _instance, _major, _minor);
 #endif
@@ -1971,12 +1937,8 @@ service_discovery_impl::validate_offer(service_t _service, instance_t _instance,
                 && (resume_processofferservice_entry.reliable_port_ == service_svcbcache_entry.port_))
            );
     if (!offer_verified) {
-        VSOMEIP_DEBUG << ">>>>> service_discovery_impl::validate_offer: No offer or SVCB record for service=" << _service
-        << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
         return;
     }
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::validate_offer: Found SVCB record for service=" << _service
-    << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << " (MEHMET MUELLER DEBUG) <<<<<";
     VSOMEIP_DEBUG << "\n\nOFFER VERIFIED\n\n";
     if(resume_processofferservice_entry.ttl_)
         statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::VALIDATE_OFFER_END_);
@@ -1995,9 +1957,6 @@ service_discovery_impl::resume_process_offerservice_serviceentry(
     uint16_t _unreliable_port,
     std::vector<std::shared_ptr<message_impl> >& _resubscribes,
     bool _received_via_mcast) {
-    
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::resume_process_offerservice_serviceentry: service=" << _service
-    << ", instance=" << _instance << ", major=" << _major << ", minor=" << _minor << ", tcp=(" << _reliable_address.to_string() << "," << _reliable_port << ")" << ", udp=(" << _unreliable_address.to_string() << "," << _unreliable_port << ")" << " (MEHMET MUELLER DEBUG) <<<<<";
 
     // NOTE: Code below belongs actually in to the process_offerservice_serviceentry method above
 
@@ -2482,7 +2441,6 @@ service_discovery_impl::process_eventgroupentry(
         bool _is_multicast,
         bool _is_stop_subscribe_subscribe, bool _force_initial_events,
         const sd_acceptance_state_t& _sd_ac_state) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::process_eventgroupentry (MEHMET MUELLER DEBUG) <<<<<";
 
     // Additional variables for service Authentication Start ##############
     std::vector<unsigned char> signed_nonce;
@@ -3369,7 +3327,6 @@ service_discovery_impl::handle_eventgroup_subscription(
         const std::set<client_t> &_clients,
         const sd_acceptance_state_t& _sd_ac_state,
         const std::shared_ptr<eventgroupinfo>& _info) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::handle_eventgroup_subscription (MEHMET MUELLER DEBUG) <<<<<";
     (void)_counter;
     (void)_reserved;
 
@@ -3685,7 +3642,6 @@ bool
 service_discovery_impl::serialize_and_send(
         const std::vector<std::shared_ptr<message_impl> > &_messages,
         const boost::asio::ip::address &_address) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::serialize_and_send (MEHMET MUELLER DEBUG) <<<<<";
     bool its_result(true);
     if (!_address.is_unspecified()) {
         std::lock_guard<std::mutex> its_lock(serialize_mutex_);
@@ -3867,7 +3823,6 @@ service_discovery_impl::check_ipv4_address(
 
 void
 service_discovery_impl::offer_service(const std::shared_ptr<serviceinfo> &_info) {
-    VSOMEIP_DEBUG << ">>>>> service_discovery_impl::offer_service (MEHMET MUELLER DEBUG) <<<<<";
     service_t its_service = _info->get_service();
     service_t its_instance = _info->get_instance();
 
@@ -3888,7 +3843,6 @@ service_discovery_impl::offer_service(const std::shared_ptr<serviceinfo> &_info)
 
 void
 service_discovery_impl::start_offer_debounce_timer(bool _first_start) {
-    //VSOMEIP_DEBUG << ">>>>> service_discovery_impl::start_offer_debounce_timer (MEHMET MUELLER DEBUG) <<<<<";
     std::lock_guard<std::mutex> its_lock(offer_debounce_timer_mutex_);
     boost::system::error_code ec;
     if (_first_start) {
@@ -3993,7 +3947,6 @@ service_discovery_impl::on_find_debounce_timer_expired(
 void
 service_discovery_impl::on_offer_debounce_timer_expired(
         const boost::system::error_code &_error) {
-    //VSOMEIP_DEBUG << ">>>>> service_discovery_impl::on_offer_debounce_timer_expired (MEHMET MUELLER DEBUG) <<<<<";
     if(_error) { // timer was canceled
         return;
     }
@@ -4335,7 +4288,7 @@ service_discovery_impl::on_main_phase_timer_expired(
     if (_error) {
         return;
     }
-    VSOMEIP_DEBUG << "CYCLIC OFFER SENDING";
+    // VSOMEIP_DEBUG << "CYCLIC OFFER SENDING";
     send(true);
     start_main_phase_timer();
 }
