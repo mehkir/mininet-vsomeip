@@ -46,8 +46,6 @@
 #include <netinet/in.h>
 #include <iostream>
 
-#define SUBSCRIBER_COUNT_TO_RECORD 199
-
 #ifdef WITH_SERVICE_AUTHENTICATION
 #define GENERATED_NONCE_CONFIG_OPTION_KEY "gn"
 #define SIGNED_NONCE_CONFIG_OPTION_KEY "sn"
@@ -1229,7 +1227,7 @@ service_discovery_impl::insert_subscription_ack(
             recorded_subscribers.insert(subscriber_address.to_uint());
         }
 
-        if(!already_contributed && (recorded_subscribers.size() == SUBSCRIBER_COUNT_TO_RECORD)) {
+        if(!already_contributed && (recorded_subscribers.size() == configuration_->get_subscriber_count_to_record())) {
             statistics_recorder_->contribute_statistics();
             already_contributed = true;
         }
