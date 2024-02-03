@@ -21,7 +21,19 @@ set (PACKAGE_VERSION ${VSOMEIP_VERSION}) # Used in documentation/doxygen.in
 set (CMAKE_VERBOSE_MAKEFILE off)
 
 # possible compile definitions: WITH_CLIENT_AUTHENTICATION WITH_ENCRYPTION NO_SOMEIP_SD WITH_SERVICE_AUTHENTICATION WITH_DNSSEC WITH_DANE
-add_compile_definitions()
+# Nots on compile definitions:
+# Vanilla                                                                       works
+# NO_SOMEIP_SD WITH_DNSSEC                                                      works (but does not scale good with many subscribers)
+# NO_SOMEIP_SD WITH_DNSSEC WITH_DANE WITH_SERVICE_AUTHENTICATION                works (but does not scale good with many subscribers)
+# NO_SOMEIP_SD WITH_DNSSEC WITH_SERVICE_AUTHENTICATION                          works (but does not scale good with many subscribers)
+# WITH_DNSSEC WITH_DANE WITH_SERVICE_AUTHENTICATION WITH_CLIENT_AUTHENTICATION  works
+# WITH_DNSSEC WITH_SERVICE_AUTHENTICATION WITH_CLIENT_AUTHENTICATION            works
+# WITH_DNSSEC WITH_SERVICE_AUTHENTICATION WITH_CLIENT_AUTHENTICATION WITH_DANE  works
+# WITH_DNSSEC WITH_SERVICE_AUTHENTICATION                                       works
+# WITH_SERVICE_AUTHENTICATION                                                   works
+# WITH_SERVICE_AUTHENTICATION WITH_CLIENT_AUTHENTICATION                        works
+
+add_compile_definitions(WITH_DNSSEC)
 
 if (NOT GTEST_ROOT)
     if (DEFINED ENV{GTEST_ROOT})
@@ -78,7 +90,7 @@ endif()
 
     set(NO_DEPRECATED "")
     set(OPTIMIZE "")
-    set(OS_CXX_FLAGS "${OS_CXX_FLAGS} -D_GLIBCXX_USE_NANOSLEEP -pthread -O -Wall -Wextra -Wformat -Wformat-security -Wconversion -fexceptions -fstrict-aliasing -fstack-protector-strong -fasynchronous-unwind-tables -fno-omit-frame-pointer -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Wpedantic -Werror -fPIE")
+    set(OS_CXX_FLAGS "${OS_CXX_FLAGS} -D_GLIBCXX_USE_NANOSLEEP -pthread -O -Wall -Wextra -Wformat -Wformat-security -Wconversion -fexceptions -fstrict-aliasing -fstack-protector-strong -fasynchronous-unwind-tables -fno-omit-frame-pointer -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Wpedantic -Wno-error -fPIE")
 
     # force all use of std::mutex and std::recursive_mutex to use runtime init
     # instead of static initialization so mutexes can be hooked to enable PI as needed
