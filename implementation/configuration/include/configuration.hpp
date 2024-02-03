@@ -313,12 +313,13 @@ public:
     virtual bool is_security_audit() const = 0;
     virtual bool is_remote_access_allowed() const = 0;
 
-    // Additional Methods for Service Authentication
+    // Additional methods for service authentication
     virtual const CryptoPP::RSA::PrivateKey& get_private_key() const = 0;
     virtual const std::vector<CryptoPP::byte>& get_certificate() const = 0;
     virtual const std::vector<CryptoPP::byte>& get_service_certificate() const = 0;
     virtual const std::map<std::string, std::vector<CryptoPP::byte>>& get_host_certificates() const = 0;
     virtual uint32_t get_network_address() const = 0;
+    virtual uint32_t get_dns_server_ip() const = 0;
 };
 
 } // namespace vsomeip_v3

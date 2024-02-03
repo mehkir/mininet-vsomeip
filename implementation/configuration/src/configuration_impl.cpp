@@ -605,9 +605,10 @@ bool configuration_impl::load_data(const std::vector<configuration_element> &_el
             load_partitions(e);
             load_routing_client_ports(e);
             load_suppress_events(e);
-            // Additional method for Service Authentication
+            // Additional methods for service authentication
             load_asymmetric_keys(e);
             compute_network_address();
+            load_dns_server_ip(e);
         }
     }
 
@@ -4550,6 +4551,21 @@ void configuration_impl::compute_network_address() {
     }
 }
 
+void configuration_impl::load_dns_server_ip(const configuration_element& _element) {
+    try {
+        std::stringstream its_converter;
+        std::string dns_server_ip = _element.tree_.get<std::string>("dns-server-ip");
+        if (!dns_server_ip.empty() && dns_server_ip[0] == '0' && dns_server_ip[1] == 'x') {
+            its_converter << std::hex << dns_server_ip;
+        } else {
+            its_converter << std::dec << dns_server_ip;
+        }
+        its_converter >> dns_server_ip_;
+    } catch (...) {
+        // intentionally left empty!
+    }
+}
+
 void configuration_impl::load_secure_service(const boost::property_tree::ptree &_tree) {
     try {
         service_t its_service(0);
@@ -5071,7 +5087,7 @@ configuration_impl::is_remote_access_allowed() const {
     return is_remote_access_allowed_;
 }
 
-// Additional Methods for Service Authentication
+// Additional methods for service authentication
 const CryptoPP::RSA::PrivateKey& configuration_impl::get_private_key() const {
     return private_key_;
 }
@@ -5090,6 +5106,10 @@ const std::map<std::string, std::vector<CryptoPP::byte>>& configuration_impl::ge
 
 uint32_t configuration_impl::get_network_address() const {
     return network_address_;
+}
+
+uint32_t configuration_impl::get_dns_server_ip() const {
+    return dns_server_ip_;
 }
 
 }  // namespace cfg

@@ -297,12 +297,13 @@ public:
     VSOMEIP_EXPORT bool is_security_audit() const;
     VSOMEIP_EXPORT bool is_remote_access_allowed() const;
 
-    // Additional Methods for Service Authentication
+    // Additional methods for service authentication
     VSOMEIP_EXPORT const CryptoPP::RSA::PrivateKey& get_private_key() const;
     VSOMEIP_EXPORT const std::vector<CryptoPP::byte>& get_certificate() const;
     VSOMEIP_EXPORT const std::vector<CryptoPP::byte>& get_service_certificate() const;
     VSOMEIP_EXPORT const std::map<std::string, std::vector<CryptoPP::byte>>& get_host_certificates() const;
     VSOMEIP_EXPORT uint32_t get_network_address() const;
+    VSOMEIP_EXPORT uint32_t get_dns_server_ip() const;
 
 private:
     void read_data(const std::set<std::string> &_input,
@@ -477,9 +478,10 @@ private:
     void load_partitions(const configuration_element &_element);
     void load_partition(const boost::property_tree::ptree &_tree);
 
-    // Additional Method for Service Authentication
+    // Additional methods for service authentication
     void load_asymmetric_keys(const configuration_element& _element);
     void compute_network_address();
+    void load_dns_server_ip(const configuration_element& _element);
 
 private:
     std::mutex mutex_;
@@ -658,13 +660,14 @@ protected:
     mutable std::mutex secure_services_mutex_;
     std::map<service_t, std::set<instance_t> > secure_services_;
 
-    // Additional Members for Service Authentication
+    // Additional members for service authentication
     crypto_operator crypto_operator_;
     std::vector<CryptoPP::byte> certificate_;
     CryptoPP::RSA::PrivateKey private_key_;
     std::vector<CryptoPP::byte> service_certificate_;
     std::map<std::string, std::vector<CryptoPP::byte>> host_certificates_;
     uint32_t network_address_;
+    uint32_t dns_server_ip_;
 
     bool log_statistics_;
     uint32_t statistics_interval_;
