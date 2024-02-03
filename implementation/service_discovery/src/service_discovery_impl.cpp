@@ -1228,7 +1228,7 @@ service_discovery_impl::insert_subscription_ack(
         }
 
         if(!already_contributed && (recorded_subscribers.size() == configuration_->get_subscriber_count_to_record())) {
-            statistics_recorder_->contribute_statistics();
+            statistics_contributor_ = std::thread(&statistics_recorder::contribute_statistics, statistics_recorder_);
             already_contributed = true;
         }
     }
