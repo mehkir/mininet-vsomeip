@@ -9,7 +9,7 @@ namespace vsomeip_v3 {
         private:
             dns_resolver* dns_resolver_;
         public:
-            tlsa_resolver();
+            tlsa_resolver(in_addr_t _dns_server_ip);
             ~tlsa_resolver();
             void request_service_tlsa_record(void* _service_data);
             void request_client_tlsa_record(void* _client_data);

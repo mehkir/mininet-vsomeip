@@ -9,7 +9,7 @@ namespace vsomeip_v3 {
         private:
             dns_resolver* dns_resolver_;
         public:
-            svcb_resolver();
+            svcb_resolver(in_addr_t _dns_server_ip);
             ~svcb_resolver();
             void request_service_svcb_record(service_data_and_cbs* _service_data_and_cbs);
             void request_client_svcb_record(client_data_and_cbs* _client_data_and_cbs);

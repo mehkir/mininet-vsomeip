@@ -8,8 +8,8 @@
 #include <boost/algorithm/string.hpp>
 
 namespace vsomeip_v3 {
-    svcb_resolver::svcb_resolver() : dns_resolver_(dns_resolver::get_instance()) {
-        dns_resolver_->initialize(DNS_SERVER_IP);
+    svcb_resolver::svcb_resolver(in_addr_t _dns_server_ip) : dns_resolver_(dns_resolver::get_instance()) {
+        dns_resolver_->initialize(_dns_server_ip);
     }
 
     svcb_resolver::~svcb_resolver() {
