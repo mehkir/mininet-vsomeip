@@ -3,15 +3,14 @@
 #include <memory>
 
 int main (int argc, char* argv[]) {
-    if(argc != 3) {
-      std::cerr << "Usage: " + std::string(argv[0]) + " <member_count> <absolute_results_directory_path>\n";
-      std::cerr << "  Example: " + std::string(argv[0]) + " 20 /path/to/results/directory\n";
+    if(argc != 4) {
+      std::cerr << "Usage: " + std::string(argv[0]) + " <member_count> <absolute_results_directory_path> <result_file_name>\n";
+      std::cerr << "  Example: " + std::string(argv[0]) + " 20 /path/to/results/directory myfilename\n";
       return 1;
     }
     std::uint32_t member_count = std::stoi(argv[1]);
     std::string absolute_results_directory_path(argv[2]);
-    std::string result_filename;
-    result_filename = "mininet-vsomeip";
+    std::string result_filename(argv[3]);
     if (member_count <= 0) {
       std::cerr << "member_count must be greater than 0\n";
       return 1;
