@@ -20,7 +20,7 @@ set (VSOMEIP_VERSION ${VSOMEIP_MAJOR_VERSION}.${VSOMEIP_MINOR_VERSION}.${VSOMEIP
 set (PACKAGE_VERSION ${VSOMEIP_VERSION}) # Used in documentation/doxygen.in
 set (CMAKE_VERBOSE_MAKEFILE off)
 
-# possible compile definitions: WITH_CLIENT_AUTHENTICATION WITH_ENCRYPTION NO_SOMEIP_SD WITH_SERVICE_AUTHENTICATION WITH_DNSSEC WITH_DANE
+# possible compile definitions: WITH_SERVICE_AUTHENTICATION WITH_CLIENT_AUTHENTICATION NO_SOMEIP_SD WITH_DNSSEC WITH_DANE WITH_ENCRYPTION   
 # Nots on compile definitions:
 # Vanilla                                                                       works
 # NO_SOMEIP_SD WITH_DNSSEC                                                      works (but does not scale good with many subscribers)
