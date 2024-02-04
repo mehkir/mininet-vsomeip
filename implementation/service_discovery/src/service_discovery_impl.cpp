@@ -1082,6 +1082,7 @@ service_discovery_impl::process_authentication_for_created_subscribe(
         }
         data_partitioner().partition_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce_vector);
     #ifdef WITH_ENCRYPTION
+        VSOMEIP_DEBUG << __func__ << " INSERT BLINDED SECRET";
         CryptoPP::SecByteBlock blinded_secret = dh_ecc_->get_blinded_secret();
         std::vector<unsigned char> blinded_secret_vector(blinded_secret.begin(), blinded_secret.end());
         data_partitioner().partition_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, configuration_option, blinded_secret_vector);
@@ -1247,6 +1248,7 @@ service_discovery_impl::process_authentication_for_created_subscribe_ack(ttl_t _
         }
         data_partitioner().partition_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, configuration_option, signed_nonce);
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
+        VSOMEIP_DEBUG << __func__ << " INSERT BLINDED SECRET + ENCRYPTED GROUP SECRET";
         encrypted_group_secret_result encrypted_groupsecret_result = encrypted_group_secret_result_cache_->get_encrypted_group_secret_result(_subscriber_address, _service, _instance, _major);
         CryptoPP::SecByteBlock blinded_secret = encrypted_groupsecret_result.blinded_publisher_secret_;
         CryptoPP::SecByteBlock encrypted_group_secret = encrypted_groupsecret_result.encrypted_group_secret_;
@@ -2993,6 +2995,7 @@ service_discovery_impl::process_authentication_for_received_subscribe(
     _client = (client_t) std::stoi(std::string(client_id.begin(), client_id.end()));
     challenge_nonce_cache_->add_publisher_challenge_nonce(_client, _sender.to_v4(), _service, _instance, _signed_nonce);
     #ifdef WITH_ENCRYPTION
+    VSOMEIP_DEBUG << __func__ << " EXTRACT BLINDED SECRET";
     _blinded_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, _configuration_option);
     #endif
 
@@ -3050,6 +3053,7 @@ service_discovery_impl::process_authentication_for_received_subscribe_ack(
     _signed_nonce = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNED_NONCE_CONFIG_OPTION_KEY, _configuration_option);
     _signature = data_partitioner().reassemble_data<std::vector<unsigned char>>(SIGNATURE_CONFIG_OPTION_KEY, _configuration_option);
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
+    VSOMEIP_DEBUG << __func__ << " EXTRACT BLINDED SECRET + ENCRYPTED GROUP SECRET";
     _blinded_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(BLINDED_SECRET_CONFIG_OPTION_KEY, _configuration_option);
     _encrypted_group_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY, _configuration_option);
     _initialization_vector = data_partitioner().reassemble_data<std::vector<unsigned char>>(INITIALIZATION_VECTOR_CONFIG_OPTION_KEY, _configuration_option);
@@ -3165,6 +3169,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
     statistics_recorder_->record_timestamp(_subscriber_ip_address.to_uint(), time_metric::VERIFY_CLIENT_SIGNATURE_END_);
     eventgroup_subscription_cache_->remove_eventgroup_subscription_cache_entry(_client, _service, _instance, _major);
 #ifdef WITH_ENCRYPTION
+    VSOMEIP_DEBUG << __func__ << " COMPUTE ENCRYPTED GROUP SECRET";
     encrypted_group_secret_result encrypted_groupsecret_result = dh_ecc_->compute_encrypted_group_secret(CryptoPP::SecByteBlock(blinded_secret.data(), blinded_secret.size()));
     #if defined(WITH_DNSSEC) && defined(WITH_DANE)
     encrypted_group_secret_result_cache_->add_encrypted_group_secret_result(client_svcbcache_entry.ipv4_address_, client_svcbcache_entry.service_, client_svcbcache_entry.instance_, client_svcbcache_entry.major_, encrypted_groupsecret_result);
@@ -3277,6 +3282,7 @@ service_discovery_impl::validate_subscribe_ack_and_verify_signature(boost::asio:
     // Addition for statistics contribution End ###################################################################
     eventgroup_subscription_ack_cache_->remove_eventgroup_subscription_ack_cache_entry(_publisher_ip_address, _service, _instance);
 #if defined(WITH_ENCRYPTION) && defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
+    VSOMEIP_DEBUG << __func__ << " DECRYPT GROUP SECRET";
     encrypted_group_secret_result encrypted_groupsecret_result;
     encrypted_groupsecret_result.blinded_publisher_secret_ = CryptoPP::SecByteBlock(blinded_secret.data(), blinded_secret.size());
     encrypted_groupsecret_result.encrypted_group_secret_ = CryptoPP::SecByteBlock(encrypted_group_secret.data(), encrypted_group_secret.size());
