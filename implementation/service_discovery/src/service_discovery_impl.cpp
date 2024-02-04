@@ -2198,7 +2198,7 @@ service_discovery_impl::process_findservice_serviceentry(
         service_t _service, instance_t _instance,
         major_version_t _major, minor_version_t _minor,
         bool _unicast_flag) {
-
+    VSOMEIP_DEBUG << __func__ << " FIND RECEIVE";
     if (_instance != ANY_INSTANCE) {
         std::shared_ptr<serviceinfo> its_info = host_->get_offered_service(
                 _service, _instance);
