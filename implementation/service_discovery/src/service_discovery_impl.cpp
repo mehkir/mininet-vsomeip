@@ -1068,7 +1068,6 @@ service_discovery_impl::process_authentication_for_created_subscribe(
         // Generate challenge nonce for publisher and add to configuration option
         CryptoPP::SecByteBlock generated_nonce = crypto_operator_.get_random_byte_block();
         challenge_nonce_cache_->add_subscriber_challenge_nonce(publisher_address.to_v4(), _service, _instance, std::vector<unsigned char>(generated_nonce.begin(), generated_nonce.end()));
-        VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string();
         std::vector<unsigned char> generated_nonce_vector(generated_nonce.begin(), generated_nonce.end());
         data_partitioner().partition_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, generated_nonce_vector);
 #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
@@ -1242,7 +1241,6 @@ service_discovery_impl::process_authentication_for_created_subscribe_ack(ttl_t _
         VSOMEIP_DEBUG << __func__ << " SERVICE SIGN START";
         statistics_recorder_->record_timestamp(_subscriber_address.to_uint(), time_metric::SERVICE_SIGN_START_);
         std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_subscriber_challenge_nonce(_subscriber_address, _service, _instance);
-        VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << _subscriber_address.to_string();
         if (signed_nonce.empty()) {
             // TODO: Better would be to return here and cancel sending the subscription acknowledge
             throw std::runtime_error("Nonce is empty!");
@@ -1515,9 +1513,10 @@ service_discovery_impl::process_serviceentry(
     ttl_t its_ttl = _entry->get_ttl();
 
     // Addition for statistics recording Start ###################################################################
-    if(unicast_.to_v4().to_string().compare("10.0.0.1") && its_type == entry_type_e::OFFER_SERVICE && its_ttl > 0)
+    if(unicast_.to_v4().to_string().compare("10.0.0.1") && its_type == entry_type_e::OFFER_SERVICE && its_ttl > 0) {
         statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::OFFER_RECEIVE_);
-    VSOMEIP_DEBUG << __func__ << " OFFER RECEIVE";
+        VSOMEIP_DEBUG << __func__ << " OFFER RECEIVE";
+    }
     // Addition for statistics recording End #####################################################################
 
     // Read address info from options
@@ -1612,10 +1611,6 @@ service_discovery_impl::process_serviceentry(
                     publisher_address = its_reliable_address;
                 }
                 challenge_nonce_cache_->add_publisher_challenge_nonce(configuration_->get_id(std::string(getenv(VSOMEIP_ENV_APPLICATION_NAME))), publisher_address.to_v4(), its_service, its_instance, generated_nonce);
-                // VSOMEIP_DEBUG << "PUBLISHER IP ADDRESS=" << publisher_address.to_v4().to_string();
-                // VSOMEIP_DEBUG << "Received offer from Publisher (OFFER_ARRIVED)"
-                // << "(" << publisher_address.to_v4().to_string() << "," << its_service << "," << its_instance << ")";
-                // print_numerical_representation(generated_nonce, "Generated nonce");
                 // Service Authentication End ############################################################################
 #endif
                 process_offerservice_serviceentry(its_service, its_instance,
@@ -3044,14 +3039,6 @@ service_discovery_impl::process_authentication_for_received_subscribe(
     }
     #endif
 #endif
-    // VSOMEIP_DEBUG << "SUBSCRIBER IP ADDRESS=" << _sender.to_v4().to_string();
-    // VSOMEIP_DEBUG << "Received subscription from Subscriber (SUBSCRIBE_ARRIVED)"
-    // << "(" << _sender.to_v4().to_string() << "," << _service << "," << _instance << ")" << std::endl;
-    // print_numerical_representation(generated_nonce, "Generated nonce");
-    // print_numerical_representation(_signed_nonce, "Signed nonce");
-    // print_numerical_representation(_blinded_secret, "Blinded secret");
-    // print_numerical_representation(_signature, "Signature");
-    // std::cout << "Client id=" << std::hex << std::string(client_id.begin(), client_id.end()) << std::endl;
 }
 #endif
 
@@ -3108,8 +3095,6 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
         return;
     }
 
-    VSOMEIP_DEBUG << "\n\n" << __func__ << " REQUIREMENTS ARE FULFILLED\n";
-
     service_t its_service = eventgroup_subscriptioncache_entry.service_;
     instance_t its_instance = eventgroup_subscriptioncache_entry.instance_;
     eventgroup_t its_eventgroup = eventgroup_subscriptioncache_entry.eventgroup_;
@@ -3154,7 +3139,6 @@ service_discovery_impl::validate_subscribe_and_verify_signature(client_t _client
         return;
     }
 
-    VSOMEIP_DEBUG << "\n\n" << __func__ << " SUBSCRIPTION VALIDATED\n";
 #endif
 
     bool signature_verified = false;
