@@ -2406,7 +2406,7 @@ service_discovery_impl::insert_offer_service(
             generate_and_add_nonce_for_offer_entry(_info->get_service(), _info->get_instance(), its_data);
         // Service Authentication End ##################################
 #endif
-
+        VSOMEIP_DEBUG << __func__ << " OFFER SEND";
         add_entry_data(_messages, its_data);
     } else {
         VSOMEIP_ERROR << __func__ << ": Failed to create service entry.";
@@ -2425,9 +2425,6 @@ service_discovery_impl::generate_and_add_nonce_for_offer_entry(service_t _servic
     std::shared_ptr<configuration_option_impl> configuration_option = std::make_shared<configuration_option_impl>();
     data_partitioner().partition_data<std::vector<unsigned char>>(GENERATED_NONCE_CONFIG_OPTION_KEY, configuration_option, challenge_nonce_cache_->get_offered_nonce(_service, _instance));
     _its_data.options_.push_back(configuration_option);
-    // VSOMEIP_DEBUG << "Created offer by Publisher (OFFER_SEND)"
-    // << " at Endpoint(" << unicast_.to_v4().to_string() << "," << _info->get_service() << "," << _info->get_instance() << ")";
-    // print_numerical_representation(generated_nonce_vector, "Generated nonce");
     // Service Authentication End ##################################
 }
 #endif
@@ -3983,7 +3980,7 @@ service_discovery_impl::on_offer_debounce_timer_expired(
         return;
     }
 
-    VSOMEIP_DEBUG << "INITIAL OFFER SENDING";
+    VSOMEIP_DEBUG << __func__ << " INITIAL OFFER SENDING";
     // Sent out offers for the first time as initial wait phase ended
     std::vector<std::shared_ptr<message_impl>> its_messages;
     std::shared_ptr<message_impl> its_message(std::make_shared<message_impl>());
@@ -4050,7 +4047,7 @@ service_discovery_impl::on_repetition_phase_timer_expired(
             std::uint8_t repetition(0);
             bool move_to_main(false);
             if (_repetition <= repetitions_max_) {
-                VSOMEIP_DEBUG << "REPETITION OFFER SENDING";
+                VSOMEIP_DEBUG << __func__ << " REPETITION OFFER SENDING";
                 // Sent offers, double time to wait and start timer again.
 
                 new_delay = std::chrono::milliseconds(_last_delay * 2);
@@ -4285,7 +4282,7 @@ service_discovery_impl::on_main_phase_timer_expired(
     if (_error) {
         return;
     }
-    // VSOMEIP_DEBUG << "CYCLIC OFFER SENDING";
+    VSOMEIP_DEBUG << __func__ << " CYCLIC OFFER SENDING";
     send(true);
     start_main_phase_timer();
 }
