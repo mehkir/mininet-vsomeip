@@ -2,7 +2,6 @@
 #define VSOMEIP_V3_SOMEIP_DNS_PARAMETERS_H
 
 #include <vsomeip/constants.hpp>
-#include "../../configuration/include/configuration.hpp"
 #include "../../service_authentication/include/crypto_operator.hpp"
 #include "../../statistics/include/shared_memory_parameters.hpp"
 #include <vector>
@@ -45,28 +44,29 @@ namespace vsomeip_v3 {
         validate_subscribe_ack_and_verify_signature_callback validate_subscribe_ack_and_verify_signature_callback_;
         record_timestamp_callback record_timestamp_callback_;
         convert_der_to_pem_callback convert_der_to_pem_callback_;
-        std::shared_ptr<configuration> configuration_;
+        boost::asio::ip::address_v4 its_unicast_;
     };
 
     // struct client_data_and_callbacks
     typedef std::function<void(client_t, service_t, instance_t, major_version_t, int, const boost::asio::ip::address_v4, std::set<port_t>)> add_client_svcb_entry_cache_callback;
     typedef std::function<void(void*)> request_client_tlsa_record_callback;
     typedef std::function<void(client_t, boost::asio::ip::address_v4, vsomeip_v3::service_t, vsomeip_v3::instance_t, std::vector<unsigned char>)> add_subscriber_certificate_callback;
-    typedef std::function<void(client_t, boost::asio::ip::address_v4, service_t, instance_t, major_version_t)> validate_subscribe_and_verify_signature_callback;
     struct client_data_and_cbs {
-        client_t client_;
-        service_t service_;
-        instance_t instance_;
-        major_version_t major_;
-        boost::asio::ip::address_v4 ipv4_address_;
-        boost::asio::ip::address_v4 unverified_client_ipv4_address_;
-        add_client_svcb_entry_cache_callback add_client_svcb_entry_cache_callback_;
-        request_client_tlsa_record_callback request_client_tlsa_record_callback_;
-        add_subscriber_certificate_callback add_subscriber_certificate_callback_;
-        validate_subscribe_and_verify_signature_callback validate_subscribe_and_verify_signature_callback_;
-        record_timestamp_callback record_timestamp_callback_;
-        convert_der_to_pem_callback convert_der_to_pem_callback_;
-        std::shared_ptr<configuration> configuration_;
+        public:
+            client_data_and_cbs(std::condition_variable& _client_tlsa_record_condition_variable) : client_tlsa_record_condition_variable_(_client_tlsa_record_condition_variable) {
+            }
+            client_t client_;
+            service_t service_;
+            instance_t instance_;
+            major_version_t major_;
+            boost::asio::ip::address_v4 ipv4_address_;
+            boost::asio::ip::address_v4 unverified_client_ipv4_address_;
+            add_client_svcb_entry_cache_callback add_client_svcb_entry_cache_callback_;
+            request_client_tlsa_record_callback request_client_tlsa_record_callback_;
+            add_subscriber_certificate_callback add_subscriber_certificate_callback_;
+            record_timestamp_callback record_timestamp_callback_;
+            convert_der_to_pem_callback convert_der_to_pem_callback_;
+            std::condition_variable& client_tlsa_record_condition_variable_;
     };
 } /* end namespace vsomeip_v3 */
 #endif /* VSOMEIP_V3_SOMEIP_DNS_PARAMETERS_H */
