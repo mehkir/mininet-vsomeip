@@ -1,5 +1,6 @@
 #include "../include/tlsa_resolver.hpp"
 #include "../include/parse_tlsa_reply.hpp"
+#include <vsomeip/internal/logger.hpp>
 #include <arpa/nameser.h>
 #include <netinet/in.h>
 #include <cstring>
@@ -28,7 +29,7 @@ namespace vsomeip_v3 {
             return;
         }
         VSOMEIP_DEBUG << __func__ << " TLSA SERVICE RESPONSE RECEIVE";
-        servicedata_and_cbs->record_timestamp_callback_(servicedata_and_cbs->configuration_->get_unicast_address().to_v4().to_uint(), time_metric::TLSA_SERVICE_RESPONSE_RECEIVE_);
+        servicedata_and_cbs->record_timestamp_callback_(servicedata_and_cbs->its_unicast_.to_uint(), time_metric::TLSA_SERVICE_RESPONSE_RECEIVE_);
 
         unsigned char* copy = new unsigned char[_alen];
         memcpy(copy, _abuf, _alen);
@@ -84,9 +85,9 @@ namespace vsomeip_v3 {
         tlsa_reply* tlsa_reply_ptr = tlsareply;
         while (tlsa_reply_ptr != nullptr) {
             clientdata_and_cbs->add_subscriber_certificate_callback_(clientdata_and_cbs->client_, clientdata_and_cbs->ipv4_address_, clientdata_and_cbs->service_, clientdata_and_cbs->instance_, clientdata_and_cbs->convert_der_to_pem_callback_(tlsa_reply_ptr->certificate_association_data_));
-            clientdata_and_cbs->validate_subscribe_and_verify_signature_callback_(clientdata_and_cbs->client_, clientdata_and_cbs->ipv4_address_, clientdata_and_cbs->service_, clientdata_and_cbs->instance_, clientdata_and_cbs->major_);
             tlsa_reply_ptr = tlsa_reply_ptr->tlsa_reply_next_;
         }
+        clientdata_and_cbs->client_tlsa_record_condition_variable_.notify_one();
         delete clientdata_and_cbs;
         delete[] copy;
         delete_tlsa_reply(tlsareply);
@@ -106,7 +107,7 @@ namespace vsomeip_v3 {
         request << ".";
         request << SERVICE_PARENTDOMAIN;
         VSOMEIP_DEBUG << __func__ << " TLSA SERVICE REQUEST SEND";
-        servicedata_and_cbs->record_timestamp_callback_(servicedata_and_cbs->configuration_->get_unicast_address().to_v4().to_uint(), time_metric::TLSA_SERVICE_REQUEST_SEND_);
+        servicedata_and_cbs->record_timestamp_callback_(servicedata_and_cbs->its_unicast_.to_uint(), time_metric::TLSA_SERVICE_REQUEST_SEND_);
         dns_resolver_->resolve(request.str().c_str(), C_IN, T_TLSA, service_tlsa_resolve_callback, _service_data);
     }
 
