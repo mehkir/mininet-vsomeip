@@ -1,6 +1,7 @@
 #include "../include/svcb_resolver.hpp"
 #include "../include/logger.hpp"
 #include "../include/parse_svcb_reply.hpp"
+#include <vsomeip/internal/logger.hpp>
 #include <arpa/nameser.h>
 #include <netinet/in.h>
 #include <string>
@@ -32,7 +33,7 @@ namespace vsomeip_v3 {
             return;
         }
         VSOMEIP_DEBUG << __func__ << " SVCB SERVICE RESPONSE RECEIVE";
-        servicedata_and_cbs->record_timestamp_callback_(servicedata_and_cbs->configuration_->get_unicast_address().to_v4().to_uint(), time_metric::SVCB_SERVICE_RESPONSE_RECEIVE_);
+        servicedata_and_cbs->record_timestamp_callback_(servicedata_and_cbs->its_unicast_.to_uint(), time_metric::SVCB_SERVICE_RESPONSE_RECEIVE_);
 
         unsigned char* copy = new unsigned char[_alen];
         memcpy(copy, _abuf, _alen);
@@ -142,7 +143,7 @@ namespace vsomeip_v3 {
         request << "id0x" << std::hex << std::setw(4) << std::setfill('0') << (int) _service_data_and_cbs->service_;
         request << ".";
         request << SERVICE_PARENTDOMAIN;
-        _service_data_and_cbs->record_timestamp_callback_(_service_data_and_cbs->configuration_->get_unicast_address().to_v4().to_uint(), time_metric::SVCB_SERVICE_REQUEST_SEND_);
+        _service_data_and_cbs->record_timestamp_callback_(_service_data_and_cbs->its_unicast_.to_uint(), time_metric::SVCB_SERVICE_REQUEST_SEND_);
         VSOMEIP_DEBUG << __func__ << " SVCB SERVICE REQUEST SEND";
         dns_resolver_->resolve(request.str().c_str(), C_IN, T_SVCB, service_svcb_resolve_callback, _service_data_and_cbs);
     }
