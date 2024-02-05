@@ -3001,7 +3001,10 @@ service_discovery_impl::process_authentication_for_received_subscribe(
     client_svcb_cache_entry client_svcbcache_entry = svcb_cache_->get_client_svcb_cache_entry(_client, _service, _instance, _major);
     std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_subscriber_certificate(_client, _sender.to_v4(), _service, _instance);
     if (client_svcbcache_entry.client_ != _client || certificate_data.empty()) {
-        client_data_and_cbs* clientdata_and_cbs = new client_data_and_cbs();
+        std::mutex client_tlsa_mutex;
+        std::condition_variable client_tlsa_condition_variable;
+        std::unique_lock<std::mutex> uniquelock(client_tlsa_mutex);
+        client_data_and_cbs* clientdata_and_cbs = new client_data_and_cbs(std::ref(client_tlsa_condition_variable));
         clientdata_and_cbs->client_ = _client;
         clientdata_and_cbs->service_ = _service;
         clientdata_and_cbs->instance_ = _instance;
@@ -3023,19 +3026,13 @@ service_discovery_impl::process_authentication_for_received_subscribe(
                                                 std::placeholders::_3,
                                                 std::placeholders::_4,
                                                 std::placeholders::_5);
-        clientdata_and_cbs->validate_subscribe_and_verify_signature_callback_ = std::bind(&sd::service_discovery_impl::validate_subscribe_and_verify_signature, this,
-                                                std::placeholders::_1,
-                                                std::placeholders::_2,
-                                                std::placeholders::_3,
-                                                std::placeholders::_4,
-                                                std::placeholders::_5);
         clientdata_and_cbs->record_timestamp_callback_ = std::bind(&statistics_recorder::record_timestamp, statistics_recorder_,
                                                 std::placeholders::_1,
                                                 std::placeholders::_2);
         clientdata_and_cbs->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, &crypto_operator_,
                                                 std::placeholders::_1);
-        clientdata_and_cbs->configuration_ = configuration_;
         svcb_resolver_->request_client_svcb_record(clientdata_and_cbs);
+        client_tlsa_condition_variable.wait_for(uniquelock, std::chrono::seconds(1));
     }
     #endif
 #endif
