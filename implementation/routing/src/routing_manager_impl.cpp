@@ -666,7 +666,7 @@ void routing_manager_impl::request_service(client_t _client, service_t _service,
     servicedata_and_cbs->record_timestamp_callback_ = std::bind(&statistics_recorder::record_timestamp, statistics_recorder_,
                                             std::placeholders::_1,
                                             std::placeholders::_2);
-    servicedata_and_cbs->configuration_ = configuration_;
+    servicedata_and_cbs->its_unicast_ = configuration_->get_unicast_address().to_v4();
     svcb_resolver_->request_service_svcb_record(servicedata_and_cbs);
     //Addition for Service Authentication End ############################################################################
 #endif
