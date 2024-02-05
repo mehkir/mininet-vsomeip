@@ -1101,12 +1101,6 @@ service_discovery_impl::process_authentication_for_created_subscribe(
         VSOMEIP_DEBUG << __func__ << " CLIENT SIGN END";
 #endif
         its_data.options_.push_back(configuration_option);
-        // VSOMEIP_DEBUG << "Created subscription by Subscriber (SUBSCRIBE_SEND)" << " for Publisher Endpoint(" << publisher_address.to_v4().to_string() << "," << _service << "," << _instance << ")";
-        // print_numerical_representation(generated_nonce_vector, "Generated nonce");
-        // print_numerical_representation(signed_nonce_vector, "Signed nonce");
-        // print_numerical_representation(blinded_secret_vector, "Blinded secret");
-        // print_numerical_representation(signature, "Signature");
-        // std::cout << "Client id=" << std::hex << client << std::endl;
     }
     // Service Authentication End ########################################################################################
 }
@@ -3052,13 +3046,6 @@ service_discovery_impl::process_authentication_for_received_subscribe_ack(
     _encrypted_group_secret = data_partitioner().reassemble_data<std::vector<unsigned char>>(ENCRYPTED_GROUP_SECRET_CONFIG_OPTION_KEY, _configuration_option);
     _initialization_vector = data_partitioner().reassemble_data<std::vector<unsigned char>>(INITIALIZATION_VECTOR_CONFIG_OPTION_KEY, _configuration_option);
 #endif
-    // VSOMEIP_DEBUG << "Received subscribe ack from Publisher (SUBSCRIBE_ACK_ARRIVED)"
-    // << "(" << _sender.to_v4().to_string() << "," << its_service << "," << its_instance << ")" << std::endl;
-    // print_numerical_representation(signed_nonce, "Signed nonce");
-    // print_numerical_representation(blinded_secret, "Blinded secret");
-    // print_numerical_representation(encrypted_group_secret, "Encrypted group secret");
-    // print_numerical_representation(initialization_vector, "Initialization vector");
-    // print_numerical_representation(signature, "Signature");
 }
 #endif
 
