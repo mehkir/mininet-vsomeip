@@ -80,10 +80,15 @@ void statistics_writer::write_statistics() {
     composite_time_statistics_ = segment.find<shared_statistics_map>(TIME_STATISTICS_MAP_NAME).first;
     boost::interprocess::named_condition condition(boost::interprocess::open_only, STATISTICS_CONDITION);
     boost::interprocess::named_mutex mutex(boost::interprocess::open_only, STATISTICS_MUTEX);
-    boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(mutex);
     while(!entries_are_complete()) {
         condition.notify_one();
-        condition.wait(lock);
+        {
+            boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(mutex);
+            if(!entries_are_complete()) {
+                condition.wait(lock);
+            }
+        }
+        // print_statistics();
     }
     std::ofstream statistics_file;
     int filecount = 0;

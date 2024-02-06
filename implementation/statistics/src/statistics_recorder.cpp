@@ -42,32 +42,36 @@ void statistics_recorder::contribute_statistics() {
             boost::interprocess::named_mutex mutex(boost::interprocess::open_only, STATISTICS_MUTEX);
             boost::interprocess::managed_shared_memory segment(boost::interprocess::open_only, SEGMENT_NAME);
             void_allocator void_allocator_instance(segment.get_segment_manager());
-            boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(mutex);
 
-            while (!(composite_time_statistics_ = segment.find<shared_statistics_map>(TIME_STATISTICS_MAP_NAME).first)) {
-                waited_for_shm = true;
-                condition.wait(lock);
-                std::cout << "[<statistics_recorder>] (" << __func__ << ") shared maps not intialized yet" << std::endl;
-            }
-            if(waited_for_shm) {
-                std::cout << "[<statistics_recorder>] (" << __func__ << ") resume composing" << std::endl;
-            }
-
-            for(auto host_entry : time_statistics_) {
-                metrics_map_data* mapped_metrics_map;
-                if(composite_time_statistics_->count(host_entry.first)) {
-                    mapped_metrics_map = &composite_time_statistics_->at(host_entry.first);
-                } else {
-                    metrics_map_data metrics_map_data_var = metrics_map_data(void_allocator_instance);
-                    mapped_metrics_map = &metrics_map_data_var;
+            {
+                boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(mutex);
+                while (!(composite_time_statistics_ = segment.find<shared_statistics_map>(TIME_STATISTICS_MAP_NAME).first)) {
+                    waited_for_shm = true;
+                    condition.wait(lock);
+                    std::cout << "[<statistics_recorder>] (" << __func__ << ") shared maps not intialized yet" << std::endl;
                 }
-                for(auto metrics_entry : host_entry.second) {
-                    mapped_metrics_map->metrics_map_.insert({metrics_entry.first, metrics_entry.second});
+                if(waited_for_shm) {
+                    std::cout << "[<statistics_recorder>] (" << __func__ << ") resume composing" << std::endl;
                 }
-                composite_time_statistics_->insert({host_entry.first, *mapped_metrics_map});
+            }
+            {
+                boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(mutex);
+                for(auto host_entry : time_statistics_) {
+                    metrics_map_data* mapped_metrics_map;
+                    if(composite_time_statistics_->count(host_entry.first)) {
+                        mapped_metrics_map = &composite_time_statistics_->at(host_entry.first);
+                    } else {
+                        metrics_map_data metrics_map_data_var = metrics_map_data(void_allocator_instance);
+                        mapped_metrics_map = &metrics_map_data_var;
+                    }
+                    for(auto metrics_entry : host_entry.second) {
+                        mapped_metrics_map->metrics_map_.insert({metrics_entry.first, metrics_entry.second});
+                    }
+                    composite_time_statistics_->insert({host_entry.first, *mapped_metrics_map});
+                }
+                shared_objects_initialized = true;
             }
             condition.notify_one();
-            shared_objects_initialized = true;
         } catch (boost::interprocess::interprocess_exception& interprocess_exception) {
             std::cerr << __func__ << interprocess_exception.what() << std::endl;
             std::cout << "[<statistics_recorder>] (" << __func__ << ") shared objects may not created yet or segment size is not enough. Examine error message for exact cause." << std::endl;

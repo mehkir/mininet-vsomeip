@@ -1217,6 +1217,7 @@ service_discovery_impl::insert_subscription_ack(
         }
 
         if(!already_contributed && (recorded_subscribers.size() == configuration_->get_subscriber_count_to_record())) {
+            VSOMEIP_DEBUG << __func__ << " CONTRIBUTING STATISTICS";
             statistics_contributor_ = std::thread(&statistics_recorder::contribute_statistics, statistics_recorder_);
             already_contributed = true;
         }
@@ -2468,6 +2469,7 @@ service_discovery_impl::process_eventgroupentry(
 #else
     // Addition for statistics contribution Start #################################################################
     if (entry_type_e::SUBSCRIBE_EVENTGROUP_ACK == its_type && its_ttl > 0) {
+        VSOMEIP_DEBUG << __func__ << " ABOUT TO CONTRIBUTE STATISTICS";
         static bool already_contributed = false;
         static std::mutex contribution_mutex;
         {
@@ -2476,6 +2478,7 @@ service_discovery_impl::process_eventgroupentry(
             statistics_recorder_->record_timestamp(unicast_.to_v4().to_uint(), time_metric::SUBSCRIBE_ACK_RECEIVE_);
 
             if(!already_contributed) {
+                VSOMEIP_DEBUG << __func__ << " CONTRIBUTING STATISTICS";
                 statistics_recorder_->contribute_statistics();
                 already_contributed = true;
             }
