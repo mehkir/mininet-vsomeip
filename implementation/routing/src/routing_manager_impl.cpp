@@ -98,11 +98,8 @@ routing_manager_impl::routing_manager_impl(routing_manager_host *_host) :
     #if defined(WITH_DNSSEC) && defined(WITH_DANE)
         ,tlsa_resolver_(std::make_shared<tlsa_resolver>(configuration_->get_dns_server_ip()))
     #endif
-    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
-        ,eventgroup_subscription_cache_(std::make_shared<eventgroup_subscription_cache>())
-        #ifdef WITH_ENCRYPTION
+    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD) && defined(WITH_ENCRYPTION)
         ,encrypted_group_secret_result_cache_(std::make_shared<encrypted_group_secret_result_cache>())
-        #endif
     #endif
 #endif
 {
@@ -206,13 +203,10 @@ void routing_manager_impl::init() {
     #if defined(WITH_DNSSEC) && defined(WITH_DANE)
             discovery_->set_tlsa_resolver(tlsa_resolver_);
     #endif
-    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
-            discovery_->set_eventgroup_subscription_cache(eventgroup_subscription_cache_);
-        #ifdef WITH_ENCRYPTION
+    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD) && defined(WITH_ENCRYPTION)
             discovery_->set_dh_ecc(dh_ecc_);
             discovery_->set_group_secret_map(group_secrets_);
             discovery_->set_encrypted_group_secret_result_cache(encrypted_group_secret_result_cache_);
-        #endif
     #endif
 #endif
             discovery_->set_statistics_recorder(statistics_recorder_);

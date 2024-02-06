@@ -41,9 +41,6 @@
     #if defined(WITH_DNSSEC) && (WITH_DANE)
 #include "../../dnssec/include/tlsa_resolver.hpp"
     #endif
-    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
-#include "../../service_authentication/include/eventgroup_subscription_cache.hpp"
-    #endif
 #endif
 
 //Additional include for statistics recorder
@@ -595,9 +592,6 @@ private:
     std::shared_ptr<eventgroup_subscription_ack_cache> eventgroup_subscription_ack_cache_;
     #if defined(WITH_DNSSEC) && defined(WITH_DANE)
     std::shared_ptr<tlsa_resolver> tlsa_resolver_;
-    #endif
-    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
-    std::shared_ptr<eventgroup_subscription_cache> eventgroup_subscription_cache_;
     #endif
 #endif
     //Addition for statistics recording

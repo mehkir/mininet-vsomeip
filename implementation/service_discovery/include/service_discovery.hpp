@@ -29,9 +29,6 @@
     #endif
 #include "../../service_authentication/include/challenge_nonce_cache.hpp"
 #include "../../service_authentication/include/eventgroup_subscription_ack_cache.hpp"
-    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
-#include "../../service_authentication/include/eventgroup_subscription_cache.hpp"
-    #endif
 #endif
 
 //Additional include for statistics recorder
@@ -116,9 +113,6 @@ public:
     virtual void set_challenge_nonce_cache(std::shared_ptr<challenge_nonce_cache> _challenge_nonce_cache) = 0;
     virtual void set_eventgroup_subscription_ack_cache(std::shared_ptr<eventgroup_subscription_ack_cache> _eventgroup_subscription_ack_cache) = 0;
     virtual void validate_subscribe_ack_and_verify_signature(boost::asio::ip::address_v4 _sender_ip_address, service_t _service, instance_t _instance, major_version_t _major) = 0;
-    #if defined(WITH_CLIENT_AUTHENTICATION) && !defined(NO_SOMEIP_SD)
-    virtual void set_eventgroup_subscription_cache(std::shared_ptr<eventgroup_subscription_cache> _eventgroup_subscription_cache) = 0;
-    #endif
 #endif
     // Addition for Service Authentication End ###########################################################################
     // Addition for statistics recorder Start ###############################################################################
