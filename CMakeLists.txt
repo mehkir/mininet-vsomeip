@@ -33,7 +33,7 @@ set (CMAKE_VERBOSE_MAKEFILE off)
 # WITH_SERVICE_AUTHENTICATION                                                   works
 # WITH_SERVICE_AUTHENTICATION WITH_CLIENT_AUTHENTICATION                        works
 
-add_compile_definitions(WITH_DNSSEC)
+add_compile_definitions()
 
 if (NOT GTEST_ROOT)
     if (DEFINED ENV{GTEST_ROOT})
