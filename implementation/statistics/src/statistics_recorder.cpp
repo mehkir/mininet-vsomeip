@@ -43,17 +43,16 @@ void statistics_recorder::contribute_statistics() {
             boost::interprocess::managed_shared_memory segment(boost::interprocess::open_only, SEGMENT_NAME);
             void_allocator void_allocator_instance(segment.get_segment_manager());
 
-            {
+            while (!(composite_time_statistics_ = segment.find<shared_statistics_map>(TIME_STATISTICS_MAP_NAME).first)) {
+                waited_for_shm = true;
                 boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(mutex);
-                while (!(composite_time_statistics_ = segment.find<shared_statistics_map>(TIME_STATISTICS_MAP_NAME).first)) {
-                    waited_for_shm = true;
-                    condition.wait(lock);
-                    std::cout << "[<statistics_recorder>] (" << __func__ << ") shared maps not intialized yet" << std::endl;
-                }
-                if(waited_for_shm) {
-                    std::cout << "[<statistics_recorder>] (" << __func__ << ") resume composing" << std::endl;
-                }
+                condition.wait(lock);
+                std::cout << "[<statistics_recorder>] (" << __func__ << ") shared maps not intialized yet" << std::endl;
             }
+            if(waited_for_shm) {
+                std::cout << "[<statistics_recorder>] (" << __func__ << ") resume composing" << std::endl;
+            }
+            
             {
                 boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(mutex);
                 for(auto host_entry : time_statistics_) {
