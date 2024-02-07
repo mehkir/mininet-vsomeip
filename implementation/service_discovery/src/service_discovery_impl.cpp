@@ -2993,7 +2993,7 @@ service_discovery_impl::process_authentication_for_received_subscribe(
         std::mutex client_tlsa_mutex;
         std::condition_variable client_tlsa_condition_variable;
         std::unique_lock<std::mutex> uniquelock(client_tlsa_mutex);
-        client_data_and_cbs* clientdata_and_cbs = new client_data_and_cbs(std::ref(client_tlsa_condition_variable));
+        client_data_and_cbs* clientdata_and_cbs = new client_data_and_cbs(std::ref(client_tlsa_mutex), std::ref(client_tlsa_condition_variable));
         clientdata_and_cbs->client_ = _client;
         clientdata_and_cbs->service_ = _service;
         clientdata_and_cbs->instance_ = _instance;

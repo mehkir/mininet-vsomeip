@@ -53,7 +53,7 @@ namespace vsomeip_v3 {
     typedef std::function<void(client_t, boost::asio::ip::address_v4, vsomeip_v3::service_t, vsomeip_v3::instance_t, std::vector<unsigned char>)> add_subscriber_certificate_callback;
     struct client_data_and_cbs {
         public:
-            client_data_and_cbs(std::condition_variable& _client_tlsa_record_condition_variable) : client_tlsa_record_condition_variable_(_client_tlsa_record_condition_variable) {
+            client_data_and_cbs(std::mutex& _client_tlsa_mutex, std::condition_variable& _client_tlsa_record_condition_variable) : client_tlsa_mutex_(_client_tlsa_mutex), client_tlsa_record_condition_variable_(_client_tlsa_record_condition_variable) {
             }
             client_t client_;
             service_t service_;
@@ -66,6 +66,7 @@ namespace vsomeip_v3 {
             add_subscriber_certificate_callback add_subscriber_certificate_callback_;
             record_timestamp_callback record_timestamp_callback_;
             convert_der_to_pem_callback convert_der_to_pem_callback_;
+            std::mutex& client_tlsa_mutex_;
             std::condition_variable& client_tlsa_record_condition_variable_;
     };
 } /* end namespace vsomeip_v3 */
