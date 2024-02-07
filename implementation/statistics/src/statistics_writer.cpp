@@ -84,7 +84,6 @@ void statistics_writer::write_statistics() {
     while(!entries_are_complete()) {
         condition.notify_one();
         condition.wait(lock);
-        print_statistics();
     }
     std::ofstream statistics_file;
     int filecount = 0;
