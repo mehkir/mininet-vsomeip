@@ -1220,6 +1220,7 @@ service_discovery_impl::insert_subscription_ack(
             VSOMEIP_DEBUG << __func__ << " CONTRIBUTING STATISTICS";
             statistics_contributor_ = std::thread(&statistics_recorder::contribute_statistics, statistics_recorder_);
             already_contributed = true;
+            VSOMEIP_DEBUG << __func__ << " STATISTICS CONTRIBUTED";
         }
     }
     // Addition for statistics contribution End ###################################################################
@@ -2483,6 +2484,7 @@ service_discovery_impl::process_eventgroupentry(
                 already_contributed = true;
             }
         }
+        VSOMEIP_DEBUG << __func__ << " STATISTICS CONTRIBUTED";
     }
     // Addition for statistics contribution End ###################################################################
 #endif
