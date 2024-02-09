@@ -3021,7 +3021,7 @@ service_discovery_impl::process_authentication_for_received_subscribe(
         clientdata_and_cbs->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, &crypto_operator_,
                                                 std::placeholders::_1);
         svcb_resolver_->request_client_svcb_record(clientdata_and_cbs);
-        client_tlsa_condition_variable.wait_for(uniquelock, std::chrono::seconds(1));
+        client_tlsa_condition_variable.wait(uniquelock);
     }
     #endif
 #endif

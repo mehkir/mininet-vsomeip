@@ -68,6 +68,13 @@ namespace vsomeip_v3 {
             convert_der_to_pem_callback convert_der_to_pem_callback_;
             std::mutex& client_tlsa_mutex_;
             std::condition_variable& client_tlsa_record_condition_variable_;
+
+            void notify_waiting_thread() {
+                {
+                    std::lock_guard<std::mutex> lockguard(client_tlsa_mutex_);
+                }
+                client_tlsa_record_condition_variable_.notify_one();
+            }
     };
 } /* end namespace vsomeip_v3 */
 #endif /* VSOMEIP_V3_SOMEIP_DNS_PARAMETERS_H */

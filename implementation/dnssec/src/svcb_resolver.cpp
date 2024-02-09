@@ -39,7 +39,7 @@ namespace vsomeip_v3 {
         memcpy(copy, _abuf, _alen);
         svcb_reply* svcbreply;
         if ((parse_svcb_reply(copy, _alen, &svcbreply)) != ARES_SUCCESS) {
-            std::cout << "Parsing service SVCB reply failed" << std::endl;
+            std::cerr << "Parsing service SVCB reply failed" << std::endl;
             delete servicedata_and_cbs;
             delete[] copy;
             delete_svcb_reply(svcbreply);
@@ -79,12 +79,14 @@ namespace vsomeip_v3 {
         
         if (_status) {
             std::cerr << __func__ << " Bad DNS response" << std::endl;
+            clientdata_and_cbs->notify_waiting_thread();
             delete clientdata_and_cbs;
             return;
         }
 
         if (_timeouts) {
             std::cerr << __func__ << " DNS request timeout" << std::endl;
+            clientdata_and_cbs->notify_waiting_thread();
             delete clientdata_and_cbs;
             return;
         }
@@ -95,7 +97,7 @@ namespace vsomeip_v3 {
         memcpy(copy, _abuf, _alen);
         svcb_reply* svcbreply;
         if ((parse_svcb_reply(copy, _alen, &svcbreply)) != ARES_SUCCESS) {
-            std::cout << "Parsing client SVCB reply failed" << std::endl;
+            std::cerr << "Parsing client SVCB reply failed" << std::endl;
             delete clientdata_and_cbs;
             delete[] copy;
             delete_svcb_reply(svcbreply);

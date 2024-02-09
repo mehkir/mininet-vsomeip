@@ -59,12 +59,14 @@ namespace vsomeip_v3 {
         
         if (_status) {
             std::cerr << __func__ << " Bad DNS response" << std::endl;
+            clientdata_and_cbs->notify_waiting_thread();
             delete clientdata_and_cbs;
             return;
         }
 
         if (_timeouts) {
             std::cerr << __func__ << " DNS request timeout" << std::endl;
+            clientdata_and_cbs->notify_waiting_thread();
             delete clientdata_and_cbs;
             return;
         }
@@ -87,11 +89,7 @@ namespace vsomeip_v3 {
             clientdata_and_cbs->add_subscriber_certificate_callback_(clientdata_and_cbs->client_, clientdata_and_cbs->ipv4_address_, clientdata_and_cbs->service_, clientdata_and_cbs->instance_, clientdata_and_cbs->convert_der_to_pem_callback_(tlsa_reply_ptr->certificate_association_data_));
             tlsa_reply_ptr = tlsa_reply_ptr->tlsa_reply_next_;
         }
-
-        {
-            std::lock_guard<std::mutex> lockguard(clientdata_and_cbs->client_tlsa_mutex_);
-        }
-        clientdata_and_cbs->client_tlsa_record_condition_variable_.notify_one();
+        clientdata_and_cbs->notify_waiting_thread();
         delete clientdata_and_cbs;
         delete[] copy;
         delete_tlsa_reply(tlsareply);
