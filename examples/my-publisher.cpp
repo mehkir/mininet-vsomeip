@@ -93,9 +93,9 @@ public:
     }
 
     void on_state(vsomeip::state_type_e _state) {
-        std::cout << "Application " << app_->get_name() << " is "
-        << (_state == vsomeip::state_type_e::ST_REGISTERED ?
-                "registered." : "deregistered.") << std::endl;
+        // std::cout << "Application " << app_->get_name() << " is "
+        // << (_state == vsomeip::state_type_e::ST_REGISTERED ?
+        //         "registered." : "deregistered.") << std::endl;
 
         if (_state == vsomeip::state_type_e::ST_REGISTERED) {
             if (!is_registered_) {
@@ -118,12 +118,12 @@ public:
                 if (its_size == sizeof(its_data))
                     its_size = 1;
 
-                std::cout << "Generating payload = (" << its_size << ") ";
+                // std::cout << "Generating payload = (" << its_size << ") ";
                 for (uint32_t i = 0; i < its_size; ++i) {
                     its_data[i] = static_cast<uint8_t>(i);
-                    std::cout << i << " ";
+                    // std::cout << i << " ";
                 }
-                std::cout << std::endl;
+                // std::cout << std::endl;
 
                 {
                     std::lock_guard<std::mutex> its_lock(payload_mutex_);
