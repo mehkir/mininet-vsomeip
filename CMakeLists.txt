@@ -287,7 +287,7 @@ if (VSOMEIP_ENABLE_MULTIPLE_ROUTING_MANAGERS EQUAL 0)
         set_target_properties(${VSOMEIP_NAME}-cfg PROPERTIES COMPILE_DEFINITIONS "VSOMEIP_DLL_COMPILATION_PLUGIN")
     endif()
 
-    target_link_libraries(${VSOMEIP_NAME}-cfg ${VSOMEIP_NAME} ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBRARY} ${SystemD_LIBRARIES} libcryptopp.a libcrypto.a libcares.so)
+    target_link_libraries(${VSOMEIP_NAME}-cfg ${VSOMEIP_NAME} ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBRARY} ${SystemD_LIBRARIES} libcryptopp.a crypto libcares.so)
 endif ()
 
 ################################################################################
@@ -337,7 +337,7 @@ target_include_directories(${VSOMEIP_NAME} INTERFACE
 # them (which shouldn't be required). ${Boost_LIBRARIES} includes absolute
 # build host paths as of writing, which also makes this important as it breaks
 # the build.
-target_link_libraries(${VSOMEIP_NAME} PRIVATE ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBRARY} ${DLT_LIBRARIES} ${SystemD_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} libcares.so libcryptopp.a libcrypto.a)
+target_link_libraries(${VSOMEIP_NAME} PRIVATE ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBRARY} ${DLT_LIBRARIES} ${SystemD_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} libcares.so libcryptopp.a crypto)
 
 if(NOT WIN32)
     target_link_options(${VSOMEIP_NAME} PRIVATE "LINKER:-as-needed")
@@ -361,7 +361,7 @@ if (MSVC)
     set_target_properties(${VSOMEIP_NAME}-sd PROPERTIES COMPILE_DEFINITIONS "VSOMEIP_DLL_COMPILATION_PLUGIN")
 endif ()
 
-target_link_libraries(${VSOMEIP_NAME}-sd ${VSOMEIP_NAME} ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBRARY} ${SystemD_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} libcryptopp.a libcrypto.a libcares.so)
+target_link_libraries(${VSOMEIP_NAME}-sd ${VSOMEIP_NAME} ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBRARY} ${SystemD_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} libcryptopp.a crypto libcares.so)
 
 
 ################################################################################
@@ -378,7 +378,7 @@ if (MSVC)
     set_target_properties(${VSOMEIP_NAME}-e2e PROPERTIES COMPILE_DEFINITIONS "VSOMEIP_DLL_COMPILATION_PLUGIN")
 endif ()
 
-target_link_libraries(${VSOMEIP_NAME}-e2e ${VSOMEIP_NAME} ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBRARY} ${SystemD_LIBRARIES} libcryptopp.a libcrypto.a libcares.so)
+target_link_libraries(${VSOMEIP_NAME}-e2e ${VSOMEIP_NAME} ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBRARY} ${SystemD_LIBRARIES} libcryptopp.a crypto libcares.so)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "QNX")
     target_link_libraries(${VSOMEIP_NAME}-e2e socket)
@@ -412,7 +412,7 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> # for generated files in build mode
     $<INSTALL_INTERFACE:include/compat> # for clients in install mode
 )
-target_link_libraries(${VSOMEIP_COMPAT_NAME} PRIVATE ${VSOMEIP_NAME} ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBRARY} ${SystemD_LIBRARIES} libcryptopp.a libcrypto.a libcares.so)
+target_link_libraries(${VSOMEIP_COMPAT_NAME} PRIVATE ${VSOMEIP_NAME} ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBRARY} ${SystemD_LIBRARIES} libcryptopp.a crypto libcares.so)
 
 endif ()
 
