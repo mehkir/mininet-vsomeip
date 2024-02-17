@@ -2986,10 +2986,9 @@ service_discovery_impl::process_authentication_for_received_subscribe(
     #endif
 
     #if defined(WITH_DNSSEC) && defined(WITH_DANE)
-    // Request client svcb record
-    client_svcb_cache_entry client_svcbcache_entry = svcb_cache_->get_client_svcb_cache_entry(_client, _service, _instance, _major);
+    // Request client tlsa record
     std::vector<byte_t> certificate_data = challenge_nonce_cache_->get_subscriber_certificate(_client, _sender.to_v4(), _service, _instance);
-    if (client_svcbcache_entry.client_ != _client || certificate_data.empty()) {
+    if (certificate_data.empty()) {
         std::mutex client_tlsa_mutex;
         std::condition_variable client_tlsa_condition_variable;
         std::unique_lock<std::mutex> uniquelock(client_tlsa_mutex);
@@ -2998,6 +2997,7 @@ service_discovery_impl::process_authentication_for_received_subscribe(
         clientdata_and_cbs->service_ = _service;
         clientdata_and_cbs->instance_ = _instance;
         clientdata_and_cbs->major_ = _major;
+        clientdata_and_cbs->ipv4_address_ = _sender.to_v4();
         clientdata_and_cbs->unverified_client_ipv4_address_ = _sender.to_v4();
         clientdata_and_cbs->add_subscriber_certificate_callback_ = std::bind(&challenge_nonce_cache::add_subscriber_certificate, challenge_nonce_cache_,
                                                 std::placeholders::_1,
