@@ -2999,16 +2999,6 @@ service_discovery_impl::process_authentication_for_received_subscribe(
         clientdata_and_cbs->instance_ = _instance;
         clientdata_and_cbs->major_ = _major;
         clientdata_and_cbs->unverified_client_ipv4_address_ = _sender.to_v4();
-        clientdata_and_cbs->add_client_svcb_entry_cache_callback_ = std::bind(&svcb_cache::add_client_svcb_cache_entry, svcb_cache_,
-                                                std::placeholders::_1,
-                                                std::placeholders::_2,
-                                                std::placeholders::_3,
-                                                std::placeholders::_4,
-                                                std::placeholders::_5,
-                                                std::placeholders::_6,
-                                                std::placeholders::_7);
-        clientdata_and_cbs->request_client_tlsa_record_callback_ = std::bind(&tlsa_resolver::request_client_tlsa_record, tlsa_resolver_,
-                                                std::placeholders::_1);
         clientdata_and_cbs->add_subscriber_certificate_callback_ = std::bind(&challenge_nonce_cache::add_subscriber_certificate, challenge_nonce_cache_,
                                                 std::placeholders::_1,
                                                 std::placeholders::_2,
@@ -3020,7 +3010,7 @@ service_discovery_impl::process_authentication_for_received_subscribe(
                                                 std::placeholders::_2);
         clientdata_and_cbs->convert_der_to_pem_callback_ = std::bind(&crypto_operator::convert_der_to_pem, &crypto_operator_,
                                                 std::placeholders::_1);
-        svcb_resolver_->request_client_svcb_record(clientdata_and_cbs);
+        tlsa_resolver_->request_client_tlsa_record(clientdata_and_cbs);
         client_tlsa_condition_variable.wait(uniquelock);
     }
     #endif
@@ -3059,9 +3049,7 @@ service_discovery_impl::validate_subscribe_and_verify_signature(
     VSOMEIP_DEBUG << __func__ << " VERIFY CLIENT SIGNATURE START";
     statistics_recorder_->record_timestamp(_subscriber_ip_address.to_uint(), time_metric::VERIFY_CLIENT_SIGNATURE_START_);
     bool requirements_are_fulfilled = false;
-#if defined(WITH_DNSSEC) && defined(WITH_DANE)
-    client_svcb_cache_entry client_svcbcache_entry = svcb_cache_->get_client_svcb_cache_entry(_client, _service, _instance, _major);
-#else
+#if !defined(WITH_DANE)
     std::string host_id = "h"+std::to_string(_subscriber_ip_address.to_uint() - configuration_->get_network_address()); // host id depends on mininet
     challenge_nonce_cache_->add_subscriber_certificate(_client, _subscriber_ip_address, _service, _instance, host_certificates_.at(host_id));
 #endif
@@ -3069,40 +3057,11 @@ service_discovery_impl::validate_subscribe_and_verify_signature(
     std::vector<unsigned char> signed_nonce = challenge_nonce_cache_->get_publisher_challenge_nonce(_client, _subscriber_ip_address, _service, _instance);
     requirements_are_fulfilled = !certificate_data.empty()
                                 && !signed_nonce.empty()
-                                && !_signature.empty()
-#if defined(WITH_DNSSEC) && defined(WITH_DANE)
-                                && (client_svcbcache_entry.client_ == _client);
-#else
-                                ;
-#endif
+                                && !_signature.empty();
 
     if (!requirements_are_fulfilled) {
         return;
     }
-
-#if defined(WITH_DNSSEC) && defined(WITH_DANE)
-    bool subscription_validated = false;
-    subscription_validated = (client_svcbcache_entry.client_ == _client)
-                            && (client_svcbcache_entry.service_ == _service)
-                            && (client_svcbcache_entry.instance_ == _instance)
-                            && (client_svcbcache_entry.major_ == _major)
-                            && challenge_nonce_cache_->has_publisher_challenge_nonce_and_remove(_client, _subscriber_ip_address, _service, _instance, challenge_nonce_cache_->get_offered_nonce(_service, _instance))
-                            && (challenge_nonce_cache_->get_offered_nonce(_service, _instance) == signed_nonce);
-
-    bool first_endpoint_validated = (client_svcbcache_entry.ipv4_address_ == _first_address)
-                                    && client_svcbcache_entry.ports_.count(_first_port)
-                                    && ((client_svcbcache_entry.l4protocol_ == IPPROTO_UDP && !_is_first_reliable)
-                                    || (client_svcbcache_entry.l4protocol_ == IPPROTO_TCP && _is_first_reliable));
-    bool second_endpoint_validated = client_svcbcache_entry.ipv4_address_ == _second_address
-                                    && client_svcbcache_entry.ports_.count(_second_port)
-                                    && ((client_svcbcache_entry.l4protocol_ == IPPROTO_UDP && !_is_second_reliable)
-                                    || (client_svcbcache_entry.l4protocol_ == IPPROTO_TCP && _is_second_reliable));
-    subscription_validated = subscription_validated && (first_endpoint_validated || second_endpoint_validated);
-    if (!subscription_validated) {
-        return;
-    }
-
-#endif
 
     bool signature_verified = false;
     CryptoPP::RSA::PublicKey public_key;
@@ -3129,20 +3088,12 @@ service_discovery_impl::validate_subscribe_and_verify_signature(
 #ifdef WITH_ENCRYPTION
     VSOMEIP_DEBUG << __func__ << " COMPUTE ENCRYPTED GROUP SECRET";
     encrypted_group_secret_result encrypted_groupsecret_result = dh_ecc_->compute_encrypted_group_secret(CryptoPP::SecByteBlock(blinded_secret.data(), blinded_secret.size()));
-    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
-    encrypted_group_secret_result_cache_->add_encrypted_group_secret_result(client_svcbcache_entry.ipv4_address_, client_svcbcache_entry.service_, client_svcbcache_entry.instance_, client_svcbcache_entry.major_, encrypted_groupsecret_result);
-    #else
     encrypted_group_secret_result_cache_->add_encrypted_group_secret_result(_subscriber_ip_address, _service, _instance, _major, encrypted_groupsecret_result);
-    #endif
 #endif
 
 #ifdef WITH_ENCRYPTION
     CryptoPP::SecByteBlock group_secret = dh_ecc_->get_group_secret();
-    #if defined(WITH_DNSSEC) && defined(WITH_DANE)
-    std::tuple<service_t, instance_t> key_tuple = std::make_tuple(client_svcbcache_entry.service_, client_svcbcache_entry.instance_);
-    #else
     std::tuple<service_t, instance_t> key_tuple = std::make_tuple(_service, _instance);
-    #endif
     group_secrets_.operator*()[key_tuple] = group_secret;
 #endif
 
